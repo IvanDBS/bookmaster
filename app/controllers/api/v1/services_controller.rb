@@ -15,11 +15,11 @@ class Api::V1::ServicesController < ApplicationController
       @services = @services.where(user_id: params[:master_id])
     end
     
-    render json: @services.as_json(include: { user: { only: [:id, :first_name, :last_name, :phone] } })
+    render json: @services
   end
 
   def show
-    render json: @service.as_json(include: { user: { only: [:id, :first_name, :last_name, :phone, :bio] } })
+    render json: @service
   end
 
   def create

@@ -1,5 +1,5 @@
 class Api::V1::AuthController < ApplicationController
-  skip_before_action :verify_authenticity_token
+  before_action :authenticate_user!, only: [:profile]
   
   def register
     user = User.new(user_params)
@@ -28,13 +28,9 @@ class Api::V1::AuthController < ApplicationController
   end
   
   def profile
-    if user_signed_in?
-      render json: {
-        user: current_user.as_json(only: [:id, :email, :first_name, :last_name, :role, :phone, :bio, :address])
-      }
-    else
-      render json: { error: 'Необходима авторизация' }, status: :unauthorized
-    end
+    render json: {
+      user: current_user.as_json(only: [:id, :email, :first_name, :last_name, :role, :phone, :bio, :address])
+    }
   end
   
   private

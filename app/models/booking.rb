@@ -14,6 +14,7 @@ class Booking < ApplicationRecord
   before_validation :set_end_time, if: :start_time_changed?
   validate :start_time_in_future
   validate :end_time_after_start_time
+  validate :no_time_conflicts
 
   # Scopes
   scope :pending, -> { where(status: 'pending') }
@@ -21,8 +22,8 @@ class Booking < ApplicationRecord
   scope :cancelled, -> { where(status: 'cancelled') }
   scope :completed, -> { where(status: 'completed') }
   scope :upcoming, -> { where('start_time > ?', Time.current) }
-  scope :past, -> { where('start_time < ?', Time.current) }
-  scope :by_date, ->(date) { where(start_time: date.beginning_of_day..date.end_of_day) }
+  scope :past, -> { where(start_time: ...Time.current) }
+  scope :by_date, ->(date) { where(start_time: date.all_day) }
 
   # Methods
   def pending?
@@ -75,6 +76,26 @@ class Booking < ApplicationRecord
     return unless start_time && end_time
     if end_time <= start_time
       errors.add(:end_time, 'должно быть после времени начала')
+    end
+  end
+
+  def no_time_conflicts
+    return unless start_time && end_time && user_id
+    
+    conflicting_bookings = Booking.where(user_id: user_id)
+                                .where.not(id: id) # исключаем текущую запись при обновлении
+                                .where(status: %w[pending confirmed])
+                                .where(
+                                  '(start_time < ? AND end_time > ?) OR ' \
+                                  '(start_time < ? AND end_time > ?) OR ' \
+                                  '(start_time >= ? AND end_time <= ?)',
+                                  end_time, start_time,
+                                  end_time, end_time,
+                                  start_time, end_time
+                                )
+    
+    if conflicting_bookings.exists?
+      errors.add(:start_time, 'время уже занято другим бронированием')
     end
   end
 end

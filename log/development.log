@@ -136,3 +136,242 @@ No serializer found for resource: {"id"=>1, "name"=>"Классический м
 Completed 200 OK in 181ms (Views: 14.8ms | ActiveRecord: 37.0ms | Allocations: 33811)
 
 
+  [1m[35m (1.7ms)[0m  [1m[35mCREATE DATABASE "bookmaster_development" ENCODING = 'unicode'[0m
+  [1m[35m (0.8ms)[0m  [1m[35mCREATE DATABASE "bookmaster_test" ENCODING = 'unicode'[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7327641567941891385)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.8ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (1.3ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_advisory_unlock(7327641567941891385)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  [1m[36mService Load (0.8ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 1], ["name", "Классический маникюр"], ["LIMIT", 1]]
+  [1m[36mService Load (0.5ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 1], ["name", "Дизайн-маникюр"], ["LIMIT", 1]]
+  [1m[36mService Load (0.6ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 1], ["name", "SPA-маникюр"], ["LIMIT", 1]]
+  [1m[36mUser Load (0.3ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "maria.pedicure@example.com"], ["LIMIT", 1]]
+  [1m[36mService Load (0.2ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 2], ["name", "Классический педикюр"], ["LIMIT", 1]]
+  [1m[36mService Load (0.3ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 2], ["name", "Аппаратный педикюр"], ["LIMIT", 1]]
+  [1m[36mService Load (0.4ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 2], ["name", "SPA-педикюр"], ["LIMIT", 1]]
+  [1m[36mUser Load (0.2ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "elena.massage@example.com"], ["LIMIT", 1]]
+  [1m[36mService Load (0.2ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 3], ["name", "Классический массаж"], ["LIMIT", 1]]
+  [1m[36mService Load (0.2ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 3], ["name", "Массаж спины"], ["LIMIT", 1]]
+  [1m[36mService Load (0.1ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 3], ["name", "SPA-массаж"], ["LIMIT", 1]]
+Started GET "/api/v1/services" for ::1 at 2025-08-05 17:18:02 +0300
+  [1m[36mActiveRecord::SchemaMigration Load (0.9ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Processing by Api::V1::ServicesController#index as */*
+  [1m[35mSQL (2.2ms)[0m  [1m[34mSELECT "services"."id" AS t0_r0, "services"."name" AS t0_r1, "services"."description" AS t0_r2, "services"."price" AS t0_r3, "services"."duration" AS t0_r4, "services"."user_id" AS t0_r5, "services"."created_at" AS t0_r6, "services"."updated_at" AS t0_r7, "users"."id" AS t1_r0, "users"."email" AS t1_r1, "users"."encrypted_password" AS t1_r2, "users"."reset_password_token" AS t1_r3, "users"."reset_password_sent_at" AS t1_r4, "users"."remember_created_at" AS t1_r5, "users"."first_name" AS t1_r6, "users"."last_name" AS t1_r7, "users"."phone" AS t1_r8, "users"."role" AS t1_r9, "users"."bio" AS t1_r10, "users"."address" AS t1_r11, "users"."created_at" AS t1_r12, "users"."updated_at" AS t1_r13 FROM "services" INNER JOIN "users" ON "users"."id" = "services"."user_id" WHERE "users"."role" = $1[0m  [["role", "master"]]
+  ↳ app/controllers/api/v1/services_controller.rb:18:in `index'
+No serializer found for resource: {"id"=>1, "name"=>"Классический маникюр", "description"=>"Базовый маникюр с покрытием", "price"=>"1500.0", "duration"=>60, "user_id"=>1, "created_at"=>"2025-08-05T14:08:38.285Z", "updated_at"=>"2025-08-05T14:08:38.285Z", "user"=>{"id"=>1, "first_name"=>"Анна", "last_name"=>"Петрова", "phone"=>"+7 (999) 123-45-67"}}
+[active_model_serializers] Rendered ActiveModel::Serializer::CollectionSerializer with Array (0.23ms)
+Completed 200 OK in 79ms (Views: 3.2ms | ActiveRecord: 21.0ms | Allocations: 31243)
+
+
+Started GET "/api/v1/services" for ::1 at 2025-08-05 17:23:11 +0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.4ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Processing by Api::V1::ServicesController#index as */*
+  [1m[35mSQL (4.8ms)[0m  [1m[34mSELECT "services"."id" AS t0_r0, "services"."name" AS t0_r1, "services"."description" AS t0_r2, "services"."price" AS t0_r3, "services"."duration" AS t0_r4, "services"."user_id" AS t0_r5, "services"."created_at" AS t0_r6, "services"."updated_at" AS t0_r7, "users"."id" AS t1_r0, "users"."email" AS t1_r1, "users"."encrypted_password" AS t1_r2, "users"."reset_password_token" AS t1_r3, "users"."reset_password_sent_at" AS t1_r4, "users"."remember_created_at" AS t1_r5, "users"."first_name" AS t1_r6, "users"."last_name" AS t1_r7, "users"."phone" AS t1_r8, "users"."role" AS t1_r9, "users"."bio" AS t1_r10, "users"."address" AS t1_r11, "users"."created_at" AS t1_r12, "users"."updated_at" AS t1_r13 FROM "services" INNER JOIN "users" ON "users"."id" = "services"."user_id" WHERE "users"."role" = $1[0m  [["role", "master"]]
+  ↳ app/controllers/api/v1/services_controller.rb:18:in `index'
+[active_model_serializers] Rendered ActiveModel::Serializer::CollectionSerializer with ActiveModelSerializers::Adapter::Attributes (2.69ms)
+Completed 200 OK in 125ms (Views: 40.6ms | ActiveRecord: 35.2ms | Allocations: 36009)
+
+
+Started POST "/api/v1/auth/login" for ::1 at 2025-08-05 17:23:18 +0300
+  
+ArgumentError (Before process_action callback :verify_authenticity_token has not been defined):
+  
+app/controllers/api/v1/auth_controller.rb:2:in `<class:AuthController>'
+app/controllers/api/v1/auth_controller.rb:1:in `<main>'
+Started POST "/api/v1/auth/login" for ::1 at 2025-08-05 17:23:36 +0300
+Processing by Api::V1::AuthController#login as */*
+  Parameters: {"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]", "auth"=>{"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]"}}
+  [1m[36mUser Load (1.1ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/auth_controller.rb:19:in `login'
+Completed 500 Internal Server Error in 291ms (ActiveRecord: 6.1ms | Allocations: 13258)
+
+
+  
+NoMethodError (undefined method `generate_jwt' for #<User id: 1, email: "anna.manicure@example.com", first_name: "Анна", last_name: "Петрова", phone: "+7 (999) 123-45-67", role: "master", bio: "Профессиональный мастер маникюра с 5-летним опытом...", address: "ул. Тверская, 15, Москва", created_at: "2025-08-05 14:08:38.133876000 +0000", updated_at: "2025-08-05 14:08:38.133876000 +0000">
+Did you mean?  generate_token_for):
+  
+app/controllers/api/v1/auth_controller.rb:24:in `login'
+Started POST "/api/v1/auth/login" for ::1 at 2025-08-05 17:23:59 +0300
+Processing by Api::V1::AuthController#login as */*
+  Parameters: {"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]", "auth"=>{"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]"}}
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/auth_controller.rb:19:in `login'
+Completed 500 Internal Server Error in 289ms (ActiveRecord: 16.1ms | Allocations: 7079)
+
+
+  
+KeyError (key not found: :jwt):
+  
+app/controllers/api/v1/auth_controller.rb:24:in `login'
+Started POST "/api/v1/auth/login" for ::1 at 2025-08-05 17:24:22 +0300
+Processing by Api::V1::AuthController#login as */*
+  Parameters: {"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]", "auth"=>{"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]"}}
+  [1m[36mUser Load (0.2ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/auth_controller.rb:19:in `login'
+Completed 500 Internal Server Error in 284ms (ActiveRecord: 4.9ms | Allocations: 12762)
+
+
+  
+NoMethodError (undefined method `jwt_token' for #<User id: 1, email: "anna.manicure@example.com", first_name: "Анна", last_name: "Петрова", phone: "+7 (999) 123-45-67", role: "master", bio: "Профессиональный мастер маникюра с 5-летним опытом...", address: "ул. Тверская, 15, Москва", created_at: "2025-08-05 14:08:38.133876000 +0000", updated_at: "2025-08-05 14:08:38.133876000 +0000">):
+  
+app/controllers/api/v1/auth_controller.rb:24:in `login'
+Started POST "/api/v1/auth/login" for ::1 at 2025-08-05 17:24:45 +0300
+Processing by Api::V1::AuthController#login as */*
+  Parameters: {"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]", "auth"=>{"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]"}}
+  [1m[36mUser Load (0.3ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/auth_controller.rb:18:in `login'
+[active_model_serializers] Rendered ActiveModel::Serializer::Null with Hash (0.05ms)
+Completed 200 OK in 283ms (Views: 2.7ms | ActiveRecord: 4.7ms | Allocations: 7809)
+
+
+Started POST "/api/v1/bookings" for ::1 at 2025-08-05 17:24:51 +0300
+Processing by Api::V1::BookingsController#create as */*
+  Parameters: {"booking"=>{"service_id"=>1, "start_time"=>"2025-08-10T14:00:00Z", "client_name"=>"Тест Клиент", "client_email"=>"test@example.com", "client_phone"=>"+7 (999) 123-45-67"}, "master_id"=>1}
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."role" = $1 AND "users"."id" = $2 LIMIT $3[0m  [["role", "master"], ["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:24:in `create'
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mService Load (0.3ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mBooking Exists? (4.3ms)[0m  [1m[34mSELECT 1 AS one FROM "bookings" WHERE "bookings"."user_id" = $1 AND "bookings"."id" IS NOT NULL AND "bookings"."status" IN ($2, $3) AND ((start_time < '2025-08-10 15:00:00' AND end_time > '2025-08-10 14:00:00') OR (start_time < '2025-08-10 15:00:00' AND end_time > '2025-08-10 15:00:00') OR (start_time >= '2025-08-10 14:00:00' AND end_time <= '2025-08-10 15:00:00')) LIMIT $4[0m  [["user_id", 1], ["status", "pending"], ["status", "confirmed"], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:95:in `no_time_conflicts'
+  [1m[36mBooking Create (8.3ms)[0m  [1m[32mINSERT INTO "bookings" ("start_time", "end_time", "status", "user_id", "service_id", "client_name", "client_email", "client_phone", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING "id"[0m  [["start_time", "2025-08-10 14:00:00"], ["end_time", "2025-08-10 15:00:00"], ["status", "pending"], ["user_id", 1], ["service_id", 1], ["client_name", "Тест Клиент"], ["client_email", "test@example.com"], ["client_phone", "+7 (999) 123-45-67"], ["created_at", "2025-08-05 14:24:51.868814"], ["updated_at", "2025-08-05 14:24:51.868814"]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT[0m
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+[active_model_serializers]   [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+[active_model_serializers]   ↳ app/models/service.rb:25:in `master_name'
+[active_model_serializers] Rendered BookingSerializer with ActiveModelSerializers::Adapter::Attributes (3.88ms)
+Completed 201 Created in 60ms (Views: 7.5ms | ActiveRecord: 26.0ms | Allocations: 22073)
+
+
+Started POST "/api/v1/bookings" for ::1 at 2025-08-05 17:24:57 +0300
+Processing by Api::V1::BookingsController#create as */*
+  Parameters: {"booking"=>{"service_id"=>1, "start_time"=>"2025-08-10T14:30:00Z", "client_name"=>"Тест Клиент 2", "client_email"=>"test2@example.com", "client_phone"=>"+7 (999) 123-45-68"}, "master_id"=>1}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."role" = $1 AND "users"."id" = $2 LIMIT $3[0m  [["role", "master"], ["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:24:in `create'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mService Load (0.2ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mBooking Exists? (0.7ms)[0m  [1m[34mSELECT 1 AS one FROM "bookings" WHERE "bookings"."user_id" = $1 AND "bookings"."id" IS NOT NULL AND "bookings"."status" IN ($2, $3) AND ((start_time < '2025-08-10 15:30:00' AND end_time > '2025-08-10 14:30:00') OR (start_time < '2025-08-10 15:30:00' AND end_time > '2025-08-10 15:30:00') OR (start_time >= '2025-08-10 14:30:00' AND end_time <= '2025-08-10 15:30:00')) LIMIT $4[0m  [["user_id", 1], ["status", "pending"], ["status", "confirmed"], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:95:in `no_time_conflicts'
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[31mROLLBACK[0m
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+[active_model_serializers] Rendered ActiveModel::Serializer::Null with Hash (0.05ms)
+Completed 422 Unprocessable Content in 1071ms (Views: 2.0ms | ActiveRecord: 2.1ms | Allocations: 988304)
+
+
+Started POST "/api/v1/bookings" for ::1 at 2025-08-05 17:25:03 +0300
+Processing by Api::V1::BookingsController#create as */*
+  Parameters: {"booking"=>{"service_id"=>1, "start_time"=>"2025-08-10T14:30:00Z", "client_name"=>"Тест Клиент 2", "client_email"=>"test2@example.com", "client_phone"=>"+7 (999) 123-45-68"}, "master_id"=>1}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."role" = $1 AND "users"."id" = $2 LIMIT $3[0m  [["role", "master"], ["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:24:in `create'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mService Load (0.5ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mBooking Exists? (0.7ms)[0m  [1m[34mSELECT 1 AS one FROM "bookings" WHERE "bookings"."user_id" = $1 AND "bookings"."id" IS NOT NULL AND "bookings"."status" IN ($2, $3) AND ((start_time < '2025-08-10 15:30:00' AND end_time > '2025-08-10 14:30:00') OR (start_time < '2025-08-10 15:30:00' AND end_time > '2025-08-10 15:30:00') OR (start_time >= '2025-08-10 14:30:00' AND end_time <= '2025-08-10 15:30:00')) LIMIT $4[0m  [["user_id", 1], ["status", "pending"], ["status", "confirmed"], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:95:in `no_time_conflicts'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[31mROLLBACK[0m
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+[active_model_serializers] Rendered ActiveModel::Serializer::Null with Hash (0.03ms)
+Completed 422 Unprocessable Content in 11ms (Views: 0.4ms | ActiveRecord: 1.8ms | Allocations: 3980)
+
+
+Started POST "/api/v1/bookings" for ::1 at 2025-08-05 17:25:15 +0300
+Processing by Api::V1::BookingsController#create as */*
+  Parameters: {"booking"=>{"service_id"=>1, "start_time"=>"2025-08-10T14:30:00Z", "client_name"=>"Тест Клиент 2", "client_email"=>"test2@example.com", "client_phone"=>"+7 (999) 123-45-68"}, "master_id"=>1}
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."role" = $1 AND "users"."id" = $2 LIMIT $3[0m  [["role", "master"], ["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:24:in `create'
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mService Load (0.3ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mBooking Exists? (0.8ms)[0m  [1m[34mSELECT 1 AS one FROM "bookings" WHERE "bookings"."user_id" = $1 AND "bookings"."id" IS NOT NULL AND "bookings"."status" IN ($2, $3) AND ((start_time < '2025-08-10 15:30:00' AND end_time > '2025-08-10 14:30:00') OR (start_time < '2025-08-10 15:30:00' AND end_time > '2025-08-10 15:30:00') OR (start_time >= '2025-08-10 14:30:00' AND end_time <= '2025-08-10 15:30:00')) LIMIT $4[0m  [["user_id", 1], ["status", "pending"], ["status", "confirmed"], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:95:in `no_time_conflicts'
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[31mROLLBACK[0m
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+[active_model_serializers] Rendered ActiveModel::Serializer::Null with Hash (0.09ms)
+Completed 422 Unprocessable Content in 16ms (Views: 4.0ms | ActiveRecord: 2.1ms | Allocations: 3980)
+
+
+Started POST "/api/v1/bookings" for ::1 at 2025-08-05 17:25:24 +0300
+Processing by Api::V1::BookingsController#create as */*
+  Parameters: {"booking"=>{"service_id"=>1, "start_time"=>"2025-08-10T16:00:00Z", "client_name"=>"Тест Клиент 3", "client_email"=>"test3@example.com", "client_phone"=>"+7 (999) 123-45-69"}, "master_id"=>1}
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."role" = $1 AND "users"."id" = $2 LIMIT $3[0m  [["role", "master"], ["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:24:in `create'
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mService Load (0.4ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mBooking Exists? (0.8ms)[0m  [1m[34mSELECT 1 AS one FROM "bookings" WHERE "bookings"."user_id" = $1 AND "bookings"."id" IS NOT NULL AND "bookings"."status" IN ($2, $3) AND ((start_time < '2025-08-10 17:00:00' AND end_time > '2025-08-10 16:00:00') OR (start_time < '2025-08-10 17:00:00' AND end_time > '2025-08-10 17:00:00') OR (start_time >= '2025-08-10 16:00:00' AND end_time <= '2025-08-10 17:00:00')) LIMIT $4[0m  [["user_id", 1], ["status", "pending"], ["status", "confirmed"], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:95:in `no_time_conflicts'
+  [1m[36mBooking Create (0.8ms)[0m  [1m[32mINSERT INTO "bookings" ("start_time", "end_time", "status", "user_id", "service_id", "client_name", "client_email", "client_phone", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING "id"[0m  [["start_time", "2025-08-10 16:00:00"], ["end_time", "2025-08-10 17:00:00"], ["status", "pending"], ["user_id", 1], ["service_id", 1], ["client_name", "Тест Клиент 3"], ["client_email", "test3@example.com"], ["client_phone", "+7 (999) 123-45-69"], ["created_at", "2025-08-05 14:25:24.664354"], ["updated_at", "2025-08-05 14:25:24.664354"]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+[active_model_serializers]   [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+[active_model_serializers]   ↳ app/models/service.rb:25:in `master_name'
+[active_model_serializers] Rendered BookingSerializer with ActiveModelSerializers::Adapter::Attributes (3.87ms)
+Completed 201 Created in 20ms (Views: 4.7ms | ActiveRecord: 3.3ms | Allocations: 5732)
+
+
+Started PATCH "/api/v1/bookings/1/update_status" for ::1 at 2025-08-05 17:25:29 +0300
+Processing by Api::V1::BookingsController#update_status as */*
+  Parameters: {"status"=>"confirmed", "id"=>"1", "booking"=>{"status"=>"confirmed"}}
+  [1m[36mBooking Load (0.3ms)[0m  [1m[34mSELECT "bookings".* FROM "bookings" WHERE "bookings"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:54:in `set_booking'
+Completed 401 Unauthorized in 3ms (ActiveRecord: 0.3ms | Allocations: 842)
+
+
+Started PATCH "/api/v1/bookings/1/update_status" for ::1 at 2025-08-05 17:25:33 +0300
+Processing by Api::V1::BookingsController#update_status as */*
+  Parameters: {"status"=>"confirmed", "id"=>"1", "booking"=>{"status"=>"confirmed"}}
+  [1m[36mBooking Load (0.5ms)[0m  [1m[34mSELECT "bookings".* FROM "bookings" WHERE "bookings"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:54:in `set_booking'
+Completed 401 Unauthorized in 4ms (ActiveRecord: 0.5ms | Allocations: 803)
+
+
+Started GET "/api/v1/services" for ::1 at 2025-08-05 17:31:43 +0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Processing by Api::V1::ServicesController#index as */*
+  [1m[35mSQL (4.2ms)[0m  [1m[34mSELECT "services"."id" AS t0_r0, "services"."name" AS t0_r1, "services"."description" AS t0_r2, "services"."price" AS t0_r3, "services"."duration" AS t0_r4, "services"."user_id" AS t0_r5, "services"."created_at" AS t0_r6, "services"."updated_at" AS t0_r7, "users"."id" AS t1_r0, "users"."email" AS t1_r1, "users"."encrypted_password" AS t1_r2, "users"."reset_password_token" AS t1_r3, "users"."reset_password_sent_at" AS t1_r4, "users"."remember_created_at" AS t1_r5, "users"."first_name" AS t1_r6, "users"."last_name" AS t1_r7, "users"."phone" AS t1_r8, "users"."role" AS t1_r9, "users"."bio" AS t1_r10, "users"."address" AS t1_r11, "users"."created_at" AS t1_r12, "users"."updated_at" AS t1_r13 FROM "services" INNER JOIN "users" ON "users"."id" = "services"."user_id" WHERE "users"."role" = $1[0m  [["role", "master"]]
+  ↳ app/controllers/api/v1/services_controller.rb:18:in `index'
+[active_model_serializers] Rendered ActiveModel::Serializer::CollectionSerializer with ActiveModelSerializers::Adapter::Attributes (3.4ms)
+Completed 200 OK in 106ms (Views: 46.5ms | ActiveRecord: 25.7ms | Allocations: 35060)
+
+
+Started POST "/api/v1/auth/login" for ::1 at 2025-08-05 17:31:48 +0300
+Processing by Api::V1::AuthController#login as */*
+  Parameters: {"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]", "auth"=>{"email"=>"anna.manicure@example.com", "password"=>"[FILTERED]"}}
+  [1m[36mUser Load (1.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/auth_controller.rb:18:in `login'
+[active_model_serializers] Rendered ActiveModel::Serializer::Null with Hash (0.04ms)
+Completed 200 OK in 270ms (Views: 1.1ms | ActiveRecord: 1.7ms | Allocations: 2223)
+
+
+Started POST "/api/v1/bookings" for ::1 at 2025-08-05 17:31:57 +0300
+Processing by Api::V1::BookingsController#create as */*
+  Parameters: {"booking"=>{"service_id"=>1, "start_time"=>"2025-08-15T14:00:00Z", "client_name"=>"Тест Клиент", "client_email"=>"test@example.com", "client_phone"=>"+7 (999) 123-45-67"}, "master_id"=>1}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."role" = $1 AND "users"."id" = $2 LIMIT $3[0m  [["role", "master"], ["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:24:in `create'
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mService Load (0.3ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:64:in `set_end_time'
+  [1m[36mBooking Exists? (3.7ms)[0m  [1m[34mSELECT 1 AS one FROM "bookings" WHERE "bookings"."user_id" = $1 AND "bookings"."id" IS NOT NULL AND "bookings"."status" IN ($2, $3) AND ((start_time < '2025-08-15 15:00:00' AND end_time > '2025-08-15 14:00:00') OR (start_time < '2025-08-15 15:00:00' AND end_time > '2025-08-15 15:00:00') OR (start_time >= '2025-08-15 14:00:00' AND end_time <= '2025-08-15 15:00:00')) LIMIT $4[0m  [["user_id", 1], ["status", "pending"], ["status", "confirmed"], ["LIMIT", 1]]
+  ↳ app/models/booking.rb:97:in `no_time_conflicts'
+  [1m[36mBooking Create (5.3ms)[0m  [1m[32mINSERT INTO "bookings" ("start_time", "end_time", "status", "user_id", "service_id", "client_name", "client_email", "client_phone", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING "id"[0m  [["start_time", "2025-08-15 14:00:00"], ["end_time", "2025-08-15 15:00:00"], ["status", "pending"], ["user_id", 1], ["service_id", 1], ["client_name", "Тест Клиент"], ["client_email", "test@example.com"], ["client_phone", "+7 (999) 123-45-67"], ["created_at", "2025-08-05 14:31:57.535306"], ["updated_at", "2025-08-05 14:31:57.535306"]]
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[35mCOMMIT[0m
+  ↳ app/controllers/api/v1/bookings_controller.rb:30:in `create'
+[active_model_serializers]   [1m[36mUser Load (0.3ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+[active_model_serializers]   ↳ app/models/service.rb:25:in `master_name'
+[active_model_serializers] Rendered BookingSerializer with ActiveModelSerializers::Adapter::Attributes (3.21ms)
+Completed 201 Created in 44ms (Views: 5.5ms | ActiveRecord: 17.8ms | Allocations: 16471)
+
+

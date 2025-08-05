@@ -2,7 +2,7 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-puts "Creating test masters and services..."
+Rails.logger.info "Creating test masters and services..."
 
 # Create masters
 masters = [
@@ -33,7 +33,8 @@ masters = [
     last_name: 'Козлова',
     phone: '+7 (999) 345-67-89',
     role: 'master',
-    bio: 'Дипломированный массажист с 8-летним стажем. Специализируюсь на классическом, расслабляющем и лечебном массаже.',
+    bio: 'Дипломированный массажист с 8-летним стажем. ' \
+         'Специализируюсь на классическом, расслабляющем и лечебном массаже.',
     address: 'Ленинский проспект, 45, Москва'
   }
 ]
@@ -43,7 +44,7 @@ masters.each do |master_data|
     u.assign_attributes(master_data)
   end
   
-  puts "Created master: #{user.full_name}"
+  Rails.logger.info "Created master: #{user.full_name}"
   
   # Create services for each master
   case user.email
@@ -71,8 +72,8 @@ masters.each do |master_data|
     service = user.services.find_or_create_by(name: service_data[:name]) do |s|
       s.assign_attributes(service_data)
     end
-    puts "  - Created service: #{service.name} (#{service.formatted_price})"
+    Rails.logger.info "  - Created service: #{service.name} (#{service.formatted_price})"
   end
 end
 
-puts "Seeds completed successfully!"
+Rails.logger.info "Seeds completed successfully!"

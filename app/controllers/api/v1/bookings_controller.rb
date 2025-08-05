@@ -12,17 +12,11 @@ class Api::V1::BookingsController < ApplicationController
     
     @bookings = @bookings.order(start_time: :desc)
     
-    render json: @bookings.as_json(include: { 
-      service: { only: [:id, :name, :price, :duration] },
-      user: { only: [:id, :first_name, :last_name, :phone] }
-    })
+    render json: @bookings
   end
 
   def show
-    render json: @booking.as_json(include: { 
-      service: { only: [:id, :name, :price, :duration, :description] },
-      user: { only: [:id, :first_name, :last_name, :phone, :bio] }
-    })
+    render json: @booking
   end
 
   def create
@@ -34,10 +28,7 @@ class Api::V1::BookingsController < ApplicationController
     end
     
     if @booking.save
-      render json: @booking.as_json(include: { 
-        service: { only: [:id, :name, :price, :duration] },
-        user: { only: [:id, :first_name, :last_name, :phone] }
-      }), status: :created
+      render json: @booking, status: :created
     else
       render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
     end
@@ -68,7 +59,7 @@ class Api::V1::BookingsController < ApplicationController
   end
 
   def ensure_booking_owner!
-    unless current_user.master? && @booking.user == current_user ||
+    unless (current_user.master? && @booking.user == current_user) ||
            @booking.client_email == current_user.email
       render json: { error: 'Доступ запрещен' }, status: :forbidden
     end
