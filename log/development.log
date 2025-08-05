@@ -1,0 +1,138 @@
+  [1m[35m (1.9ms)[0m  [1m[35mCREATE DATABASE "bookmaster_development" ENCODING = 'unicode'[0m
+  [1m[35m (0.7ms)[0m  [1m[35mCREATE DATABASE "bookmaster_test" ENCODING = 'unicode'[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7327641567941891385)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.6ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (2.5ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+Migrating to DeviseCreateUsers (20250805140150)
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (7.0ms)[0m  [1m[35mCREATE TABLE "users" ("id" bigserial primary key, "email" character varying DEFAULT '' NOT NULL, "encrypted_password" character varying DEFAULT '' NOT NULL, "reset_password_token" character varying, "reset_password_sent_at" timestamp(6), "remember_created_at" timestamp(6), "first_name" character varying, "last_name" character varying, "phone" character varying, "role" character varying DEFAULT 'client', "bio" text, "address" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[31mROLLBACK[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_advisory_unlock(7327641567941891385)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.8ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (2.3ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.2ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.2ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[35m (29.4ms)[0m  [1m[35mDROP DATABASE IF EXISTS "bookmaster_development"[0m
+  [1m[35m (24.3ms)[0m  [1m[35mDROP DATABASE IF EXISTS "bookmaster_test"[0m
+  [1m[35m (111.1ms)[0m  [1m[35mCREATE DATABASE "bookmaster_development" ENCODING = 'unicode'[0m
+  [1m[35m (43.7ms)[0m  [1m[35mCREATE DATABASE "bookmaster_test" ENCODING = 'unicode'[0m
+  [1m[35m (10.0ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" character varying NOT NULL PRIMARY KEY)[0m
+  [1m[35m (4.5ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" character varying NOT NULL PRIMARY KEY, "value" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[35m (0.4ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7327641567941891385)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (2.5ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::InternalMetadata Create (2.8ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2025-08-05 14:03:19.420912', '2025-08-05 14:03:19.420915') RETURNING "key"[0m
+Migrating to DeviseCreateUsers (20250805140150)
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (8.8ms)[0m  [1m[35mCREATE TABLE "users" ("id" bigserial primary key, "email" character varying DEFAULT '' NOT NULL, "encrypted_password" character varying DEFAULT '' NOT NULL, "reset_password_token" character varying, "reset_password_sent_at" timestamp(6), "remember_created_at" timestamp(6), "first_name" character varying, "last_name" character varying, "phone" character varying, "role" character varying DEFAULT 'client', "bio" text, "address" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[35m (1.8ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_users_on_email" ON "users" ("email")[0m
+  [1m[35m (1.1ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_users_on_reset_password_token" ON "users" ("reset_password_token")[0m
+  [1m[35m (0.8ms)[0m  [1m[35mCREATE INDEX "index_users_on_role" ON "users" ("role")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.5ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250805140150') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.7ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateServices (20250805140154)
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (10.7ms)[0m  [1m[35mCREATE TABLE "services" ("id" bigserial primary key, "name" character varying NOT NULL, "description" text, "price" decimal(10,2) NOT NULL, "duration" integer NOT NULL, "user_id" bigint NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_51a813203f"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+)[0m
+  [1m[35m (1.5ms)[0m  [1m[35mCREATE INDEX "index_services_on_user_id" ON "services" ("user_id")[0m
+  [1m[35m (1.4ms)[0m  [1m[35mCREATE INDEX "index_services_on_name" ON "services" ("name")[0m
+  [1m[35m (1.7ms)[0m  [1m[35mCREATE INDEX "index_services_on_price" ON "services" ("price")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250805140154') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateBookings (20250805140200)
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (5.3ms)[0m  [1m[35mCREATE TABLE "bookings" ("id" bigserial primary key, "start_time" timestamp(6) NOT NULL, "end_time" timestamp(6) NOT NULL, "status" character varying DEFAULT 'pending', "user_id" bigint NOT NULL, "service_id" bigint NOT NULL, "client_name" character varying NOT NULL, "client_email" character varying NOT NULL, "client_phone" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_ef0571f117"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_1707d5de0d"
+FOREIGN KEY ("service_id")
+  REFERENCES "services" ("id")
+)[0m
+  [1m[35m (1.4ms)[0m  [1m[35mCREATE INDEX "index_bookings_on_user_id" ON "bookings" ("user_id")[0m
+  [1m[35m (4.3ms)[0m  [1m[35mCREATE INDEX "index_bookings_on_service_id" ON "bookings" ("service_id")[0m
+  [1m[35m (5.2ms)[0m  [1m[35mCREATE INDEX "index_bookings_on_start_time" ON "bookings" ("start_time")[0m
+  [1m[35m (1.3ms)[0m  [1m[35mCREATE INDEX "index_bookings_on_status" ON "bookings" ("status")[0m
+  [1m[35m (0.8ms)[0m  [1m[35mCREATE INDEX "index_bookings_on_client_email" ON "bookings" ("client_email")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.5ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250805140200') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[35mCOMMIT[0m
+  [1m[35m (2.2ms)[0m  [1m[34mSELECT pg_advisory_unlock(7327641567941891385)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7327641567941891385)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.5ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (3.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+Migrating to CreateJwtDenylists (20250805140411)
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (9.0ms)[0m  [1m[35mCREATE TABLE "jwt_denylists" ("id" bigserial primary key, "jti" character varying, "exp" timestamp(6), "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[36mActiveRecord::SchemaMigration Create (1.8ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250805140411') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_advisory_unlock(7327641567941891385)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mUser Exists? (0.5ms)[0m  [1m[34mSELECT 1 AS one FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  [1m[36mCACHE User Exists? (0.0ms)[0m  [1m[34mSELECT 1 AS one FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "anna.manicure@example.com"], ["LIMIT", 1]]
+  [1m[36mUser Create (7.1ms)[0m  [1m[32mINSERT INTO "users" ("email", "encrypted_password", "reset_password_token", "reset_password_sent_at", "remember_created_at", "first_name", "last_name", "phone", "role", "bio", "address", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING "id"[0m  [["email", "anna.manicure@example.com"], ["encrypted_password", "[FILTERED]"], ["reset_password_token", "[FILTERED]"], ["reset_password_sent_at", "[FILTERED]"], ["remember_created_at", nil], ["first_name", "Анна"], ["last_name", "Петрова"], ["phone", "+7 (999) 123-45-67"], ["role", "master"], ["bio", "Профессиональный мастер маникюра с 5-летним опытом. Специализируюсь на классическом и дизайн-маникюре."], ["address", "ул. Тверская, 15, Москва"], ["created_at", "2025-08-05 14:08:38.133876"], ["updated_at", "2025-08-05 14:08:38.133876"]]
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (51.1ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 1], ["name", "Классический маникюр"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (4.4ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "Классический маникюр"], ["description", "Базовый маникюр с покрытием"], ["price", "1500.0"], ["duration", 60], ["user_id", 1], ["created_at", "2025-08-05 14:08:38.285914"], ["updated_at", "2025-08-05 14:08:38.285914"]]
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (0.6ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 1], ["name", "Дизайн-маникюр"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (2.3ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "Дизайн-маникюр"], ["description", "Маникюр с художественным дизайном"], ["price", "2500.0"], ["duration", 90], ["user_id", 1], ["created_at", "2025-08-05 14:08:38.295237"], ["updated_at", "2025-08-05 14:08:38.295237"]]
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (0.5ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 1], ["name", "SPA-маникюр"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (2.4ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "SPA-маникюр"], ["description", "Маникюр с уходом за кожей рук"], ["price", "2000.0"], ["duration", 75], ["user_id", 1], ["created_at", "2025-08-05 14:08:38.302449"], ["updated_at", "2025-08-05 14:08:38.302449"]]
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "maria.pedicure@example.com"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mUser Exists? (1.7ms)[0m  [1m[34mSELECT 1 AS one FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "maria.pedicure@example.com"], ["LIMIT", 1]]
+  [1m[36mCACHE User Exists? (0.0ms)[0m  [1m[34mSELECT 1 AS one FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "maria.pedicure@example.com"], ["LIMIT", 1]]
+  [1m[36mUser Create (0.6ms)[0m  [1m[32mINSERT INTO "users" ("email", "encrypted_password", "reset_password_token", "reset_password_sent_at", "remember_created_at", "first_name", "last_name", "phone", "role", "bio", "address", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING "id"[0m  [["email", "maria.pedicure@example.com"], ["encrypted_password", "[FILTERED]"], ["reset_password_token", "[FILTERED]"], ["reset_password_sent_at", "[FILTERED]"], ["remember_created_at", nil], ["first_name", "Мария"], ["last_name", "Сидорова"], ["phone", "+7 (999) 234-56-78"], ["role", "master"], ["bio", "Мастер педикюра с медицинским образованием. Выполняю аппаратный и классический педикюр."], ["address", "ул. Арбат, 25, Москва"], ["created_at", "2025-08-05 14:08:38.579542"], ["updated_at", "2025-08-05 14:08:38.579542"]]
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (0.4ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 2], ["name", "Классический педикюр"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (1.8ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "Классический педикюр"], ["description", "Базовый педикюр с покрытием"], ["price", "2000.0"], ["duration", 60], ["user_id", 2], ["created_at", "2025-08-05 14:08:38.584236"], ["updated_at", "2025-08-05 14:08:38.584236"]]
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (0.4ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 2], ["name", "Аппаратный педикюр"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (1.6ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "Аппаратный педикюр"], ["description", "Педикюр с использованием аппарата"], ["price", "3000.0"], ["duration", 90], ["user_id", 2], ["created_at", "2025-08-05 14:08:38.589570"], ["updated_at", "2025-08-05 14:08:38.589570"]]
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (0.5ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 2], ["name", "SPA-педикюр"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (1.4ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "SPA-педикюр"], ["description", "Педикюр с уходом за кожей ног"], ["price", "3500.0"], ["duration", 120], ["user_id", 2], ["created_at", "2025-08-05 14:08:38.594829"], ["updated_at", "2025-08-05 14:08:38.594829"]]
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mUser Load (0.2ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "elena.massage@example.com"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mUser Exists? (1.9ms)[0m  [1m[34mSELECT 1 AS one FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "elena.massage@example.com"], ["LIMIT", 1]]
+  [1m[36mCACHE User Exists? (0.0ms)[0m  [1m[34mSELECT 1 AS one FROM "users" WHERE "users"."email" = $1 LIMIT $2[0m  [["email", "elena.massage@example.com"], ["LIMIT", 1]]
+  [1m[36mUser Create (0.6ms)[0m  [1m[32mINSERT INTO "users" ("email", "encrypted_password", "reset_password_token", "reset_password_sent_at", "remember_created_at", "first_name", "last_name", "phone", "role", "bio", "address", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING "id"[0m  [["email", "elena.massage@example.com"], ["encrypted_password", "[FILTERED]"], ["reset_password_token", "[FILTERED]"], ["reset_password_sent_at", "[FILTERED]"], ["remember_created_at", nil], ["first_name", "Елена"], ["last_name", "Козлова"], ["phone", "+7 (999) 345-67-89"], ["role", "master"], ["bio", "Дипломированный массажист с 8-летним стажем. Специализируюсь на классическом, расслабляющем и лечебном массаже."], ["address", "Ленинский проспект, 45, Москва"], ["created_at", "2025-08-05 14:08:38.865017"], ["updated_at", "2025-08-05 14:08:38.865017"]]
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (0.3ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 3], ["name", "Классический массаж"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (2.8ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "Классический массаж"], ["description", "Расслабляющий массаж всего тела"], ["price", "3000.0"], ["duration", 60], ["user_id", 3], ["created_at", "2025-08-05 14:08:38.877630"], ["updated_at", "2025-08-05 14:08:38.877630"]]
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (0.2ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 3], ["name", "Массаж спины"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (6.5ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "Массаж спины"], ["description", "Специализированный массаж спины"], ["price", "2000.0"], ["duration", 45], ["user_id", 3], ["created_at", "2025-08-05 14:08:38.893813"], ["updated_at", "2025-08-05 14:08:38.893813"]]
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mService Load (0.2ms)[0m  [1m[34mSELECT "services".* FROM "services" WHERE "services"."user_id" = $1 AND "services"."name" = $2 LIMIT $3[0m  [["user_id", 3], ["name", "SPA-массаж"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  [1m[36mService Create (22.8ms)[0m  [1m[32mINSERT INTO "services" ("name", "description", "price", "duration", "user_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"[0m  [["name", "SPA-массаж"], ["description", "Массаж с ароматическими маслами"], ["price", "4000.0"], ["duration", 90], ["user_id", 3], ["created_at", "2025-08-05 14:08:38.917714"], ["updated_at", "2025-08-05 14:08:38.917714"]]
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+Started GET "/api/v1/services" for ::1 at 2025-08-05 17:08:46 +0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Processing by Api::V1::ServicesController#index as */*
+  [1m[35mSQL (2.1ms)[0m  [1m[34mSELECT "services"."id" AS t0_r0, "services"."name" AS t0_r1, "services"."description" AS t0_r2, "services"."price" AS t0_r3, "services"."duration" AS t0_r4, "services"."user_id" AS t0_r5, "services"."created_at" AS t0_r6, "services"."updated_at" AS t0_r7, "users"."id" AS t1_r0, "users"."email" AS t1_r1, "users"."encrypted_password" AS t1_r2, "users"."reset_password_token" AS t1_r3, "users"."reset_password_sent_at" AS t1_r4, "users"."remember_created_at" AS t1_r5, "users"."first_name" AS t1_r6, "users"."last_name" AS t1_r7, "users"."phone" AS t1_r8, "users"."role" AS t1_r9, "users"."bio" AS t1_r10, "users"."address" AS t1_r11, "users"."created_at" AS t1_r12, "users"."updated_at" AS t1_r13 FROM "services" INNER JOIN "users" ON "users"."id" = "services"."user_id" WHERE "users"."role" = $1[0m  [["role", "master"]]
+  ↳ app/controllers/api/v1/services_controller.rb:18:in `index'
+No serializer found for resource: {"id"=>1, "name"=>"Классический маникюр", "description"=>"Базовый маникюр с покрытием", "price"=>"1500.0", "duration"=>60, "user_id"=>1, "created_at"=>"2025-08-05T14:08:38.285Z", "updated_at"=>"2025-08-05T14:08:38.285Z", "user"=>{"id"=>1, "first_name"=>"Анна", "last_name"=>"Петрова", "phone"=>"+7 (999) 123-45-67"}}
+[active_model_serializers] Rendered ActiveModel::Serializer::CollectionSerializer with Array (0.52ms)
+Completed 200 OK in 181ms (Views: 14.8ms | ActiveRecord: 37.0ms | Allocations: 33811)
+
+
