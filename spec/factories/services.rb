@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :service do
-    name { "MyString" }
-    description { "MyText" }
-    price { "9.99" }
-    duration { 1 }
-    user { nil }
+    association :user, factory: :user, role: 'master'
+    sequence(:name) { |n| "Услуга #{n}" }
+    description { "Описание услуги" }
+    price { rand(1000..5000) }
+    duration { rand(30..120) }
   end
 end
