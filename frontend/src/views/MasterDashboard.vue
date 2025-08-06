@@ -556,7 +556,7 @@ const calendarDates = computed(() => {
   
   const firstDay = new Date(year, month, 1)
   const startDate = new Date(firstDay)
-  startDate.setDate(startDate.getDate() - firstDay.getDay() + (firstDay.getDay() === 0 ? -6 : 1))
+  startDate.setDate(startDate.getDate() - firstDay.getDay())
   
   const dates = []
   const today = new Date()
@@ -630,7 +630,7 @@ const nextMonthDates = computed(() => {
   
   const firstDay = new Date(year, month, 1)
   const startDate = new Date(firstDay)
-  startDate.setDate(startDate.getDate() - firstDay.getDay() + (firstDay.getDay() === 0 ? -6 : 1))
+  startDate.setDate(startDate.getDate() - firstDay.getDay())
   
   const dates = []
   const today = new Date()
@@ -1228,18 +1228,5 @@ const getSlotStatusText = (slot) => {
 // Navigation function
 const goToScheduleSettings = () => {
   router.push('/master/schedule')
-}
-
-// Header navigation handlers
-const handleScrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
-  }
-}
-
-const handleNotificationClick = () => {
-  // Scroll to bookings section when notification is clicked
-  handleScrollToSection('bookings')
 }
 </script> 

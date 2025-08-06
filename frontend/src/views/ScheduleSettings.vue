@@ -42,6 +42,7 @@
                       type="checkbox" 
                       :id="`day-${schedule.day_of_week}`"
                       v-model="schedule.is_working"
+                      @change="handleWorkingDayChange(schedule)"
                       class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     >
                     <label :for="`day-${schedule.day_of_week}`" class="font-medium text-gray-900">
@@ -266,7 +267,10 @@ const saveSchedule = async () => {
       
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.errors ? errorData.errors.join(', ') : 'Failed to update schedule')
+        const errorMessage = errorData.errors ? 
+          (Array.isArray(errorData.errors) ? errorData.errors.join(', ') : errorData.errors) : 
+          'Failed to update schedule'
+        throw new Error(errorMessage)
       }
       
       return response.json()
@@ -289,7 +293,7 @@ const setDefaultSchedule = () => {
       // Weekdays
       schedule.is_working = true
       schedule.start_time = '09:00'
-      schedule.end_time = '18:00'
+      schedule.end_time = '19:00'
       schedule.lunch_start = '13:00'
       schedule.lunch_end = '14:00'
       schedule.slot_duration_minutes = 60
@@ -306,7 +310,7 @@ const setWeekendSchedule = () => {
       // Weekdays
       schedule.is_working = true
       schedule.start_time = '09:00'
-      schedule.end_time = '18:00'
+      schedule.end_time = '19:00'
       schedule.lunch_start = '13:00'
       schedule.lunch_end = '14:00'
       schedule.slot_duration_minutes = 60
@@ -321,7 +325,7 @@ const setFullWeekSchedule = () => {
   workingSchedules.value.forEach(schedule => {
     schedule.is_working = true
     schedule.start_time = '09:00'
-    schedule.end_time = '18:00'
+    schedule.end_time = '19:00'
     schedule.lunch_start = '13:00'
     schedule.lunch_end = '14:00'
     schedule.slot_duration_minutes = 60
@@ -331,5 +335,16 @@ const setFullWeekSchedule = () => {
 // Navigation function
 const goBackToDashboard = () => {
   router.push('/master/dashboard')
+}
+
+// Auto-fill default values when enabling working day
+const handleWorkingDayChange = (schedule) => {
+  if (schedule.is_working && !schedule.start_time) {
+    schedule.start_time = '09:00'
+    schedule.end_time = '19:00'
+    schedule.lunch_start = '13:00'
+    schedule.lunch_end = '14:00'
+    schedule.slot_duration_minutes = 60
+  }
 }
 </script> 
