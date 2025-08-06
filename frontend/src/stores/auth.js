@@ -23,8 +23,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await api.login(email, password)
         this.user = response.user
-        // Пока не используем токен, просто сохраняем пользователя
-        this.token = 'dummy-token' // Временное решение
+        this.token = response.token
         localStorage.setItem('token', this.token)
         return response
       } catch (error) {
@@ -42,8 +41,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await api.register(userData)
         this.user = response.user
-        // Пока не используем токен, просто сохраняем пользователя
-        this.token = 'dummy-token' // Временное решение
+        this.token = response.token
         localStorage.setItem('token', this.token)
         return response
       } catch (error) {
@@ -58,18 +56,26 @@ export const useAuthStore = defineStore('auth', {
       if (!this.token) return
       
       try {
-        const user = await api.getCurrentUser(this.token)
-        this.user = user
+        const response = await api.getCurrentUser(this.token)
+        this.user = response.user
       } catch (error) {
         this.logout()
       }
     },
 
-    logout() {
-      this.user = null
-      this.token = null
-      this.error = null
-      localStorage.removeItem('token')
+    async logout() {
+      try {
+        if (this.token) {
+          await api.logout(this.token)
+        }
+      } catch (error) {
+        console.error('Logout error:', error)
+      } finally {
+        this.user = null
+        this.token = null
+        this.error = null
+        localStorage.removeItem('token')
+      }
     }
   }
 }) 

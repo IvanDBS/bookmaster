@@ -10,6 +10,7 @@ Rails.application.routes.draw do
       # Auth routes
       post '/auth/register', to: 'auth#register'
       post '/auth/login', to: 'auth#login'
+      delete '/auth/logout', to: 'auth#logout'
       get '/auth/profile', to: 'auth#profile'
       
       # Users routes

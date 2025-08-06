@@ -148,6 +148,21 @@ class ApiService {
     return await response.json()
   }
 
+  async logout(token) {
+    const response = await fetch(`${this.baseURL}/auth/logout`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to logout')
+    }
+    
+    return await response.json()
+  }
+
   // Users endpoints
   async getCurrentUser(token) {
     const response = await fetch(`${this.baseURL}/auth/profile`, {

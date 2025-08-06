@@ -1,8 +1,8 @@
 class Api::V1::ServicesController < ApplicationController
   before_action :set_service, only: [:show, :update, :destroy]
-  before_action :authenticate_user!, except: [:index, :show, :create, :update, :destroy] # Временно отключаю для всех операций
-  before_action :ensure_master!, only: [] # Временно отключаю все проверки
-  before_action :ensure_service_owner!, only: [] # Временно отключаю все проверки
+  before_action :authenticate_user!, except: [:index, :show]
+  before_action :ensure_master!, only: [:create, :update, :destroy]
+  before_action :ensure_service_owner!, only: [:update, :destroy]
 
   def index
     @services = Service.includes(:user).active
@@ -23,9 +23,7 @@ class Api::V1::ServicesController < ApplicationController
   end
 
   def create
-    # Временно создаем услугу для первого мастера
-    master = User.where(role: 'master').first
-    @service = master.services.build(service_params)
+    @service = current_user.services.build(service_params)
     
     if @service.save
       render json: @service, status: :created

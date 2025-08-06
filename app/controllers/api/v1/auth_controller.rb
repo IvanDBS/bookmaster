@@ -1,12 +1,14 @@
 class Api::V1::AuthController < ApplicationController
-  before_action :authenticate_user!, only: [:profile]
+  before_action :authenticate_user!, only: [:profile, :logout]
   
   def register
     user = User.new(user_params)
     
     if user.save
+      token = request.env['warden-jwt_auth.token']
       render json: {
         user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
+        token: token,
         message: 'Пользователь успешно зарегистрирован'
       }, status: :created
     else
@@ -18,8 +20,11 @@ class Api::V1::AuthController < ApplicationController
     user = User.find_by(email: params[:user][:email])
     
     if user&.valid_password?(params[:user][:password])
+      sign_in user
+      token = request.env['warden-jwt_auth.token']
       render json: {
         user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
+        token: token,
         message: 'Успешный вход'
       }
     else
@@ -31,6 +36,11 @@ class Api::V1::AuthController < ApplicationController
     render json: {
       user: current_user.as_json(only: [:id, :email, :first_name, :last_name, :role, :phone, :bio, :address])
     }
+  end
+  
+  def logout
+    sign_out current_user
+    render json: { message: 'Успешный выход' }
   end
   
   private

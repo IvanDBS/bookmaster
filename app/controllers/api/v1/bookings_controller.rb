@@ -1,11 +1,18 @@
 class Api::V1::BookingsController < ApplicationController
   before_action :set_booking, only: [:show, :update_status]
-  before_action :authenticate_user!, except: [:create, :index, :update_status] # Временно отключаю для update_status
-  before_action :ensure_booking_owner!, only: [:show] # Временно отключаю для update_status
+  before_action :authenticate_user!, except: [:create]
+  before_action :ensure_booking_owner!, only: [:show, :update_status]
 
   def index
-    # Временно возвращаем все записи для тестирования
-    @bookings = Booking.includes(:service, :user).order(start_time: :desc)
+    if current_user.master?
+      # Для мастеров показываем их записи
+      @bookings = current_user.bookings.includes(:service).order(start_time: :desc)
+    else
+      # Для клиентов показываем записи где они клиенты
+      @bookings = Booking.includes(:service, :user)
+                        .where(client_email: current_user.email)
+                        .order(start_time: :desc)
+    end
     
     render json: @bookings
   end
