@@ -478,11 +478,13 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
 import ConfirmationModal from '../components/ConfirmationModal.vue'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 // Reactive data
 const user = ref(null)
@@ -1225,6 +1227,6 @@ const getSlotStatusText = (slot) => {
 
 // Navigation function
 const goToScheduleSettings = () => {
-  window.location.href = '/master/schedule'
+  router.push('/master/schedule')
 }
 </script> 

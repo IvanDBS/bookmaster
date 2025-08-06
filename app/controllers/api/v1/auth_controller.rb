@@ -17,9 +17,9 @@ class Api::V1::AuthController < ApplicationController
   end
   
   def login
-    user = User.find_by(email: params[:user][:email])
+    user = User.find_by(email: params[:email])
     
-    if user&.valid_password?(params[:user][:password])
+    if user&.valid_password?(params[:password])
       sign_in user
       token = request.env['warden-jwt_auth.token']
       render json: {
