@@ -42,8 +42,13 @@ class Api::V1::WorkingSchedulesController < Api::V1::BaseController
     schedule = current_user.working_schedules.find(params[:id])
     
     if schedule.update(schedule_params)
-      # Удаляем старые слоты для этого дня недели (будут пересозданы при необходимости)
+      # Удаляем старые слоты для этого дня недели
       clear_slots_for_day_of_week(schedule.day_of_week)
+      
+      # Создаем новые слоты для будущих дат этого дня недели
+      if schedule.is_working
+        create_slots_for_day_of_week(schedule.day_of_week)
+      end
       
       render json: {
         id: schedule.id,
@@ -77,6 +82,22 @@ class Api::V1::WorkingSchedulesController < Api::V1::BaseController
     
     dates_to_clear.each do |date|
       current_user.time_slots.for_date(date).destroy_all
+    end
+  end
+
+  def create_slots_for_day_of_week(day_of_week)
+    # Создаем слоты для будущих дат этого дня недели
+    schedule = current_user.working_schedules.find_by(day_of_week: day_of_week)
+    return unless schedule&.is_working
+
+    dates_to_create = (0..30).map { |i| i.days.from_now.to_date }
+                              .select { |date| date.wday == day_of_week }
+    
+    dates_to_create.each do |date|
+      slots = schedule.generate_slots_for_date(date)
+      slots.each do |slot_data|
+        current_user.time_slots.create!(slot_data.except(:user))
+      end
     end
   end
 

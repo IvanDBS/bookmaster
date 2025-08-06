@@ -715,6 +715,12 @@ onMounted(async () => {
   }
 })
 
+// Очищаем кэш при возврате из настроек
+const clearSlotsCache = () => {
+  slotsCache.value.clear()
+  loadSlotsForVisibleDates()
+}
+
 const loadServices = async () => {
   try {
     // Загружаем услуги напрямую из API

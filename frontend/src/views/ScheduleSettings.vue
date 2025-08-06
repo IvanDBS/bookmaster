@@ -278,6 +278,9 @@ const saveSchedule = async () => {
     
     await Promise.all(updatePromises)
     
+    // Перезагружаем данные после сохранения
+    await loadWorkingSchedules()
+    
     alert('Расписание успешно сохранено!')
   } catch (error) {
     console.error('Error saving schedule:', error)
@@ -334,7 +337,12 @@ const setFullWeekSchedule = () => {
 
 // Navigation function
 const goBackToDashboard = () => {
+  // Очищаем кэш слотов чтобы календарь перезагрузил данные
   router.push('/master/dashboard')
+  // Принудительно перезагружаем страницу для обновления календаря
+  setTimeout(() => {
+    window.location.reload()
+  }, 100)
 }
 
 // Auto-fill default values when enabling working day
