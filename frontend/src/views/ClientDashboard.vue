@@ -4,7 +4,7 @@
     <AppHeader :show-navigation="true" user-type="client" :pending-bookings-count="0" @scroll-to-section="handleScrollToSection" />
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 py-8 mt-24">
+    <div class="max-w-7xl mx-auto px-6 py-8 mt-20">
       <!-- Welcome Section -->
       <div class="mb-8">
         <h2 class="text-3xl font-bold text-gray-900 mb-2">

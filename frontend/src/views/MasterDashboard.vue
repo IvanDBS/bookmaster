@@ -13,7 +13,7 @@
     />
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 py-8 mt-24">
+    <div class="max-w-7xl mx-auto px-6 py-8 mt-20">
       <!-- Welcome Section -->
       <div class="mb-8">
         <h2 class="text-3xl font-bold text-gray-900 mb-2">
@@ -520,13 +520,25 @@ const loadServices = async () => {
 
 const loadBookings = async () => {
   try {
-    // Загружаем записи напрямую из API
-    const response = await fetch('http://localhost:3000/api/v1/bookings')
+    if (!authStore.token) {
+      console.warn('No auth token available')
+      recentBookings.value = []
+      return
+    }
+
+    // Загружаем записи с авторизацией
+    const response = await fetch('http://localhost:3000/api/v1/bookings', {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`,
+      },
+    })
+    
     if (!response.ok) {
       throw new Error('Failed to fetch bookings')
     }
+    
     const bookingsData = await response.json()
-    recentBookings.value = bookingsData // Загружаем все записи для корректной работы календаря
+    recentBookings.value = bookingsData
   } catch (error) {
     console.error('Error loading bookings:', error)
     recentBookings.value = []
@@ -549,7 +561,10 @@ const editService = (service) => {
 
 const addService = async () => {
   try {
-    // Здесь будет добавление услуги через API
+    if (!authStore.token) {
+      throw new Error('Не авторизован')
+    }
+
     const serviceData = {
       name: newService.value.name,
       description: newService.value.description,
@@ -566,18 +581,19 @@ const addService = async () => {
       method = 'PUT'
     }
     
-    // Добавляем услугу через API напрямую (временно без токена)
+    // Добавляем услугу через API с авторизацией
     const response = await fetch(url, {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`,
       },
       body: JSON.stringify({ service: serviceData }),
     })
     
     if (!response.ok) {
       const errorData = await response.json()
-      throw new Error(errorData.errors ? errorData.errors.join(', ') : 'Failed to create service')
+      throw new Error(errorData.errors ? errorData.errors.join(', ') : errorData.error || 'Failed to create service')
     }
     
     // Обновляем список услуг
@@ -598,15 +614,21 @@ const addService = async () => {
 const deleteService = async (serviceId) => {
   if (confirm('Вы уверены, что хотите удалить эту услугу?')) {
     try {
+      if (!authStore.token) {
+        throw new Error('Не авторизован')
+      }
+
       const response = await fetch(`http://localhost:3000/api/v1/services/${serviceId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authStore.token}`,
         },
       })
       
       if (!response.ok) {
-        throw new Error('Failed to delete service')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete service')
       }
       
       await loadServices()
@@ -647,17 +669,23 @@ const closeConfirmationModal = () => {
 
 const handleModalConfirm = async (bookingId) => {
   try {
+    if (!authStore.token) {
+      throw new Error('Не авторизован')
+    }
+
     const status = modalType.value === 'confirm' ? 'confirmed' : 'cancelled'
     const response = await fetch(`http://localhost:3000/api/v1/bookings/${bookingId}/update_status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`,
       },
       body: JSON.stringify({ status }),
     })
     
     if (!response.ok) {
-      throw new Error(`Failed to ${modalType.value} booking`)
+      const errorData = await response.json()
+      throw new Error(errorData.error || `Failed to ${modalType.value} booking`)
     }
     
     // Обновляем записи
