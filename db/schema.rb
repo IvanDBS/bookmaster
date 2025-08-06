@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_06_173654) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_06_181354) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -91,6 +91,18 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_06_173654) do
     t.index ["role"], name: "index_users_on_role"
   end
 
+  create_table "working_day_exceptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "date", null: false
+    t.boolean "is_working", default: false
+    t.string "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_working_day_exceptions_on_date"
+    t.index ["user_id", "date"], name: "index_working_day_exceptions_on_user_id_and_date", unique: true
+    t.index ["user_id"], name: "index_working_day_exceptions_on_user_id"
+  end
+
   create_table "working_schedules", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.integer "day_of_week", null: false
@@ -111,5 +123,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_06_173654) do
   add_foreign_key "services", "users"
   add_foreign_key "time_slots", "bookings"
   add_foreign_key "time_slots", "users"
+  add_foreign_key "working_day_exceptions", "users"
   add_foreign_key "working_schedules", "users"
 end

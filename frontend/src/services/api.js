@@ -185,6 +185,85 @@ class ApiService {
     
     return await response.json()
   }
+
+  // Working Day Exceptions endpoints
+  async getWorkingDayExceptions(token) {
+    const response = await fetch(`${this.baseURL}/working_day_exceptions`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch working day exceptions')
+    }
+    
+    return await response.json()
+  }
+
+  async toggleWorkingDay(date, token, reason = null) {
+    const response = await fetch(`${this.baseURL}/working_day_exceptions/toggle`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ date, reason }),
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to toggle working day')
+    }
+    
+    return await response.json()
+  }
+
+  async createWorkingDayException(exceptionData, token) {
+    const response = await fetch(`${this.baseURL}/working_day_exceptions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ working_day_exception: exceptionData }),
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to create working day exception')
+    }
+    
+    return await response.json()
+  }
+
+  async updateWorkingDayException(id, exceptionData, token) {
+    const response = await fetch(`${this.baseURL}/working_day_exceptions/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ working_day_exception: exceptionData }),
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to update working day exception')
+    }
+    
+    return await response.json()
+  }
+
+  async deleteWorkingDayException(id, token) {
+    const response = await fetch(`${this.baseURL}/working_day_exceptions/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to delete working day exception')
+    }
+  }
 }
 
 export default new ApiService() 

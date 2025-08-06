@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :bookings, dependent: :destroy
   has_many :working_schedules, dependent: :destroy
   has_many :time_slots, dependent: :destroy
+  has_many :working_day_exceptions, dependent: :destroy
 
   # Validations
   validates :email, presence: true, uniqueness: true
@@ -90,19 +91,28 @@ class User < ApplicationRecord
     
     Rails.logger.info "User##{id}: ensure_slots_for_date called for date #{date} (wday: #{date.wday})"
 
-    # Определяем, является ли этот день рабочим согласно расписанию
-    schedule = working_schedules.find_by(day_of_week: date.wday)
-    is_scheduled_working_day = schedule && schedule.is_working
-
-    Rails.logger.info "User##{id}: Schedule for #{date.wday} (is_working: #{is_scheduled_working_day})"
+    # Проверяем, есть ли исключение для этой даты
+    exception = working_day_exceptions.find_by(date: date)
+    
+    # Определяем, является ли этот день рабочим
+    if exception
+      # Исключение имеет приоритет над обычным расписанием
+      is_working_day = exception.is_working
+      Rails.logger.info "User##{id}: Found exception for #{date}: is_working=#{is_working_day}"
+    else
+      # Используем обычное расписание
+      schedule = working_schedules.find_by(day_of_week: date.wday)
+      is_working_day = schedule && schedule.is_working
+      Rails.logger.info "User##{id}: Using schedule for #{date.wday} (is_working: #{is_working_day})"
+    end
     
     # Очищаем все существующие слоты для этой даты
     # Это важно, чтобы старые слоты для дня, который стал нерабочим, были удалены
     deleted_count = time_slots.for_date(date).destroy_all.count
     Rails.logger.info "User##{id}: Deleted #{deleted_count} existing slots for date #{date}"
     
-    # Генерируем слоты только если это запланированный рабочий день
-    if is_scheduled_working_day
+    # Генерируем слоты только если это рабочий день (по расписанию или исключению)
+    if is_working_day
       slot_data = generate_slots_for_date(date)
       Rails.logger.info "User##{id}: Generated #{slot_data.length} slots for date #{date}"
       
@@ -124,7 +134,7 @@ class User < ApplicationRecord
         end
       end
     else
-      Rails.logger.info "User##{id}: Not generating new slots for #{date} as it is not a scheduled working day."
+      Rails.logger.info "User##{id}: Not generating new slots for #{date} as it is not a working day."
     end
   end
 end

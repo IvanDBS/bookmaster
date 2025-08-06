@@ -35,6 +35,13 @@ Rails.application.routes.draw do
       
       # Working schedules routes
       resources :working_schedules, only: [:index, :show, :update]
+      
+      # Working day exceptions routes
+      resources :working_day_exceptions, only: [:index, :show, :create, :update, :destroy] do
+        collection do
+          post 'toggle', to: 'working_day_exceptions#toggle'
+        end
+      end
     end
   end
 

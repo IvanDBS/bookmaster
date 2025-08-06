@@ -31,7 +31,6 @@ gem "ice_cube"
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop and debug your application
   gem "byebug", platforms: [:mri, :mingw, :x64_mingw]
-  gem "web-console"
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
   gem 'pry-byebug'
@@ -44,6 +43,7 @@ group :development, :test do
 end
 
 group :development do
+  gem "web-console"
   gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
   gem "annotate"
   gem "listen"

@@ -199,11 +199,40 @@
           </div>
 
           <!-- Selected Date Slots -->
-          <div v-if="selectedDateSlots.length > 0" class="mt-6">
-            <h5 class="font-semibold text-gray-900 mb-3">
-              Временные слоты на {{ formatSelectedDate() }}
-            </h5>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div v-if="selectedDate" class="mt-6">
+            <div class="flex items-center justify-between mb-3">
+              <h5 class="font-semibold text-gray-900">
+                Временные слоты на {{ formatSelectedDate() }}
+              </h5>
+              
+              <!-- Toggle Switch для управления статусом дня -->
+              <div class="flex items-center space-x-3">
+                <span class="text-sm text-gray-700">Рабочий день</span>
+                <button
+                  @click="toggleDayStatus"
+                  :class="[
+                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                    isDayWorking
+                      ? 'bg-blue-600'
+                      : 'bg-gray-200'
+                  ]"
+                  role="switch"
+                  :aria-checked="isDayWorking"
+                >
+                  <span
+                    :class="[
+                      'inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out',
+                      isDayWorking
+                        ? 'translate-x-6'
+                        : 'translate-x-1'
+                    ]"
+                  />
+                </button>
+              </div>
+            </div>
+            
+            <!-- Slots Grid (only show if there are slots) -->
+            <div v-if="selectedDateSlots.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div v-for="slot in selectedDateSlots" :key="slot.id" 
                    class="bg-gray-50 rounded-lg p-3 border-l-4"
                    :class="{
@@ -519,6 +548,7 @@ const selectedDateBookings = ref([])
 const selectedDateSlots = ref([])
 const workingSchedules = ref([])
 const slotsCache = ref(new Map()) // Кэш слотов по датам
+const workingDayExceptions = ref([]) // Исключения по дням
 
 // Modal data
 const showConfirmationModal = ref(false)
@@ -543,6 +573,24 @@ const sortedSelectedDateBookings = computed(() => {
     const timeB = new Date(b.start_time).getTime()
     return timeA - timeB
   })
+})
+
+// Computed для определения статуса выбранного дня
+const isDayWorking = computed(() => {
+  if (!selectedDate.value) return false
+  
+  const dateString = selectedDate.value.toISOString().split('T')[0]
+  const exception = workingDayExceptions.value.find(ex => ex.date === dateString)
+  
+  if (exception) {
+    // Исключение имеет приоритет
+    return exception.is_working
+  }
+  
+  // Используем расписание
+  const dayOfWeek = selectedDate.value.getDay()
+  const schedule = workingSchedules.value.find(s => s.day_of_week === dayOfWeek)
+  return schedule ? schedule.is_working : false
 })
 
 
@@ -588,14 +636,18 @@ const calendarDates = computed(() => {
     const bookedSlots = workSlots.filter(slot => slot.booked)
     const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
     
-    // Определяем статус дня на основе расписания и слотов
+    // Определяем статус дня на основе расписания, исключений и слотов (CURRENT MONTH)
     const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, etc.
     const scheduleForDay = workingSchedules.value.find(s => s.day_of_week === dayOfWeek);
+    const exception = workingDayExceptions.value.find(ex => ex.date === dateString);
 
     let loadLevel = 'non_working'; // не рабочий день по умолчанию
     let dayStatus = 'non_working';
+    
+    // Определяем, является ли день рабочим (исключение имеет приоритет над расписанием)
+    const isDayWorkingFinal = exception ? exception.is_working : (scheduleForDay?.is_working || false);
 
-    if (scheduleForDay && scheduleForDay.is_working) {
+    if (isDayWorkingFinal) {
       // Если день явно помечен как рабочий в настройках
       if (workSlots.length === 0) {
         // Если рабочий день, но слоты не сгенерированы - считаем свободным
@@ -701,14 +753,18 @@ const nextMonthDates = computed(() => {
     const bookedSlots = workSlots.filter(slot => slot.booked)
     const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
     
-    // Определяем статус дня на основе расписания и слотов
+    // Определяем статус дня на основе расписания, исключений и слотов (NEXT MONTH)
     const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, etc.
     const scheduleForDay = workingSchedules.value.find(s => s.day_of_week === dayOfWeek);
+    const exception = workingDayExceptions.value.find(ex => ex.date === dateString);
 
     let loadLevel = 'non_working'; // не рабочий день по умолчанию
     let dayStatus = 'non_working';
+    
+    // Определяем, является ли день рабочим (исключение имеет приоритет над расписанием)
+    const isDayWorkingFinal = exception ? exception.is_working : (scheduleForDay?.is_working || false);
 
-    if (scheduleForDay && scheduleForDay.is_working) {
+    if (isDayWorkingFinal) {
       // Если день явно помечен как рабочий в настройках
       if (workSlots.length === 0) {
         // Если рабочий день, но слоты не сгенерированы - считаем свободным
@@ -793,6 +849,7 @@ const nextMonthDates = computed(() => {
 onMounted(async () => {
   console.log('MasterDashboard mounted')
   await loadWorkingSchedules()
+  await loadWorkingDayExceptions()
   await loadServices()
   await loadServiceTypes()
   await loadBookings()
@@ -810,11 +867,7 @@ onMounted(async () => {
   }
 })
 
-// Очищаем кэш при возврате из настроек
-const clearSlotsCache = () => {
-  slotsCache.value.clear()
-  loadSlotsForVisibleDates()
-}
+
 
 // Очищаем кэш при активации компонента
 onActivated(() => {
@@ -900,6 +953,57 @@ const loadWorkingSchedules = async () => {
   } catch (error) {
     console.error('Error loading working schedules:', error)
     workingSchedules.value = []
+  }
+}
+
+// Методы для работы с исключениями дней
+const loadWorkingDayExceptions = async () => {
+  try {
+    if (!authStore.token) {
+      console.warn('No auth token available')
+      workingDayExceptions.value = []
+      return
+    }
+
+    const exceptionsData = await api.getWorkingDayExceptions(authStore.token)
+    workingDayExceptions.value = exceptionsData
+    
+    console.log('Loaded working day exceptions:', workingDayExceptions.value.length)
+  } catch (error) {
+    console.error('Error loading working day exceptions:', error)
+    workingDayExceptions.value = []
+  }
+}
+
+const toggleDayStatus = async () => {
+  try {
+    if (!selectedDate.value || !authStore.token) {
+      console.warn('No selected date or auth token')
+      return
+    }
+
+    const dateString = selectedDate.value.toISOString().split('T')[0]
+    console.log('Toggling day status for:', dateString)
+    
+    const updatedException = await api.toggleWorkingDay(dateString, authStore.token)
+    
+    // Обновляем локальные данные
+    const existingIndex = workingDayExceptions.value.findIndex(ex => ex.date === dateString)
+    if (existingIndex !== -1) {
+      workingDayExceptions.value[existingIndex] = updatedException
+    } else {
+      workingDayExceptions.value.push(updatedException)
+    }
+    
+    // Очищаем кэш слотов для этой даты и перезагружаем
+    const dateKey = dateString
+    slotsCache.value.delete(dateKey)
+    await loadSlotsForSelectedDate(selectedDate.value)
+    
+    console.log('Day status toggled successfully:', updatedException)
+  } catch (error) {
+    console.error('Error toggling day status:', error)
+    alert('Ошибка при изменении статуса дня: ' + error.message)
   }
 }
 
@@ -990,6 +1094,7 @@ const refreshCalendar = async () => {
   console.log('Refreshing calendar...')
   slotsCache.value.clear()
   await loadWorkingSchedules() // Перезагружаем расписание
+  await loadWorkingDayExceptions() // Перезагружаем исключения
   await loadSlotsForVisibleDates()
   console.log('Calendar refreshed')
 }
@@ -1380,15 +1485,5 @@ const goToScheduleSettings = () => {
   router.push('/master/schedule')
 }
 
-// Добавляем обработчик возврата из настроек
-const handleReturnFromSettings = () => {
-  refreshCalendar()
-}
 
-// Добавляем обработчик для обновления календаря при изменении расписания
-const handleScheduleUpdate = async () => {
-  console.log('Schedule updated, refreshing calendar...')
-  await refreshCalendar()
-  console.log('Calendar updated after schedule change')
-}
 </script> 
