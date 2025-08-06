@@ -5,11 +5,15 @@ class Api::V1::TimeSlotsController < Api::V1::BaseController
   def index
     date = params[:date] ? Date.parse(params[:date]) : Date.current
     
+    Rails.logger.info "Loading time slots for date: #{date} for user: #{current_user.id}"
+    
     # Генерируем слоты если их нет
     current_user.ensure_slots_for_date(date)
     
     # Получаем слоты на дату
     slots = current_user.time_slots.for_date(date).order(:start_time)
+    
+    Rails.logger.info "Found #{slots.count} slots for date #{date}"
     
     render json: {
       date: date,

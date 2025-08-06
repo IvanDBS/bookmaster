@@ -41,17 +41,26 @@ class WorkingSchedule < ApplicationRecord
   end
 
   def total_slots_count
+    return 0 unless slot_duration_minutes && slot_duration_minutes > 0
     working_duration_minutes / slot_duration_minutes
   end
 
   # Генерация слотов для конкретной даты
   def generate_slots_for_date(date)
-    return [] unless is_working && start_time && end_time
+    Rails.logger.info "WorkingSchedule##{id}: generate_slots_for_date called for date #{date} (wday: #{date.wday}). is_working: #{is_working}"
+    unless is_working && start_time && end_time
+      Rails.logger.info "WorkingSchedule##{id}: Not generating slots for #{date} because is_working is false or times are missing."
+      return []
+    end
     return [] unless date.wday == day_of_week
+    return [] unless slot_duration_minutes && slot_duration_minutes > 0
+
+    Rails.logger.info "WorkingSchedule##{id}: Generating slots for date #{date} (day #{day_of_week}) with is_working=#{is_working}, start_time=#{start_time&.strftime('%H:%M')}, end_time=#{end_time&.strftime('%H:%M')}"
 
     slots = []
     current_time = start_time
     
+    # Генерируем рабочие слоты
     while current_time < end_time
       slot_end = add_minutes_to_time(current_time, slot_duration_minutes)
       break if slot_end > end_time
@@ -90,6 +99,7 @@ class WorkingSchedule < ApplicationRecord
       }
     end
 
+    Rails.logger.info "Generated #{slots.length} slots for #{date}"
     slots
   end
 
@@ -132,9 +142,12 @@ class WorkingSchedule < ApplicationRecord
   end
 
   def add_minutes_to_time(time, minutes)
+    # Используем правильную логику для добавления минут к времени
     total_minutes = time.hour * 60 + time.min + minutes
     hours = total_minutes / 60
     mins = total_minutes % 60
-    Time.parse("#{hours}:#{mins}")
+    
+    # Создаем новое время с правильными часами и минутами
+    Time.utc(2000, 1, 1, hours, mins, 0)
   end
 end

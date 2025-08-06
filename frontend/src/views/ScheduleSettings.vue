@@ -211,6 +211,7 @@ const loadWorkingSchedules = async () => {
       return
     }
 
+    console.log('Loading working schedules...')
     const response = await fetch('http://localhost:3000/api/v1/working_schedules', {
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
@@ -218,40 +219,73 @@ const loadWorkingSchedules = async () => {
     })
     
     if (!response.ok) {
+      console.error('Failed to fetch working schedules:', response.status, response.statusText)
       throw new Error('Failed to fetch working schedules')
     }
     
     const schedulesData = await response.json()
     
-    console.log('Received schedules:', schedulesData)
+    // Add day names and ensure all days are present, and format times
+    workingSchedules.value = schedulesData.map(schedule => {
+      const formattedSchedule = {
+        ...schedule,
+        day_name: dayNames[schedule.day_of_week]
+      }
+
+      // Format time strings from ISO 8601 to HH:mm, or set to null if not working
+      formattedSchedule.start_time = formattedSchedule.is_working && formattedSchedule.start_time 
+        ? new Date(formattedSchedule.start_time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', hour12: false }) 
+        : null
+      formattedSchedule.end_time = formattedSchedule.is_working && formattedSchedule.end_time 
+        ? new Date(formattedSchedule.end_time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', hour12: false }) 
+        : null
+      formattedSchedule.lunch_start = formattedSchedule.is_working && formattedSchedule.lunch_start 
+        ? new Date(formattedSchedule.lunch_start).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', hour12: false }) 
+        : null
+      formattedSchedule.lunch_end = formattedSchedule.is_working && formattedSchedule.lunch_end 
+        ? new Date(formattedSchedule.lunch_end).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', hour12: false }) 
+        : null
+      
+      // Ensure slot_duration_minutes is a number if working, otherwise null
+      formattedSchedule.slot_duration_minutes = formattedSchedule.is_working 
+        ? (formattedSchedule.slot_duration_minutes || 60) 
+        : null
+
+      return formattedSchedule
+    })
     
-    // Add day names and ensure all days are present
-    workingSchedules.value = schedulesData.map(schedule => ({
-      ...schedule,
-      day_name: dayNames[schedule.day_of_week]
-    }))
-    
-    // Sort by day of week
-    workingSchedules.value.sort((a, b) => a.day_of_week - b.day_of_week)
+    // Sort by day of week (Monday first, Sunday last)
+    workingSchedules.value.sort((a, b) => {
+      const dayA = a.day_of_week === 0 ? 7 : a.day_of_week;
+      const dayB = b.day_of_week === 0 ? 7 : b.day_of_week;
+      return dayA - dayB;
+    });
     
     // Заполняем дефолтные значения для рабочих дней без времени
     workingSchedules.value.forEach(schedule => {
       if (schedule.is_working) {
-        if (!schedule.start_time || schedule.start_time === '--:--') {
+        if (!schedule.start_time || schedule.start_time === '--:--' || schedule.start_time === null || schedule.start_time === '') {
           schedule.start_time = '09:00'
         }
-        if (!schedule.end_time || schedule.end_time === '--:--') {
+        if (!schedule.end_time || schedule.end_time === '--:--' || schedule.end_time === null || schedule.end_time === '') {
           schedule.end_time = '19:00'
         }
-        if (!schedule.lunch_start || schedule.lunch_start === '--:--') {
+        if (!schedule.lunch_start || schedule.lunch_start === '--:--' || schedule.lunch_start === null || schedule.lunch_start === '') {
           schedule.lunch_start = '13:00'
         }
-        if (!schedule.lunch_end || schedule.lunch_end === '--:--') {
+        if (!schedule.lunch_end || schedule.lunch_end === '--:--' || schedule.lunch_end === null || schedule.lunch_end === '') {
           schedule.lunch_end = '14:00'
         }
         if (!schedule.slot_duration_minutes) {
           schedule.slot_duration_minutes = 60
         }
+      } else {
+        // Очищаем время при отключении рабочего дня
+        schedule.start_time = null
+        schedule.end_time = null
+        schedule.lunch_start = null
+        schedule.lunch_end = null
+        schedule.slot_duration_minutes = null
       }
     })
     
@@ -272,22 +306,22 @@ const saveSchedule = async () => {
 
     console.log('Saving schedules:', workingSchedules.value)
 
-    // Update each schedule
-    const updatePromises = workingSchedules.value.map(async (schedule) => {
-      // Фильтруем пустые значения
+    // Обновляем только измененные дни
+    const originalSchedules = ref([]) // Сохраняем оригинальные данные для сравнения
+    
+    for (const schedule of workingSchedules.value) {
+      // Проверяем валидность данных перед отправкой
       const scheduleData = {
         working_schedule: {
           is_working: schedule.is_working,
-          start_time: schedule.start_time && schedule.start_time !== '--:--' ? schedule.start_time : null,
-          end_time: schedule.end_time && schedule.end_time !== '--:--' ? schedule.end_time : null,
-          lunch_start: schedule.lunch_start && schedule.lunch_start !== '--:--' ? schedule.lunch_start : null,
-          lunch_end: schedule.lunch_end && schedule.lunch_end !== '--:--' ? schedule.lunch_end : null,
-          slot_duration_minutes: schedule.slot_duration_minutes
+          start_time: schedule.is_working ? schedule.start_time : null,
+          end_time: schedule.is_working ? schedule.end_time : null,
+          lunch_start: schedule.is_working ? schedule.lunch_start : null,
+          lunch_end: schedule.is_working ? schedule.lunch_end : null,
+          slot_duration_minutes: schedule.is_working ? (schedule.slot_duration_minutes || 60) : null
         }
       }
       
-      console.log('Updating schedule:', schedule.id, scheduleData)
-
       const response = await fetch(`http://localhost:3000/api/v1/working_schedules/${schedule.id}`, {
         method: 'PATCH',
         headers: {
@@ -297,26 +331,25 @@ const saveSchedule = async () => {
         body: JSON.stringify(scheduleData)
       })
       
-      console.log('Response status:', response.status)
-      
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('Error response:', errorData)
         const errorMessage = errorData.errors ? 
           (Array.isArray(errorData.errors) ? errorData.errors.join(', ') : errorData.errors) : 
           'Failed to update schedule'
-        throw new Error(errorMessage)
+        throw new Error(`Ошибка для ${schedule.day_name}: ${errorMessage}`)
       }
       
       const result = await response.json()
-      console.log('Update result:', result)
-      return result
-    })
-    
-    await Promise.all(updatePromises)
+      
+      // Небольшая задержка между запросами
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
     
     // Перезагружаем данные после сохранения
     await loadWorkingSchedules()
+    
+    // Очищаем кэш слотов в sessionStorage для принудительного обновления календаря
+    sessionStorage.setItem('clearSlotsCache', 'true')
     
     alert('Расписание успешно сохранено!')
   } catch (error) {
@@ -373,30 +406,31 @@ const setFullWeekSchedule = () => {
 }
 
 // Navigation function
-const goBackToDashboard = () => {
+const goBackToDashboard = async () => {
+  // Очищаем кэш слотов перед возвратом в dashboard
+  console.log('Clearing slots cache before returning to dashboard...')
+  
+  // Устанавливаем флаг для обновления календаря в dashboard
+  sessionStorage.setItem('fromScheduleSettings', 'true')
+  
+  // Переходим в dashboard
   router.push('/master/dashboard')
 }
 
 // Auto-fill default values when enabling working day
 const handleWorkingDayChange = (schedule) => {
-  console.log('Working day changed:', schedule)
   if (schedule.is_working) {
-    if (!schedule.start_time || schedule.start_time === '--:--') {
-      schedule.start_time = '09:00'
-    }
-    if (!schedule.end_time || schedule.end_time === '--:--') {
-      schedule.end_time = '19:00'
-    }
-    if (!schedule.lunch_start || schedule.lunch_start === '--:--') {
-      schedule.lunch_start = '13:00'
-    }
-    if (!schedule.lunch_end || schedule.lunch_end === '--:--') {
-      schedule.lunch_end = '14:00'
-    }
-    if (!schedule.slot_duration_minutes) {
-      schedule.slot_duration_minutes = 60
-    }
-    console.log('Updated schedule:', schedule)
+    schedule.start_time = '09:00'
+    schedule.end_time = '19:00'
+    schedule.lunch_start = '13:00'
+    schedule.lunch_end = '14:00'
+    schedule.slot_duration_minutes = 60
+  } else {
+    schedule.start_time = null
+    schedule.end_time = null
+    schedule.lunch_start = null
+    schedule.lunch_end = null
+    schedule.slot_duration_minutes = null
   }
 }
 </script> 

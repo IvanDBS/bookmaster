@@ -43,8 +43,14 @@ class User < ApplicationRecord
   def generate_slots_for_date(date)
     return [] unless master?
     
+    Rails.logger.info "User##{id}: Attempting to generate slots for date #{date} (wday: #{date.wday})"
     schedule = working_schedules.find_by(day_of_week: date.wday)
-    return [] unless schedule
+    if schedule
+      Rails.logger.info "User##{id}: Found schedule for day #{date.wday}: is_working=#{schedule.is_working}, start_time=#{schedule.start_time&.strftime('%H:%M')}, end_time=#{schedule.end_time&.strftime('%H:%M')}"
+    else
+      Rails.logger.info "User##{id}: No schedule found for day #{date.wday}. Returning empty slots."
+      return []
+    end
     
     schedule.generate_slots_for_date(date)
   end
@@ -81,11 +87,44 @@ class User < ApplicationRecord
 
   def ensure_slots_for_date(date)
     return unless master?
-    return if time_slots.for_date(date).exists?
+    
+    Rails.logger.info "User##{id}: ensure_slots_for_date called for date #{date} (wday: #{date.wday})"
 
-    slot_data = generate_slots_for_date(date)
-    slot_data.each do |slot_attrs|
-      time_slots.create!(slot_attrs)
+    # Определяем, является ли этот день рабочим согласно расписанию
+    schedule = working_schedules.find_by(day_of_week: date.wday)
+    is_scheduled_working_day = schedule && schedule.is_working
+
+    Rails.logger.info "User##{id}: Schedule for #{date.wday} (is_working: #{is_scheduled_working_day})"
+    
+    # Очищаем все существующие слоты для этой даты
+    # Это важно, чтобы старые слоты для дня, который стал нерабочим, были удалены
+    deleted_count = time_slots.for_date(date).destroy_all.count
+    Rails.logger.info "User##{id}: Deleted #{deleted_count} existing slots for date #{date}"
+    
+    # Генерируем слоты только если это запланированный рабочий день
+    if is_scheduled_working_day
+      slot_data = generate_slots_for_date(date)
+      Rails.logger.info "User##{id}: Generated #{slot_data.length} slots for date #{date}"
+      
+      slot_data.each do |slot_attrs|
+        begin
+          # Создаем слот с правильными атрибутами
+          time_slots.create!(
+            date: slot_attrs[:date],
+            start_time: slot_attrs[:start_time],
+            end_time: slot_attrs[:end_time],
+            duration_minutes: slot_attrs[:duration_minutes],
+            is_available: slot_attrs[:is_available],
+            slot_type: slot_attrs[:slot_type]
+          )
+          Rails.logger.info "User##{id}: Created slot: #{slot_attrs[:start_time]} - #{slot_attrs[:end_time]} (type: #{slot_attrs[:slot_type]}, available: #{slot_attrs[:is_available]})"
+        rescue => e
+          Rails.logger.error "User##{id}: Error creating slot for #{date}: #{e.message}"
+          Rails.logger.error e.backtrace.join("\n")
+        end
+      end
+    else
+      Rails.logger.info "User##{id}: Not generating new slots for #{date} as it is not a scheduled working day."
     end
   end
 end

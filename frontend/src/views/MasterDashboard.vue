@@ -533,6 +533,8 @@ const sortedSelectedDateBookings = computed(() => {
   })
 })
 
+
+
 // Calendar computed properties
 const currentMonthYear = computed(() => {
   return currentDate.value.toLocaleDateString('ru-RU', { 
@@ -556,7 +558,7 @@ const calendarDates = computed(() => {
   
   const firstDay = new Date(year, month, 1)
   const startDate = new Date(firstDay)
-  startDate.setDate(startDate.getDate() - firstDay.getDay())
+  startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1))
   
   const dates = []
   const today = new Date()
@@ -574,32 +576,57 @@ const calendarDates = computed(() => {
     const bookedSlots = workSlots.filter(slot => slot.booked)
     const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
     
-    // Определяем статус дня на основе слотов
-    let loadLevel = 'non_working' // не рабочий день
-    let dayStatus = 'non_working'
-    
-    if (workSlots.length > 0) {
-      // Это рабочий день
-      const totalSlots = workSlots.length
-      const occupiedSlots = bookedSlots.length
-      const occupancyRate = totalSlots > 0 ? occupiedSlots / totalSlots : 0
-      
-      if (occupancyRate === 0) {
-        loadLevel = 'free'
-        dayStatus = 'available'
-      } else if (occupancyRate < 0.3) {
-        loadLevel = 'light'
-        dayStatus = 'available'
-      } else if (occupancyRate < 0.7) {
-        loadLevel = 'moderate'
-        dayStatus = 'partial'
-      } else if (occupancyRate < 1) {
-        loadLevel = 'busy'
-        dayStatus = 'partial'
+    // Определяем статус дня на основе расписания и слотов
+    const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, etc.
+    const scheduleForDay = workingSchedules.value.find(s => s.day_of_week === dayOfWeek);
+
+    let loadLevel = 'non_working'; // не рабочий день по умолчанию
+    let dayStatus = 'non_working';
+
+    if (scheduleForDay && scheduleForDay.is_working) {
+      // Если день явно помечен как рабочий в настройках
+      if (workSlots.length === 0) {
+        // Если рабочий день, но слоты не сгенерированы - считаем свободным
+        loadLevel = 'free';
+        dayStatus = 'available';
       } else {
-        loadLevel = 'full'
-        dayStatus = 'busy'
+        // Если есть рабочие слоты, определяем уровень загруженности
+        const totalSlots = workSlots.length;
+        const occupiedSlots = bookedSlots.length;
+        const occupancyRate = totalSlots > 0 ? occupiedSlots / totalSlots : 0;
+
+        if (occupancyRate === 0) {
+          loadLevel = 'free';
+          dayStatus = 'available';
+        } else if (occupancyRate < 0.3) {
+          loadLevel = 'light';
+          dayStatus = 'available';
+        } else if (occupancyRate < 0.7) {
+          loadLevel = 'moderate';
+          dayStatus = 'partial';
+        } else if (occupancyRate < 1) {
+          loadLevel = 'busy';
+          dayStatus = 'partial';
+        } else {
+          loadLevel = 'full';
+          dayStatus = 'busy';
+        }
       }
+    } else {
+      // Если день не помечен как рабочий в настройках
+      loadLevel = 'non_working';
+      dayStatus = 'non_working';
+    }
+    
+    // Отладка для вторника
+    if (date.getDay() === 2) {
+      console.log(`Debug Tuesday ${dateString}:`, {
+        daySlots: daySlots.length,
+        workSlots: workSlots.length,
+        loadLevel,
+        scheduleForDay: scheduleForDay?.is_working,
+        allSlots: daySlots
+      })
     }
     
     dates.push({
@@ -630,7 +657,7 @@ const nextMonthDates = computed(() => {
   
   const firstDay = new Date(year, month, 1)
   const startDate = new Date(firstDay)
-  startDate.setDate(startDate.getDate() - firstDay.getDay())
+  startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1))
   
   const dates = []
   const today = new Date()
@@ -648,32 +675,57 @@ const nextMonthDates = computed(() => {
     const bookedSlots = workSlots.filter(slot => slot.booked)
     const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
     
-    // Определяем статус дня на основе слотов
-    let loadLevel = 'non_working' // не рабочий день
-    let dayStatus = 'non_working'
-    
-    if (workSlots.length > 0) {
-      // Это рабочий день
-      const totalSlots = workSlots.length
-      const occupiedSlots = bookedSlots.length
-      const occupancyRate = totalSlots > 0 ? occupiedSlots / totalSlots : 0
-      
-      if (occupancyRate === 0) {
-        loadLevel = 'free'
-        dayStatus = 'available'
-      } else if (occupancyRate < 0.3) {
-        loadLevel = 'light'
-        dayStatus = 'available'
-      } else if (occupancyRate < 0.7) {
-        loadLevel = 'moderate'
-        dayStatus = 'partial'
-      } else if (occupancyRate < 1) {
-        loadLevel = 'busy'
-        dayStatus = 'partial'
+    // Определяем статус дня на основе расписания и слотов
+    const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, etc.
+    const scheduleForDay = workingSchedules.value.find(s => s.day_of_week === dayOfWeek);
+
+    let loadLevel = 'non_working'; // не рабочий день по умолчанию
+    let dayStatus = 'non_working';
+
+    if (scheduleForDay && scheduleForDay.is_working) {
+      // Если день явно помечен как рабочий в настройках
+      if (workSlots.length === 0) {
+        // Если рабочий день, но слоты не сгенерированы - считаем свободным
+        loadLevel = 'free';
+        dayStatus = 'available';
       } else {
-        loadLevel = 'full'
-        dayStatus = 'busy'
+        // Если есть рабочие слоты, определяем уровень загруженности
+        const totalSlots = workSlots.length;
+        const occupiedSlots = bookedSlots.length;
+        const occupancyRate = totalSlots > 0 ? occupiedSlots / totalSlots : 0;
+
+        if (occupancyRate === 0) {
+          loadLevel = 'free';
+          dayStatus = 'available';
+        } else if (occupancyRate < 0.3) {
+          loadLevel = 'light';
+          dayStatus = 'available';
+        } else if (occupancyRate < 0.7) {
+          loadLevel = 'moderate';
+          dayStatus = 'partial';
+        } else if (occupancyRate < 1) {
+          loadLevel = 'busy';
+          dayStatus = 'partial';
+        } else {
+          loadLevel = 'full';
+          dayStatus = 'busy';
+        }
       }
+    } else {
+      // Если день не помечен как рабочий в настройках
+      loadLevel = 'non_working';
+      dayStatus = 'non_working';
+    }
+    
+    // Отладка для вторника в следующем месяце
+    if (date.getDay() === 2) {
+      console.log(`Debug Next Month Tuesday ${dateString}:`, {
+        daySlots: daySlots.length,
+        workSlots: workSlots.length,
+        loadLevel,
+        scheduleForDay: scheduleForDay?.is_working,
+        allSlots: daySlots
+      })
     }
     
     dates.push({
@@ -699,19 +751,21 @@ const nextMonthDates = computed(() => {
 })
 
 onMounted(async () => {
-  try {
-    // Загружаем пользователя
-    user.value = authStore.user
-    
-    // Загружаем данные параллельно
-    await Promise.all([
-      loadServices(),
-      loadBookings(),
-      loadWorkingSchedules(),
-      loadSlotsForVisibleDates()
-    ])
-  } catch (error) {
-    console.error('Error loading dashboard data:', error)
+  console.log('MasterDashboard mounted')
+  await loadWorkingSchedules()
+  await loadServices()
+  await loadRecentBookings()
+  await loadSlotsForVisibleDates()
+  
+  // Проверяем, возвращаемся ли мы из настроек расписания
+  const fromSettings = sessionStorage.getItem('fromScheduleSettings')
+  const clearCache = sessionStorage.getItem('clearSlotsCache')
+  
+  if (fromSettings === 'true' || clearCache === 'true') {
+    console.log('Returning from schedule settings or cache clear requested, refreshing calendar...')
+    await refreshCalendar()
+    sessionStorage.removeItem('fromScheduleSettings')
+    sessionStorage.removeItem('clearSlotsCache')
   }
 })
 
@@ -789,6 +843,9 @@ const loadWorkingSchedules = async () => {
     
     const schedulesData = await response.json()
     workingSchedules.value = schedulesData
+    
+    // Отладочная информация
+    console.log('Loaded working schedules:', workingSchedules.value)
   } catch (error) {
     console.error('Error loading working schedules:', error)
     workingSchedules.value = []
@@ -806,6 +863,7 @@ const loadSlotsForDate = async (date) => {
     
     // Проверяем кэш
     if (slotsCache.value.has(dateString)) {
+      console.log(`Cache HIT for ${dateString}. Slots:`, slotsCache.value.get(dateString).length);
       return slotsCache.value.get(dateString)
     }
 
@@ -823,7 +881,7 @@ const loadSlotsForDate = async (date) => {
     }
     
     const slotsData = await response.json()
-    console.log('Received slots for', dateString, ':', slotsData.slots.length)
+    console.log('Received slots for', dateString, ':', slotsData.slots.length, 'Slots data:', slotsData.slots);
     
     // Сохраняем в кэш
     slotsCache.value.set(dateString, slotsData.slots)
@@ -845,13 +903,21 @@ const loadSlotsForVisibleDates = async () => {
     
     // Дни текущего месяца
     for (let i = 0; i < 42; i++) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1 - currentMonth.getDay() + i + 1)
+      const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const startCalendarDate = new Date(firstDayOfMonth);
+      startCalendarDate.setDate(startCalendarDate.getDate() - (firstDayOfMonth.getDay() === 0 ? 6 : firstDayOfMonth.getDay() - 1));
+      const date = new Date(startCalendarDate);
+      date.setDate(startCalendarDate.getDate() + i);
       dates.push(date)
     }
     
     // Дни следующего месяца
     for (let i = 0; i < 42; i++) {
-      const date = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1 - nextMonth.getDay() + i + 1)
+      const firstDayOfNextMonth = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1);
+      const startCalendarDateNextMonth = new Date(firstDayOfNextMonth);
+      startCalendarDateNextMonth.setDate(startCalendarDateNextMonth.getDate() - (firstDayOfNextMonth.getDay() === 0 ? 6 : firstDayOfNextMonth.getDay() - 1));
+      const date = new Date(startCalendarDateNextMonth);
+      date.setDate(startCalendarDateNextMonth.getDate() + i);
       dates.push(date)
     }
     
@@ -866,6 +932,15 @@ const loadSlotsForVisibleDates = async () => {
   } catch (error) {
     console.error('Error loading slots for visible dates:', error)
   }
+}
+
+// Добавляем функцию для принудительного обновления календаря
+const refreshCalendar = async () => {
+  console.log('Refreshing calendar...')
+  slotsCache.value.clear()
+  await loadWorkingSchedules() // Перезагружаем расписание
+  await loadSlotsForVisibleDates()
+  console.log('Calendar refreshed')
 }
 
 const editService = (service) => {
@@ -1035,10 +1110,12 @@ const closeModal = () => {
 // Calendar functions
 const previousMonth = () => {
   currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
+  loadSlotsForVisibleDates()
 }
 
 const nextMonth = () => {
   currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
+  loadSlotsForVisibleDates()
 }
 
 const selectDate = async (date) => {
@@ -1139,60 +1216,63 @@ const handleNotificationClick = () => {
 const getDateBgClass = (date) => {
   if (date.isPast) return 'bg-gray-50 border-gray-200'
   
-  switch (date.loadLevel) {
-    case 'non_working':
-      return 'bg-gray-100 border-gray-300 cursor-not-allowed'
-    case 'free':
-      return 'bg-green-50 border-green-200 hover:bg-green-100'
-    case 'light':
-      return 'bg-lime-50 border-lime-200 hover:bg-lime-100'
-    case 'moderate':
-      return 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
-    case 'busy':
-      return 'bg-orange-50 border-orange-200 hover:bg-orange-100'
-    case 'full':
-      return 'bg-red-50 border-red-200 hover:bg-red-100'
-    default:
-      return 'bg-white border-gray-200 hover:bg-gray-50'
+  if (date.loadLevel === 'non_working') {
+    return 'bg-gray-100 border-gray-300 cursor-not-allowed' // Выходной
   }
+  
+  // Если день помечен как свободный в loadLevel, то зеленый
+  if (date.loadLevel === 'free') {
+    return 'bg-green-50 border-green-200 hover:bg-green-100' // Зеленый для свободного рабочего дня
+  }
+  
+  // Если слотов нет совсем (для рабочего дня) и это не free loadLevel
+  if (date.totalSlots === 0) {
+    return 'bg-red-50 border-red-200 hover:bg-red-100' // Красный (нет слотов)
+  }
+
+  // Если есть слоты (даже 1+), то зеленый
+  return 'bg-green-50 border-green-200 hover:bg-green-100' // Зеленый (есть записи или свободно)
 }
 
 const getDateBorderClass = (date) => {
   if (date.isPast) return 'border-gray-200'
   
-  switch (date.loadLevel) {
-    case 'non_working':
-      return 'border-gray-300'
-    case 'free':
-      return 'border-green-200'
-    case 'light':
-      return 'border-lime-200'
-    case 'moderate':
-      return 'border-yellow-200'
-    case 'busy':
-      return 'border-orange-200'
-    case 'full':
-      return 'border-red-200'
-    default:
-      return 'border-gray-200'
+  if (date.loadLevel === 'non_working') {
+    return 'border-gray-300' // Выходной
   }
+  
+  // Если день помечен как свободный в loadLevel, то зеленый
+  if (date.loadLevel === 'free') {
+    return 'border-green-200' // Зеленый для свободного рабочего дня
+  }
+  
+  // Если слотов нет совсем (для рабочего дня) и это не free loadLevel
+  if (date.totalSlots === 0) {
+    return 'border-red-200' // Красный (нет слотов)
+  }
+
+  // Если есть слоты (даже 1+), то зеленый
+  return 'border-green-200' // Зеленый (есть записи или свободно)
 }
 
 const getBookingDotClass = (date) => {
-  switch (date.loadLevel) {
-    case 'non_working':
-      return 'bg-gray-400'
-    case 'light':
-      return 'bg-lime-400'
-    case 'moderate':
-      return 'bg-yellow-400'
-    case 'busy':
-      return 'bg-orange-400'
-    case 'full':
-      return 'bg-red-400'
-    default:
-      return 'bg-gray-400'
+  if (date.loadLevel === 'non_working') {
+    return 'bg-gray-400' // Черная точка для выходного
   }
+  
+  // Если день помечен как свободный в loadLevel, то зеленый
+  if (date.loadLevel === 'free') {
+    return 'bg-green-400' // Зеленая точка для свободного рабочего дня
+  }
+  
+  // Если слотов нет совсем (для рабочего дня) и это не free loadLevel
+  if (date.totalSlots === 0) {
+    return 'bg-red-400' // Красная точка для дня без слотов
+  }
+
+  // Если есть записи (даже 1 слот) или день свободен (есть слоты, но нет записей)
+  // Всегда зеленая точка для рабочих дней с хоть какими-то слотами
+  return 'bg-green-400'
 }
 
 // Slot helper functions
@@ -1240,5 +1320,17 @@ const getSlotStatusText = (slot) => {
 // Navigation function
 const goToScheduleSettings = () => {
   router.push('/master/schedule')
+}
+
+// Добавляем обработчик возврата из настроек
+const handleReturnFromSettings = () => {
+  refreshCalendar()
+}
+
+// Добавляем обработчик для обновления календаря при изменении расписания
+const handleScheduleUpdate = async () => {
+  console.log('Schedule updated, refreshing calendar...')
+  await refreshCalendar()
+  console.log('Calendar updated after schedule change')
 }
 </script> 
