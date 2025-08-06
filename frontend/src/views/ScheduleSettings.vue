@@ -223,6 +223,8 @@ const loadWorkingSchedules = async () => {
     
     const schedulesData = await response.json()
     
+    console.log('Received schedules:', schedulesData)
+    
     // Add day names and ensure all days are present
     workingSchedules.value = schedulesData.map(schedule => ({
       ...schedule,
@@ -231,6 +233,29 @@ const loadWorkingSchedules = async () => {
     
     // Sort by day of week
     workingSchedules.value.sort((a, b) => a.day_of_week - b.day_of_week)
+    
+    // Заполняем дефолтные значения для рабочих дней без времени
+    workingSchedules.value.forEach(schedule => {
+      if (schedule.is_working) {
+        if (!schedule.start_time || schedule.start_time === '--:--') {
+          schedule.start_time = '09:00'
+        }
+        if (!schedule.end_time || schedule.end_time === '--:--') {
+          schedule.end_time = '19:00'
+        }
+        if (!schedule.lunch_start || schedule.lunch_start === '--:--') {
+          schedule.lunch_start = '13:00'
+        }
+        if (!schedule.lunch_end || schedule.lunch_end === '--:--') {
+          schedule.lunch_end = '14:00'
+        }
+        if (!schedule.slot_duration_minutes) {
+          schedule.slot_duration_minutes = 60
+        }
+      }
+    })
+    
+    console.log('Processed schedules:', workingSchedules.value)
   } catch (error) {
     console.error('Error loading working schedules:', error)
     workingSchedules.value = []
@@ -249,13 +274,14 @@ const saveSchedule = async () => {
 
     // Update each schedule
     const updatePromises = workingSchedules.value.map(async (schedule) => {
+      // Фильтруем пустые значения
       const scheduleData = {
         working_schedule: {
           is_working: schedule.is_working,
-          start_time: schedule.start_time,
-          end_time: schedule.end_time,
-          lunch_start: schedule.lunch_start,
-          lunch_end: schedule.lunch_end,
+          start_time: schedule.start_time && schedule.start_time !== '--:--' ? schedule.start_time : null,
+          end_time: schedule.end_time && schedule.end_time !== '--:--' ? schedule.end_time : null,
+          lunch_start: schedule.lunch_start && schedule.lunch_start !== '--:--' ? schedule.lunch_start : null,
+          lunch_end: schedule.lunch_end && schedule.lunch_end !== '--:--' ? schedule.lunch_end : null,
           slot_duration_minutes: schedule.slot_duration_minutes
         }
       }
@@ -353,12 +379,24 @@ const goBackToDashboard = () => {
 
 // Auto-fill default values when enabling working day
 const handleWorkingDayChange = (schedule) => {
+  console.log('Working day changed:', schedule)
   if (schedule.is_working) {
-    schedule.start_time = schedule.start_time || '09:00'
-    schedule.end_time = schedule.end_time || '19:00'
-    schedule.lunch_start = schedule.lunch_start || '13:00'
-    schedule.lunch_end = schedule.lunch_end || '14:00'
-    schedule.slot_duration_minutes = schedule.slot_duration_minutes || 60
+    if (!schedule.start_time || schedule.start_time === '--:--') {
+      schedule.start_time = '09:00'
+    }
+    if (!schedule.end_time || schedule.end_time === '--:--') {
+      schedule.end_time = '19:00'
+    }
+    if (!schedule.lunch_start || schedule.lunch_start === '--:--') {
+      schedule.lunch_start = '13:00'
+    }
+    if (!schedule.lunch_end || schedule.lunch_end === '--:--') {
+      schedule.lunch_end = '14:00'
+    }
+    if (!schedule.slot_duration_minutes) {
+      schedule.slot_duration_minutes = 60
+    }
+    console.log('Updated schedule:', schedule)
   }
 }
 </script> 
