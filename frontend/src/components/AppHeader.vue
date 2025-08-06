@@ -17,24 +17,26 @@
           <button @click="scrollToSection('calendar')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Календарь</button>
           <button @click="scrollToSection('bookings')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Записи</button>
           <button @click="scrollToSection('services')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Услуги</button>
-          <span v-if="pendingBookingsCount > 0" class="relative">
-            <button @click="handleNotificationClick" class="text-orange-600 hover:text-orange-700 font-medium transition-colors">
-              Уведомления
-              <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {{ pendingBookingsCount }}
-              </span>
-            </button>
-          </span>
         </nav>
 
         <!-- Actions -->
         <div class="flex items-center space-x-6">
           <div class="hidden md:flex items-center space-x-4">
-            <div class="w-5 h-5 text-gray-600">
-              <svg fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-              </svg>
+            <!-- Notifications Bell -->
+            <div class="relative">
+              <button v-if="showNavigation && pendingBookingsCount > 0" @click="handleNotificationClick" class="w-6 h-6 text-gray-600 hover:text-orange-600 transition-colors">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                </svg>
+                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {{ pendingBookingsCount }}
+                </span>
+              </button>
+              <div v-else-if="showNavigation" class="w-6 h-6 text-gray-400">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                </svg>
+              </div>
             </div>
             <span class="text-gray-600 font-medium">{{ user?.first_name }} {{ user?.last_name }}</span>
           </div>
