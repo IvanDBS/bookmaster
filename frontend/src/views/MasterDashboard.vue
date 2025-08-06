@@ -795,6 +795,8 @@ const loadSlotsForDate = async (date) => {
       return slotsCache.value.get(dateString)
     }
 
+    console.log('Loading slots for date:', dateString)
+
     const response = await fetch(`http://localhost:3000/api/v1/time_slots?date=${dateString}`, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
@@ -802,17 +804,19 @@ const loadSlotsForDate = async (date) => {
     })
     
     if (!response.ok) {
+      console.error('Failed to fetch slots for', dateString, 'Status:', response.status)
       throw new Error('Failed to fetch time slots')
     }
     
     const slotsData = await response.json()
+    console.log('Received slots for', dateString, ':', slotsData.slots.length)
     
     // Сохраняем в кэш
     slotsCache.value.set(dateString, slotsData.slots)
     
     return slotsData.slots
   } catch (error) {
-    console.error('Error loading time slots:', error)
+    console.error('Error loading time slots for', date.toISOString().split('T')[0], ':', error)
     return []
   }
 }
@@ -843,6 +847,8 @@ const loadSlotsForVisibleDates = async () => {
     
     // Загружаем слоты для всех дат параллельно
     await Promise.all(uniqueDates.map(date => loadSlotsForDate(date)))
+    
+    console.log('Loaded slots for dates:', uniqueDates.length)
   } catch (error) {
     console.error('Error loading slots for visible dates:', error)
   }
