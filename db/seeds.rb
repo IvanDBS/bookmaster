@@ -1,79 +1,313 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
+# This file should contain all the record creation needed to seed the database with its default values.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-Rails.logger.info "Creating test masters and services..."
+puts "Clearing existing data..."
+User.destroy_all
+Service.destroy_all
+Booking.destroy_all
 
-# Create masters
+puts "Creating masters..."
+
+# Create masters with services
 masters = [
   {
-    email: 'anna.manicure@example.com',
+    email: 'anna@example.com',
     password: 'password123',
     first_name: 'Анна',
     last_name: 'Петрова',
-    phone: '+7 (999) 123-45-67',
+    phone: '+7 (999) 111-11-11',
     role: 'master',
-    bio: 'Профессиональный мастер маникюра с 5-летним опытом. Специализируюсь на классическом и дизайн-маникюре.',
+    bio: 'Профессиональный мастер маникюра с 5-летним опытом',
     address: 'ул. Тверская, 15, Москва'
   },
   {
-    email: 'maria.pedicure@example.com',
+    email: 'maria@example.com',
     password: 'password123',
     first_name: 'Мария',
     last_name: 'Сидорова',
-    phone: '+7 (999) 234-56-78',
+    phone: '+7 (999) 222-22-22',
     role: 'master',
-    bio: 'Мастер педикюра с медицинским образованием. Выполняю аппаратный и классический педикюр.',
+    bio: 'Специалист по педикюру и уходу за ногами',
     address: 'ул. Арбат, 25, Москва'
   },
   {
-    email: 'elena.massage@example.com',
+    email: 'elena@example.com',
     password: 'password123',
     first_name: 'Елена',
     last_name: 'Козлова',
-    phone: '+7 (999) 345-67-89',
+    phone: '+7 (999) 333-33-33',
     role: 'master',
-    bio: 'Дипломированный массажист с 8-летним стажем. ' \
-         'Специализируюсь на классическом, расслабляющем и лечебном массаже.',
-    address: 'Ленинский проспект, 45, Москва'
+    bio: 'Массажист с медицинским образованием',
+    address: 'ул. Новый Арбат, 10, Москва'
+  },
+  {
+    email: 'irina@example.com',
+    password: 'password123',
+    first_name: 'Ирина',
+    last_name: 'Волкова',
+    phone: '+7 (999) 444-44-44',
+    role: 'master',
+    bio: 'Мастер по наращиванию ресниц и бровей',
+    address: 'ул. Покровка, 8, Москва'
+  },
+  {
+    email: 'svetlana@example.com',
+    password: 'password123',
+    first_name: 'Светлана',
+    last_name: 'Морозова',
+    phone: '+7 (999) 555-55-55',
+    role: 'master',
+    bio: 'Косметолог и специалист по уходу за лицом',
+    address: 'ул. Мясницкая, 20, Москва'
   }
 ]
 
 masters.each do |master_data|
-  user = User.find_or_create_by(email: master_data[:email]) do |u|
-    u.assign_attributes(master_data)
-  end
-  
-  Rails.logger.info "Created master: #{user.full_name}"
-  
-  # Create services for each master
-  case user.email
-  when 'anna.manicure@example.com'
-    services = [
-      { name: 'Классический маникюр', description: 'Базовый маникюр с покрытием', price: 1500, duration: 60 },
-      { name: 'Дизайн-маникюр', description: 'Маникюр с художественным дизайном', price: 2500, duration: 90 },
-      { name: 'SPA-маникюр', description: 'Маникюр с уходом за кожей рук', price: 2000, duration: 75 }
-    ]
-  when 'maria.pedicure@example.com'
-    services = [
-      { name: 'Классический педикюр', description: 'Базовый педикюр с покрытием', price: 2000, duration: 60 },
-      { name: 'Аппаратный педикюр', description: 'Педикюр с использованием аппарата', price: 3000, duration: 90 },
-      { name: 'SPA-педикюр', description: 'Педикюр с уходом за кожей ног', price: 3500, duration: 120 }
-    ]
-  when 'elena.massage@example.com'
-    services = [
-      { name: 'Классический массаж', description: 'Расслабляющий массаж всего тела', price: 3000, duration: 60 },
-      { name: 'Массаж спины', description: 'Специализированный массаж спины', price: 2000, duration: 45 },
-      { name: 'SPA-массаж', description: 'Массаж с ароматическими маслами', price: 4000, duration: 90 }
-    ]
-  end
+  user = User.create!(master_data)
+  puts "Created master: #{user.full_name}"
+end
+
+puts "Creating services for masters..."
+
+# Services for Anna (manicure)
+anna = User.find_by(email: 'anna@example.com')
+if anna
+  services = [
+    { name: 'Классический маникюр', description: 'Базовый маникюр с покрытием гель-лаком', price: 1500, duration: 60 },
+    { name: 'Дизайн-маникюр', description: 'Маникюр с художественным дизайном', price: 2500, duration: 90 },
+    { name: 'SPA-маникюр', description: 'Маникюр с уходом за кожей рук', price: 2000, duration: 75 },
+    { name: 'Наращивание ногтей', description: 'Наращивание акрилом или гелем', price: 3500, duration: 120 }
+  ]
   
   services.each do |service_data|
-    service = user.services.find_or_create_by(name: service_data[:name]) do |s|
-      s.assign_attributes(service_data)
-    end
-    Rails.logger.info "  - Created service: #{service.name} (#{service.formatted_price})"
+    service = anna.services.create!(service_data)
+    puts "Created service for Anna: #{service.name}"
   end
 end
 
-Rails.logger.info "Seeds completed successfully!"
+# Services for Maria (pedicure)
+maria = User.find_by(email: 'maria@example.com')
+if maria
+  services = [
+    { name: 'Классический педикюр', description: 'Базовый педикюр с покрытием', price: 2000, duration: 60 },
+    { name: 'Аппаратный педикюр', description: 'Педикюр с использованием аппарата', price: 3000, duration: 90 },
+    { name: 'SPA-педикюр', description: 'Педикюр с уходом за кожей ног', price: 3500, duration: 120 },
+    { name: 'Парафинотерапия', description: 'Уход за ногами с парафином', price: 1500, duration: 45 }
+  ]
+  
+  services.each do |service_data|
+    service = maria.services.create!(service_data)
+    puts "Created service for Maria: #{service.name}"
+  end
+end
+
+# Services for Elena (massage)
+elena = User.find_by(email: 'elena@example.com')
+if elena
+  services = [
+    { name: 'Классический массаж', description: 'Расслабляющий массаж всего тела', price: 3000, duration: 60 },
+    { name: 'Массаж спины', description: 'Специализированный массаж спины', price: 2000, duration: 45 },
+    { name: 'SPA-массаж', description: 'Массаж с ароматическими маслами', price: 4000, duration: 90 },
+    { name: 'Антицеллюлитный массаж', description: 'Массаж для коррекции фигуры', price: 3500, duration: 75 }
+  ]
+  
+  services.each do |service_data|
+    service = elena.services.create!(service_data)
+    puts "Created service for Elena: #{service.name}"
+  end
+end
+
+# Services for Irina (eyelashes)
+irina = User.find_by(email: 'irina@example.com')
+if irina
+  services = [
+    { name: 'Наращивание ресниц', description: 'Классическое наращивание ресниц', price: 3000, duration: 120 },
+    { name: 'Наращивание ресниц 2D', description: 'Объемное наращивание ресниц', price: 4000, duration: 150 },
+    { name: 'Коррекция бровей', description: 'Коррекция и окрашивание бровей', price: 1500, duration: 45 },
+    { name: 'Ламинирование ресниц', description: 'Ламинирование и окрашивание ресниц', price: 2500, duration: 60 }
+  ]
+  
+  services.each do |service_data|
+    service = irina.services.create!(service_data)
+    puts "Created service for Irina: #{service.name}"
+  end
+end
+
+# Services for Svetlana (cosmetology)
+svetlana = User.find_by(email: 'svetlana@example.com')
+if svetlana
+  services = [
+    { name: 'Чистка лица', description: 'Классическая чистка лица', price: 2500, duration: 60 },
+    { name: 'Маска для лица', description: 'Увлажняющая маска для лица', price: 1500, duration: 30 },
+    { name: 'Пилинг лица', description: 'Химический пилинг лица', price: 3000, duration: 45 },
+    { name: 'Массаж лица', description: 'Омолаживающий массаж лица', price: 2000, duration: 40 }
+  ]
+  
+  services.each do |service_data|
+    service = svetlana.services.create!(service_data)
+    puts "Created service for Svetlana: #{service.name}"
+  end
+end
+
+puts "Creating clients..."
+
+# Create clients
+clients = [
+  {
+    email: 'olga@example.com',
+    password: 'password123',
+    first_name: 'Ольга',
+    last_name: 'Иванова',
+    phone: '+7 (999) 666-66-66',
+    role: 'client',
+    bio: 'Люблю качественный маникюр и массаж',
+    address: 'ул. Покровка, 10, Москва'
+  },
+  {
+    email: 'natalia@example.com',
+    password: 'password123',
+    first_name: 'Наталья',
+    last_name: 'Смирнова',
+    phone: '+7 (999) 777-77-77',
+    role: 'client',
+    bio: 'Регулярно делаю педикюр и массаж',
+    address: 'ул. Мясницкая, 20, Москва'
+  },
+  {
+    email: 'test@example.com',
+    password: 'password123',
+    first_name: 'Тест',
+    last_name: 'Пользователь',
+    phone: '+7 (999) 123-45-67',
+    role: 'client',
+    bio: 'Тестовый пользователь',
+    address: 'ул. Тестовая, 1, Москва'
+  },
+  {
+    email: 'elena_client@example.com',
+    password: 'password123',
+    first_name: 'Елена',
+    last_name: 'Кузнецова',
+    phone: '+7 (999) 888-88-88',
+    role: 'client',
+    bio: 'Постоянный клиент массажиста',
+    address: 'ул. Тверская, 5, Москва'
+  },
+  {
+    email: 'anna_client@example.com',
+    password: 'password123',
+    first_name: 'Анна',
+    last_name: 'Соколова',
+    phone: '+7 (999) 999-99-99',
+    role: 'client',
+    bio: 'Любительница косметологических процедур',
+    address: 'ул. Арбат, 15, Москва'
+  }
+]
+
+clients.each do |client_data|
+  user = User.create!(client_data)
+  puts "Created client: #{user.full_name}"
+end
+
+puts "Creating bookings..."
+
+# Create bookings
+if User.exists?(role: 'master') && User.exists?(role: 'client')
+  masters = User.where(role: 'master')
+  clients = User.where(role: 'client')
+  
+  # Get some services
+  services = Service.all
+  
+  # Create bookings for the next few days
+  (1..14).each do |day_offset|
+    masters.each_with_index do |master, master_index|
+      master.services.each_with_index do |service, service_index|
+        client = clients[master_index % clients.length]
+        
+        # Добавляем больше интервала между записями
+        start_time = day_offset.days.from_now + (10 + service_index * 3).hours
+        end_time = start_time + service.duration.minutes
+        
+        # Проверяем, нет ли конфликта
+        conflicting_booking = Booking.where(
+          user: master,
+          start_time: start_time..end_time
+        ).or(
+          Booking.where(
+            user: master,
+            end_time: start_time..end_time
+          )
+        ).first
+        
+        unless conflicting_booking
+          booking = Booking.create!(
+            user: master,
+            service: service,
+            start_time: start_time,
+            end_time: end_time,
+            client_name: client.full_name,
+            client_email: client.email,
+            client_phone: client.phone,
+            status: ['pending', 'confirmed', 'cancelled'].sample
+          )
+          
+          puts "Created booking: #{client.full_name} -> #{master.full_name} (#{service.name}) on #{start_time.strftime('%d.%m.%Y %H:%M')}"
+        else
+          puts "Skipped booking due to time conflict: #{client.full_name} -> #{master.full_name} (#{service.name})"
+        end
+      end
+    end
+  end
+  
+  # Добавляем дополнительные записи для Анны Петровой
+  anna = User.find_by(email: 'anna@example.com')
+  if anna
+    anna_services = anna.services
+    clients.each do |client|
+      # Создаем записи на сегодня и завтра для Анны
+      [0, 1].each do |day_offset|
+        anna_services.each_with_index do |service, index|
+          # Увеличиваем интервал между записями
+          start_time = day_offset.days.from_now + (9 + index * 4).hours
+          end_time = start_time + service.duration.minutes
+          
+          # Проверяем конфликт
+          conflicting_booking = Booking.where(
+            user: anna,
+            start_time: start_time..end_time
+          ).or(
+            Booking.where(
+              user: anna,
+              end_time: start_time..end_time
+            )
+          ).first
+          
+          unless conflicting_booking
+            booking = Booking.create!(
+              user: anna,
+              service: service,
+              start_time: start_time,
+              end_time: end_time,
+              client_name: client.full_name,
+              client_email: client.email,
+              client_phone: client.phone,
+              status: ['pending', 'confirmed'].sample
+            )
+            
+            puts "Created additional booking for Anna: #{client.full_name} -> #{service.name} on #{start_time.strftime('%d.%m.%Y %H:%M')}"
+          else
+            puts "Skipped additional booking for Anna due to conflict: #{client.full_name} -> #{service.name}"
+          end
+        end
+      end
+    end
+  end
+end
+
+puts "Seeds completed successfully!"
+puts "Created #{User.where(role: 'master').count} masters"
+puts "Created #{User.where(role: 'client').count} clients"
+puts "Created #{Service.count} services"
+puts "Created #{Booking.count} bookings"
