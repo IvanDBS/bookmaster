@@ -1229,4 +1229,17 @@ const getSlotStatusText = (slot) => {
 const goToScheduleSettings = () => {
   router.push('/master/schedule')
 }
+
+// Header navigation handlers
+const handleScrollToSection = (sectionId) => {
+  const element = document.getElementById(sectionId)
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
+const handleNotificationClick = () => {
+  // Scroll to bookings section when notification is clicked
+  handleScrollToSection('bookings')
+}
 </script> 

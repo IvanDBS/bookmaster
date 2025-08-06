@@ -7,10 +7,20 @@
     <div class="max-w-4xl mx-auto px-6 py-8 mt-20">
       <!-- Welcome Section -->
       <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">
-          Настройки расписания
-        </h2>
-        <p class="text-gray-600">Управляйте своим рабочим временем и выходными днями</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">
+              Настройки расписания
+            </h2>
+            <p class="text-gray-600">Управляйте своим рабочим временем и выходными днями</p>
+          </div>
+          <button 
+            @click="goBackToDashboard"
+            class="bg-gray-600 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+          >
+            ← Назад к календарю
+          </button>
+        </div>
       </div>
 
       <!-- Working Schedule Form -->
@@ -167,10 +177,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 // Reactive data
 const workingSchedules = ref([])
@@ -314,5 +326,10 @@ const setFullWeekSchedule = () => {
     schedule.lunch_end = '14:00'
     schedule.slot_duration_minutes = 60
   })
+}
+
+// Navigation function
+const goBackToDashboard = () => {
+  router.push('/master/dashboard')
 }
 </script> 
