@@ -72,8 +72,12 @@
                        !date.isSelected && !date.isToday && getDateBorderClass(date)
                      ]">
                   <span class="text-xs font-medium">{{ date.day }}</span>
+                  <!-- Индикатор нерабочего дня (приоритет выше загруженности) -->
+                  <div v-if="date.loadLevel === 'non_working' && !date.isSelected" class="mt-0.5">
+                    <span class="text-xs text-gray-400">⚫</span>
+                  </div>
                   <!-- Индикатор загруженности на основе слотов -->
-                  <div v-if="date.totalSlots > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
+                  <div v-else-if="date.totalSlots > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
                     <div v-for="n in Math.min(date.bookedSlots, 4)" :key="n" 
                          :class="[
                            'w-1 h-1 rounded-full',
@@ -81,10 +85,6 @@
                          ]">
                     </div>
                     <span v-if="date.bookedSlots > 4" class="text-xs font-bold">+</span>
-                  </div>
-                  <!-- Индикатор нерабочего дня -->
-                  <div v-else-if="date.loadLevel === 'non_working' && !date.isSelected" class="mt-0.5">
-                    <span class="text-xs text-gray-400">⚫</span>
                   </div>
                 </div>
               </div>
@@ -124,8 +124,12 @@
                        !date.isSelected && !date.isToday && getDateBorderClass(date)
                      ]">
                   <span class="text-xs font-medium">{{ date.day }}</span>
+                  <!-- Индикатор нерабочего дня (приоритет выше загруженности) -->
+                  <div v-if="date.loadLevel === 'non_working' && !date.isSelected" class="mt-0.5">
+                    <span class="text-xs text-gray-400">⚫</span>
+                  </div>
                   <!-- Индикатор загруженности на основе слотов -->
-                  <div v-if="date.totalSlots > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
+                  <div v-else-if="date.totalSlots > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
                     <div v-for="n in Math.min(date.bookedSlots, 4)" :key="n" 
                          :class="[
                            'w-1 h-1 rounded-full',
@@ -133,10 +137,6 @@
                          ]">
                     </div>
                     <span v-if="date.bookedSlots > 4" class="text-xs font-bold">+</span>
-                  </div>
-                  <!-- Индикатор нерабочего дня -->
-                  <div v-else-if="date.loadLevel === 'non_working' && !date.isSelected" class="mt-0.5">
-                    <span class="text-xs text-gray-400">⚫</span>
                   </div>
                 </div>
               </div>
@@ -486,11 +486,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onActivated, computed } from 'vue'
+import { ref, onMounted, onActivated, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
 import ConfirmationModal from '../components/ConfirmationModal.vue'
+import api from '../services/api'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -640,6 +641,20 @@ const calendarDates = computed(() => {
       })
     }
     
+    // Отладка для субботы (день недели 6)
+    if (date.getDay() === 6) {
+      console.log(`Debug Saturday ${dateString}:`, {
+        daySlots: daySlots.length,
+        workSlots: workSlots.length,
+        loadLevel,
+        dayStatus,
+        scheduleForDay: scheduleForDay?.is_working,
+        totalSlots: workSlots.length,
+        isCurrentMonth: date.getMonth() === month,
+        isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString()
+      })
+    }
+    
     dates.push({
       key: date.toISOString(),
       day: date.getDate(),
@@ -739,6 +754,20 @@ const nextMonthDates = computed(() => {
       })
     }
     
+    // Отладка для субботы в следующем месяце (день недели 6)
+    if (date.getDay() === 6) {
+      console.log(`Debug Next Month Saturday ${dateString}:`, {
+        daySlots: daySlots.length,
+        workSlots: workSlots.length,
+        loadLevel,
+        dayStatus,
+        scheduleForDay: scheduleForDay?.is_working,
+        totalSlots: workSlots.length,
+        isCurrentMonth: date.getMonth() === month - 1,
+        isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString()
+      })
+    }
+    
     dates.push({
       key: date.toISOString(),
       day: date.getDate(),
@@ -766,7 +795,7 @@ onMounted(async () => {
   await loadWorkingSchedules()
   await loadServices()
   await loadServiceTypes()
-  await loadRecentBookings()
+  await loadBookings()
   await loadSlotsForVisibleDates()
   
   // Проверяем, возвращаемся ли мы из настроек расписания
@@ -1143,8 +1172,13 @@ const nextMonth = () => {
 }
 
 const selectDate = async (date) => {
+  console.log(`Selecting date: ${date.date.toDateString()}`)
   selectedDate.value = date.date
   await loadSlotsForSelectedDate(date.date)
+  
+  // Принудительное обновление для корректного отображения индикаторов
+  // Нужно для того чтобы isSelected правильно обновлялся для всех дат
+  await nextTick()
 }
 
 const loadSlotsForSelectedDate = async (date) => {
