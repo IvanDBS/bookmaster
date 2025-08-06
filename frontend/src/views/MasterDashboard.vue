@@ -55,13 +55,25 @@
                      @click="selectDate(date)"
                      class="relative"
                      :class="[
-                       'h-12 flex items-center justify-center text-sm cursor-pointer rounded-full transition-colors',
-                       date.isCurrentMonth ? 'hover:bg-gray-100' : 'text-gray-400',
-                       date.isSelected ? 'bg-blue-500 text-white' : '',
-                       date.isToday ? 'bg-gray-200 font-semibold' : '',
-                       date.isPast ? 'text-gray-400' : ''
+                       'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border',
+                       date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
+                       date.isSelected ? 'bg-blue-500 text-white border-blue-600 shadow-lg' : '',
+                       date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
+                       date.isPast ? 'text-gray-400 cursor-not-allowed' : '',
+                       !date.isSelected && !date.isToday && getDateBgClass(date),
+                       !date.isSelected && !date.isToday && getDateBorderClass(date)
                      ]">
-                  {{ date.day }}
+                  <span class="text-xs font-medium">{{ date.day }}</span>
+                  <!-- Индикатор загруженности -->
+                  <div v-if="date.totalBookings > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
+                    <div v-for="n in Math.min(date.totalBookings, 4)" :key="n" 
+                         :class="[
+                           'w-1 h-1 rounded-full',
+                           getBookingDotClass(date)
+                         ]">
+                    </div>
+                    <span v-if="date.totalBookings > 4" class="text-xs font-bold">+</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -91,14 +103,75 @@
                      @click="selectDate(date)"
                      class="relative"
                      :class="[
-                       'h-12 flex items-center justify-center text-sm cursor-pointer rounded-full transition-colors',
-                       date.isCurrentMonth ? 'hover:bg-gray-100' : 'text-gray-400',
-                       date.isSelected ? 'bg-blue-500 text-white' : '',
-                       date.isToday ? 'bg-gray-200 font-semibold' : '',
-                       date.isPast ? 'text-gray-400' : ''
+                       'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border',
+                       date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
+                       date.isSelected ? 'bg-blue-500 text-white border-blue-600 shadow-lg' : '',
+                       date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
+                       date.isPast ? 'text-gray-400 cursor-not-allowed' : '',
+                       !date.isSelected && !date.isToday && getDateBgClass(date),
+                       !date.isSelected && !date.isToday && getDateBorderClass(date)
                      ]">
-                  {{ date.day }}
+                  <span class="text-xs font-medium">{{ date.day }}</span>
+                  <!-- Индикатор загруженности -->
+                  <div v-if="date.totalBookings > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
+                    <div v-for="n in Math.min(date.totalBookings, 4)" :key="n" 
+                         :class="[
+                           'w-1 h-1 rounded-full',
+                           getBookingDotClass(date)
+                         ]">
+                    </div>
+                    <span v-if="date.totalBookings > 4" class="text-xs font-bold">+</span>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calendar Legend -->
+          <div class="mt-6 bg-gray-50 rounded-lg p-4">
+            <h5 class="font-semibold text-gray-900 mb-3">Обозначения загруженности</h5>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 bg-green-50 border border-green-200 rounded flex items-center justify-center">
+                  <div class="w-1 h-1 bg-gray-400 rounded-full opacity-0"></div>
+                </div>
+                <span class="text-gray-700">Свободен</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 bg-lime-50 border border-lime-200 rounded flex items-center justify-center">
+                  <div class="w-1 h-1 bg-lime-400 rounded-full"></div>
+                </div>
+                <span class="text-gray-700">1 запись</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 bg-yellow-50 border border-yellow-200 rounded flex items-center justify-center">
+                  <div class="flex space-x-0.5">
+                    <div class="w-1 h-1 bg-yellow-400 rounded-full"></div>
+                    <div class="w-1 h-1 bg-yellow-400 rounded-full"></div>
+                  </div>
+                </div>
+                <span class="text-gray-700">2-4 записи</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 bg-orange-50 border border-orange-200 rounded flex items-center justify-center">
+                  <div class="flex space-x-0.5">
+                    <div class="w-1 h-1 bg-orange-400 rounded-full"></div>
+                    <div class="w-1 h-1 bg-orange-400 rounded-full"></div>
+                    <div class="w-1 h-1 bg-orange-400 rounded-full"></div>
+                  </div>
+                </div>
+                <span class="text-gray-700">5-7 записей</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 bg-red-50 border border-red-200 rounded flex items-center justify-center">
+                  <div class="flex space-x-0.5">
+                    <div class="w-1 h-1 bg-red-400 rounded-full"></div>
+                    <div class="w-1 h-1 bg-red-400 rounded-full"></div>
+                    <div class="w-1 h-1 bg-red-400 rounded-full"></div>
+                    <div class="w-1 h-1 bg-red-400 rounded-full"></div>
+                  </div>
+                </div>
+                <span class="text-gray-700">8+ записей</span>
               </div>
             </div>
           </div>
@@ -423,16 +496,29 @@ const calendarDates = computed(() => {
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
     
-    // Check if this date has pending bookings
+    // Check bookings for this date
     const startOfDay = new Date(date)
     startOfDay.setHours(0, 0, 0, 0)
     const endOfDay = new Date(date)
     endOfDay.setHours(23, 59, 59, 999)
     
-    const hasPendingBookings = recentBookings.value.some(booking => {
+    const dayBookings = recentBookings.value.filter(booking => {
       const bookingDate = new Date(booking.start_time)
-      return bookingDate >= startOfDay && bookingDate <= endOfDay && booking.status === 'pending'
+      return bookingDate >= startOfDay && bookingDate <= endOfDay
     })
+    
+    const totalBookings = dayBookings.length
+    const pendingBookings = dayBookings.filter(b => b.status === 'pending').length
+    const confirmedBookings = dayBookings.filter(b => b.status === 'confirmed').length
+    
+    // Определяем уровень загруженности
+    let loadLevel = 'free' // свободен
+    if (totalBookings > 0) {
+      if (totalBookings >= 8) loadLevel = 'full' // полностью занят
+      else if (totalBookings >= 5) loadLevel = 'busy' // сильно занят
+      else if (totalBookings >= 2) loadLevel = 'moderate' // умеренно занят
+      else loadLevel = 'light' // слабо занят
+    }
     
     dates.push({
       key: date.toISOString(),
@@ -442,7 +528,12 @@ const calendarDates = computed(() => {
       isToday: date.toDateString() === today.toDateString(),
       isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString(),
       isPast: date < today,
-      hasPendingBookings: hasPendingBookings
+      hasPendingBookings: pendingBookings > 0,
+      totalBookings: totalBookings,
+      pendingBookings: pendingBookings,
+      confirmedBookings: confirmedBookings,
+      loadLevel: loadLevel,
+      dayBookings: dayBookings
     })
   }
   
@@ -464,16 +555,29 @@ const nextMonthDates = computed(() => {
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
     
-    // Check if this date has pending bookings
+    // Check bookings for this date
     const startOfDay = new Date(date)
     startOfDay.setHours(0, 0, 0, 0)
     const endOfDay = new Date(date)
     endOfDay.setHours(23, 59, 59, 999)
     
-    const hasPendingBookings = recentBookings.value.some(booking => {
+    const dayBookings = recentBookings.value.filter(booking => {
       const bookingDate = new Date(booking.start_time)
-      return bookingDate >= startOfDay && bookingDate <= endOfDay && booking.status === 'pending'
+      return bookingDate >= startOfDay && bookingDate <= endOfDay
     })
+    
+    const totalBookings = dayBookings.length
+    const pendingBookings = dayBookings.filter(b => b.status === 'pending').length
+    const confirmedBookings = dayBookings.filter(b => b.status === 'confirmed').length
+    
+    // Определяем уровень загруженности
+    let loadLevel = 'free' // свободен
+    if (totalBookings > 0) {
+      if (totalBookings >= 8) loadLevel = 'full' // полностью занят
+      else if (totalBookings >= 5) loadLevel = 'busy' // сильно занят
+      else if (totalBookings >= 2) loadLevel = 'moderate' // умеренно занят
+      else loadLevel = 'light' // слабо занят
+    }
     
     dates.push({
       key: date.toISOString(),
@@ -483,7 +587,12 @@ const nextMonthDates = computed(() => {
       isToday: date.toDateString() === today.toDateString(),
       isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString(),
       isPast: date < today,
-      hasPendingBookings: hasPendingBookings
+      hasPendingBookings: pendingBookings > 0,
+      totalBookings: totalBookings,
+      pendingBookings: pendingBookings,
+      confirmedBookings: confirmedBookings,
+      loadLevel: loadLevel,
+      dayBookings: dayBookings
     })
   }
   
@@ -798,4 +907,58 @@ const handleNotificationClick = () => {
   handleScrollToSection('bookings')
   setBookingFilter('pending')
 };
+
+// Calendar styling methods
+const getDateBgClass = (date) => {
+  if (date.isPast) return 'bg-gray-50 border-gray-200'
+  
+  switch (date.loadLevel) {
+    case 'free':
+      return 'bg-green-50 border-green-200 hover:bg-green-100'
+    case 'light':
+      return 'bg-lime-50 border-lime-200 hover:bg-lime-100'
+    case 'moderate':
+      return 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
+    case 'busy':
+      return 'bg-orange-50 border-orange-200 hover:bg-orange-100'
+    case 'full':
+      return 'bg-red-50 border-red-200 hover:bg-red-100'
+    default:
+      return 'bg-white border-gray-200 hover:bg-gray-50'
+  }
+}
+
+const getDateBorderClass = (date) => {
+  if (date.isPast) return 'border-gray-200'
+  
+  switch (date.loadLevel) {
+    case 'free':
+      return 'border-green-200'
+    case 'light':
+      return 'border-lime-200'
+    case 'moderate':
+      return 'border-yellow-200'
+    case 'busy':
+      return 'border-orange-200'
+    case 'full':
+      return 'border-red-200'
+    default:
+      return 'border-gray-200'
+  }
+}
+
+const getBookingDotClass = (date) => {
+  switch (date.loadLevel) {
+    case 'light':
+      return 'bg-lime-400'
+    case 'moderate':
+      return 'bg-yellow-400'
+    case 'busy':
+      return 'bg-orange-400'
+    case 'full':
+      return 'bg-red-400'
+    default:
+      return 'bg-gray-400'
+  }
+}
 </script> 
