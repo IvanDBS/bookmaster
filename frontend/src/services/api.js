@@ -53,6 +53,14 @@ class ApiService {
     return await response.json()
   }
 
+  async getServiceTypes() {
+    const response = await fetch(`${this.baseURL}/services/service_types`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch service types')
+    }
+    return await response.json()
+  }
+
   async createService(serviceData, token) {
     const response = await fetch(`${this.baseURL}/services`, {
       method: 'POST',

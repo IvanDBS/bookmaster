@@ -17,7 +17,11 @@ Rails.application.routes.draw do
       resources :users, only: [:index, :show, :update]
       
       # Services routes
-      resources :services, only: [:index, :show, :create, :update, :destroy]
+      resources :services, only: [:index, :show, :create, :update, :destroy] do
+        collection do
+          get :service_types
+        end
+      end
       
       # Bookings routes
       resources :bookings, only: [:index, :show, :create] do

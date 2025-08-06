@@ -75,83 +75,77 @@ end
 
 puts "Creating services for masters..."
 
-# Services for Anna (manicure)
+# Services for Anna (manicure specialist)
 anna = User.find_by(email: 'anna@example.com')
 if anna
   services = [
-    { name: 'Классический маникюр', description: 'Базовый маникюр с покрытием гель-лаком', price: 1500, duration: 60 },
-    { name: 'Дизайн-маникюр', description: 'Маникюр с художественным дизайном', price: 2500, duration: 90 },
-    { name: 'SPA-маникюр', description: 'Маникюр с уходом за кожей рук', price: 2000, duration: 75 },
-    { name: 'Наращивание ногтей', description: 'Наращивание акрилом или гелем', price: 3500, duration: 120 }
+    { name: 'Классический маникюр', description: 'Базовый маникюр с покрытием гель-лаком', price: 1500, duration: 60, service_type: 'маникюр' },
+    { name: 'Дизайн-маникюр', description: 'Маникюр с художественным дизайном', price: 2500, duration: 90, service_type: 'маникюр' },
+    { name: 'SPA-маникюр', description: 'Маникюр с уходом за кожей рук', price: 2000, duration: 75, service_type: 'маникюр' }
   ]
   
   services.each do |service_data|
     service = anna.services.create!(service_data)
-    puts "Created service for Anna: #{service.name}"
+    puts "Created service for Anna: #{service.name} (#{service.service_type})"
   end
 end
 
-# Services for Maria (pedicure)
+# Services for Maria (pedicure specialist)
 maria = User.find_by(email: 'maria@example.com')
 if maria
   services = [
-    { name: 'Классический педикюр', description: 'Базовый педикюр с покрытием', price: 2000, duration: 60 },
-    { name: 'Аппаратный педикюр', description: 'Педикюр с использованием аппарата', price: 3000, duration: 90 },
-    { name: 'SPA-педикюр', description: 'Педикюр с уходом за кожей ног', price: 3500, duration: 120 },
-    { name: 'Парафинотерапия', description: 'Уход за ногами с парафином', price: 1500, duration: 45 }
+    { name: 'Классический педикюр', description: 'Базовый педикюр с покрытием', price: 2000, duration: 60, service_type: 'педикюр' },
+    { name: 'Аппаратный педикюр', description: 'Педикюр с использованием аппарата', price: 3000, duration: 90, service_type: 'педикюр' },
+    { name: 'SPA-педикюр', description: 'Педикюр с уходом за кожей ног', price: 3500, duration: 120, service_type: 'педикюр' }
   ]
   
   services.each do |service_data|
     service = maria.services.create!(service_data)
-    puts "Created service for Maria: #{service.name}"
+    puts "Created service for Maria: #{service.name} (#{service.service_type})"
   end
 end
 
-# Services for Elena (massage)
+# Services for Elena (massage specialist)
 elena = User.find_by(email: 'elena@example.com')
 if elena
   services = [
-    { name: 'Классический массаж', description: 'Расслабляющий массаж всего тела', price: 3000, duration: 60 },
-    { name: 'Массаж спины', description: 'Специализированный массаж спины', price: 2000, duration: 45 },
-    { name: 'SPA-массаж', description: 'Массаж с ароматическими маслами', price: 4000, duration: 90 },
-    { name: 'Антицеллюлитный массаж', description: 'Массаж для коррекции фигуры', price: 3500, duration: 75 }
+    { name: 'Классический массаж', description: 'Расслабляющий массаж всего тела', price: 3000, duration: 60, service_type: 'массаж' },
+    { name: 'Массаж спины', description: 'Специализированный массаж спины', price: 2000, duration: 45, service_type: 'массаж' },
+    { name: 'SPA-массаж', description: 'Массаж с ароматическими маслами', price: 4000, duration: 90, service_type: 'массаж' }
   ]
   
   services.each do |service_data|
     service = elena.services.create!(service_data)
-    puts "Created service for Elena: #{service.name}"
+    puts "Created service for Elena: #{service.name} (#{service.service_type})"
   end
 end
 
-# Services for Irina (eyelashes)
+# Update other masters to work with available service types
+# Irina - now provides manicure services
 irina = User.find_by(email: 'irina@example.com')
 if irina
   services = [
-    { name: 'Наращивание ресниц', description: 'Классическое наращивание ресниц', price: 3000, duration: 120 },
-    { name: 'Наращивание ресниц 2D', description: 'Объемное наращивание ресниц', price: 4000, duration: 150 },
-    { name: 'Коррекция бровей', description: 'Коррекция и окрашивание бровей', price: 1500, duration: 45 },
-    { name: 'Ламинирование ресниц', description: 'Ламинирование и окрашивание ресниц', price: 2500, duration: 60 }
+    { name: 'Французский маникюр', description: 'Элегантный французский маникюр', price: 1800, duration: 75, service_type: 'маникюр' },
+    { name: 'Гелевое наращивание', description: 'Наращивание ногтей гелем', price: 3000, duration: 120, service_type: 'маникюр' }
   ]
   
   services.each do |service_data|
     service = irina.services.create!(service_data)
-    puts "Created service for Irina: #{service.name}"
+    puts "Created service for Irina: #{service.name} (#{service.service_type})"
   end
 end
 
-# Services for Svetlana (cosmetology)
+# Svetlana - now provides massage services
 svetlana = User.find_by(email: 'svetlana@example.com')
 if svetlana
   services = [
-    { name: 'Чистка лица', description: 'Классическая чистка лица', price: 2500, duration: 60 },
-    { name: 'Маска для лица', description: 'Увлажняющая маска для лица', price: 1500, duration: 30 },
-    { name: 'Пилинг лица', description: 'Химический пилинг лица', price: 3000, duration: 45 },
-    { name: 'Массаж лица', description: 'Омолаживающий массаж лица', price: 2000, duration: 40 }
+    { name: 'Лимфодренажный массаж', description: 'Массаж для улучшения лимфотока', price: 3500, duration: 75, service_type: 'массаж' },
+    { name: 'Расслабляющий массаж', description: 'Антистресс массаж для релаксации', price: 2800, duration: 60, service_type: 'массаж' }
   ]
   
   services.each do |service_data|
     service = svetlana.services.create!(service_data)
-    puts "Created service for Svetlana: #{service.name}"
+    puts "Created service for Svetlana: #{service.name} (#{service.service_type})"
   end
 end
 

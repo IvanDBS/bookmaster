@@ -393,6 +393,15 @@
         <form @submit.prevent="addService">
           <div class="space-y-4">
             <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Тип услуги</label>
+              <select v-model="newService.service_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500">
+                <option value="">Выберите тип услуги</option>
+                <option v-for="serviceType in availableServiceTypes" :key="serviceType" :value="serviceType">
+                  {{ serviceType.charAt(0).toUpperCase() + serviceType.slice(1) }}
+                </option>
+              </select>
+            </div>
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Название</label>
               <input v-model="newService.name" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500" />
             </div>
@@ -497,8 +506,10 @@ const newService = ref({
   name: '',
   description: '',
   price: '',
-  duration: ''
+  duration: '',
+  service_type: ''
 })
+const availableServiceTypes = ref([])
 
 // Calendar data
 const currentDate = ref(new Date())
@@ -754,6 +765,7 @@ onMounted(async () => {
   console.log('MasterDashboard mounted')
   await loadWorkingSchedules()
   await loadServices()
+  await loadServiceTypes()
   await loadRecentBookings()
   await loadSlotsForVisibleDates()
   
@@ -793,6 +805,16 @@ const loadServices = async () => {
   } catch (error) {
     console.error('Error loading services:', error)
     services.value = []
+  }
+}
+
+const loadServiceTypes = async () => {
+  try {
+    const serviceTypesData = await api.getServiceTypes()
+    availableServiceTypes.value = serviceTypesData.service_types || []
+  } catch (error) {
+    console.error('Error loading service types:', error)
+    availableServiceTypes.value = ['маникюр', 'педикюр', 'массаж'] // fallback to default types
   }
 }
 
@@ -949,7 +971,8 @@ const editService = (service) => {
     name: service.name,
     description: service.description,
     price: service.price.toString(),
-    duration: service.duration.toString()
+    duration: service.duration.toString(),
+    service_type: service.service_type || ''
   }
   showModal.value = true
   
@@ -967,7 +990,8 @@ const addService = async () => {
       name: newService.value.name,
       description: newService.value.description,
       price: parseInt(newService.value.price),
-      duration: parseInt(newService.value.duration)
+      duration: parseInt(newService.value.duration),
+      service_type: newService.value.service_type
     }
     
     let url = 'http://localhost:3000/api/v1/services'
@@ -1103,7 +1127,7 @@ const handleModalConfirm = async (bookingId) => {
 
 const closeModal = () => {
   showModal.value = false
-  newService.value = { name: '', description: '', price: '', duration: '' }
+  newService.value = { name: '', description: '', price: '', duration: '', service_type: '' }
   editingServiceId.value = null
 }
 

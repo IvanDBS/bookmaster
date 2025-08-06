@@ -1,6 +1,6 @@
 class Api::V1::ServicesController < ApplicationController
   before_action :set_service, only: [:show, :update, :destroy]
-  before_action :authenticate_user!, except: [:index, :show]
+  before_action :authenticate_user!, except: [:index, :show, :service_types]
   before_action :ensure_master!, only: [:create, :update, :destroy]
   before_action :ensure_service_owner!, only: [:update, :destroy]
 
@@ -9,6 +9,10 @@ class Api::V1::ServicesController < ApplicationController
     
     if params[:category].present?
       @services = @services.by_category(params[:category])
+    end
+    
+    if params[:service_type].present?
+      @services = @services.by_service_type(params[:service_type])
     end
     
     if params[:master_id].present?
@@ -20,6 +24,10 @@ class Api::V1::ServicesController < ApplicationController
 
   def show
     render json: @service
+  end
+
+  def service_types
+    render json: { service_types: Service.available_service_types }
   end
 
   def create
@@ -52,7 +60,7 @@ class Api::V1::ServicesController < ApplicationController
   end
 
   def service_params
-    params.require(:service).permit(:name, :description, :price, :duration)
+    params.require(:service).permit(:name, :description, :price, :duration, :service_type)
   end
 
   def ensure_master!
