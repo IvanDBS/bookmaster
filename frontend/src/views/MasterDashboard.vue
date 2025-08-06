@@ -64,15 +64,19 @@
                        !date.isSelected && !date.isToday && getDateBorderClass(date)
                      ]">
                   <span class="text-xs font-medium">{{ date.day }}</span>
-                  <!-- Индикатор загруженности -->
-                  <div v-if="date.totalBookings > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
-                    <div v-for="n in Math.min(date.totalBookings, 4)" :key="n" 
+                  <!-- Индикатор загруженности на основе слотов -->
+                  <div v-if="date.totalSlots > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
+                    <div v-for="n in Math.min(date.bookedSlots, 4)" :key="n" 
                          :class="[
                            'w-1 h-1 rounded-full',
                            getBookingDotClass(date)
                          ]">
                     </div>
-                    <span v-if="date.totalBookings > 4" class="text-xs font-bold">+</span>
+                    <span v-if="date.bookedSlots > 4" class="text-xs font-bold">+</span>
+                  </div>
+                  <!-- Индикатор нерабочего дня -->
+                  <div v-else-if="date.loadLevel === 'non_working' && !date.isSelected" class="mt-0.5">
+                    <span class="text-xs text-gray-400">⚫</span>
                   </div>
                 </div>
               </div>
@@ -112,15 +116,19 @@
                        !date.isSelected && !date.isToday && getDateBorderClass(date)
                      ]">
                   <span class="text-xs font-medium">{{ date.day }}</span>
-                  <!-- Индикатор загруженности -->
-                  <div v-if="date.totalBookings > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
-                    <div v-for="n in Math.min(date.totalBookings, 4)" :key="n" 
+                  <!-- Индикатор загруженности на основе слотов -->
+                  <div v-if="date.totalSlots > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
+                    <div v-for="n in Math.min(date.bookedSlots, 4)" :key="n" 
                          :class="[
                            'w-1 h-1 rounded-full',
                            getBookingDotClass(date)
                          ]">
                     </div>
-                    <span v-if="date.totalBookings > 4" class="text-xs font-bold">+</span>
+                    <span v-if="date.bookedSlots > 4" class="text-xs font-bold">+</span>
+                  </div>
+                  <!-- Индикатор нерабочего дня -->
+                  <div v-else-if="date.loadLevel === 'non_working' && !date.isSelected" class="mt-0.5">
+                    <span class="text-xs text-gray-400">⚫</span>
                   </div>
                 </div>
               </div>
@@ -130,7 +138,13 @@
           <!-- Calendar Legend -->
           <div class="mt-6 bg-gray-50 rounded-lg p-4">
             <h5 class="font-semibold text-gray-900 mb-3">Обозначения загруженности</h5>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded flex items-center justify-center">
+                  <span class="text-xs text-gray-400">⚫</span>
+                </div>
+                <span class="text-gray-700">Выходной</span>
+              </div>
               <div class="flex items-center space-x-2">
                 <div class="w-4 h-4 bg-green-50 border border-green-200 rounded flex items-center justify-center">
                   <div class="w-1 h-1 bg-gray-400 rounded-full opacity-0"></div>
@@ -141,7 +155,7 @@
                 <div class="w-4 h-4 bg-lime-50 border border-lime-200 rounded flex items-center justify-center">
                   <div class="w-1 h-1 bg-lime-400 rounded-full"></div>
                 </div>
-                <span class="text-gray-700">1 запись</span>
+                <span class="text-gray-700">1 слот</span>
               </div>
               <div class="flex items-center space-x-2">
                 <div class="w-4 h-4 bg-yellow-50 border border-yellow-200 rounded flex items-center justify-center">
@@ -150,7 +164,7 @@
                     <div class="w-1 h-1 bg-yellow-400 rounded-full"></div>
                   </div>
                 </div>
-                <span class="text-gray-700">2-4 записи</span>
+                <span class="text-gray-700">2-3 слота</span>
               </div>
               <div class="flex items-center space-x-2">
                 <div class="w-4 h-4 bg-orange-50 border border-orange-200 rounded flex items-center justify-center">
@@ -160,7 +174,7 @@
                     <div class="w-1 h-1 bg-orange-400 rounded-full"></div>
                   </div>
                 </div>
-                <span class="text-gray-700">5-7 записей</span>
+                <span class="text-gray-700">4-5 слотов</span>
               </div>
               <div class="flex items-center space-x-2">
                 <div class="w-4 h-4 bg-red-50 border border-red-200 rounded flex items-center justify-center">
@@ -171,7 +185,49 @@
                     <div class="w-1 h-1 bg-red-400 rounded-full"></div>
                   </div>
                 </div>
-                <span class="text-gray-700">8+ записей</span>
+                <span class="text-gray-700">6+ слотов</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Date Slots -->
+          <div v-if="selectedDateSlots.length > 0" class="mt-6">
+            <h5 class="font-semibold text-gray-900 mb-3">
+              Временные слоты на {{ formatSelectedDate() }}
+            </h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div v-for="slot in selectedDateSlots" :key="slot.id" 
+                   class="bg-gray-50 rounded-lg p-3 border-l-4"
+                   :class="{
+                     'border-green-500': slot.is_available && !slot.booked,
+                     'border-blue-500': slot.booked,
+                     'border-gray-400': slot.slot_type === 'lunch',
+                     'border-red-400': slot.slot_type === 'blocked'
+                   }">
+                <div class="flex justify-between items-start mb-2">
+                  <div class="flex-1">
+                    <h6 class="font-semibold text-gray-900 text-sm">
+                      {{ slot.start_time }} - {{ slot.end_time }}
+                    </h6>
+                    <p class="text-xs text-gray-600">
+                      {{ getSlotTypeText(slot.slot_type) }}
+                    </p>
+                  </div>
+                  <span :class="getSlotStatusClass(slot)" class="px-2 py-1 rounded-full text-xs font-semibold ml-2">
+                    {{ getSlotStatusText(slot) }}
+                  </span>
+                </div>
+                <div v-if="slot.booking" class="mt-2 p-2 bg-blue-50 rounded">
+                  <p class="text-xs text-gray-700">
+                    <strong>Клиент:</strong> {{ slot.booking.client_name }}
+                  </p>
+                  <p class="text-xs text-gray-700">
+                    <strong>Услуга:</strong> {{ slot.booking.service_name }}
+                  </p>
+                  <p class="text-xs text-gray-700">
+                    <strong>Статус:</strong> {{ getStatusText(slot.booking.status) }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -217,8 +273,8 @@
               </div>
             </div>
           </div>
-          <div v-else-if="selectedDate" class="mt-6 text-center py-4">
-            <p class="text-gray-500">На выбранную дату записей нет</p>
+          <div v-else-if="selectedDate && selectedDateSlots.length === 0" class="mt-6 text-center py-4">
+            <p class="text-gray-500">На выбранную дату слотов нет</p>
           </div>
         </div>
       </div>
@@ -438,6 +494,9 @@ const newService = ref({
 const currentDate = ref(new Date())
 const selectedDate = ref(null)
 const selectedDateBookings = ref([])
+const selectedDateSlots = ref([])
+const workingSchedules = ref([])
+const slotsCache = ref(new Map()) // Кэш слотов по датам
 
 // Modal data
 const showConfirmationModal = ref(false)
@@ -496,28 +555,41 @@ const calendarDates = computed(() => {
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
     
-    // Check bookings for this date
-    const startOfDay = new Date(date)
-    startOfDay.setHours(0, 0, 0, 0)
-    const endOfDay = new Date(date)
-    endOfDay.setHours(23, 59, 59, 999)
+    const dateString = date.toISOString().split('T')[0]
+    const daySlots = slotsCache.value.get(dateString) || []
     
-    const dayBookings = recentBookings.value.filter(booking => {
-      const bookingDate = new Date(booking.start_time)
-      return bookingDate >= startOfDay && bookingDate <= endOfDay
-    })
+    // Анализируем слоты для определения статуса дня
+    const workSlots = daySlots.filter(slot => slot.slot_type === 'work')
+    const availableSlots = workSlots.filter(slot => slot.is_available && !slot.booked)
+    const bookedSlots = workSlots.filter(slot => slot.booked)
+    const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
     
-    const totalBookings = dayBookings.length
-    const pendingBookings = dayBookings.filter(b => b.status === 'pending').length
-    const confirmedBookings = dayBookings.filter(b => b.status === 'confirmed').length
+    // Определяем статус дня на основе слотов
+    let loadLevel = 'non_working' // не рабочий день
+    let dayStatus = 'non_working'
     
-    // Определяем уровень загруженности
-    let loadLevel = 'free' // свободен
-    if (totalBookings > 0) {
-      if (totalBookings >= 8) loadLevel = 'full' // полностью занят
-      else if (totalBookings >= 5) loadLevel = 'busy' // сильно занят
-      else if (totalBookings >= 2) loadLevel = 'moderate' // умеренно занят
-      else loadLevel = 'light' // слабо занят
+    if (workSlots.length > 0) {
+      // Это рабочий день
+      const totalSlots = workSlots.length
+      const occupiedSlots = bookedSlots.length
+      const occupancyRate = totalSlots > 0 ? occupiedSlots / totalSlots : 0
+      
+      if (occupancyRate === 0) {
+        loadLevel = 'free'
+        dayStatus = 'available'
+      } else if (occupancyRate < 0.3) {
+        loadLevel = 'light'
+        dayStatus = 'available'
+      } else if (occupancyRate < 0.7) {
+        loadLevel = 'moderate'
+        dayStatus = 'partial'
+      } else if (occupancyRate < 1) {
+        loadLevel = 'busy'
+        dayStatus = 'partial'
+      } else {
+        loadLevel = 'full'
+        dayStatus = 'busy'
+      }
     }
     
     dates.push({
@@ -528,12 +600,14 @@ const calendarDates = computed(() => {
       isToday: date.toDateString() === today.toDateString(),
       isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString(),
       isPast: date < today,
-      hasPendingBookings: pendingBookings > 0,
-      totalBookings: totalBookings,
-      pendingBookings: pendingBookings,
-      confirmedBookings: confirmedBookings,
+      hasPendingBookings: pendingSlots.length > 0,
+      totalSlots: workSlots.length,
+      availableSlots: availableSlots.length,
+      bookedSlots: bookedSlots.length,
+      pendingSlots: pendingSlots.length,
       loadLevel: loadLevel,
-      dayBookings: dayBookings
+      dayStatus: dayStatus,
+      slots: daySlots
     })
   }
   
@@ -555,28 +629,41 @@ const nextMonthDates = computed(() => {
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
     
-    // Check bookings for this date
-    const startOfDay = new Date(date)
-    startOfDay.setHours(0, 0, 0, 0)
-    const endOfDay = new Date(date)
-    endOfDay.setHours(23, 59, 59, 999)
+    const dateString = date.toISOString().split('T')[0]
+    const daySlots = slotsCache.value.get(dateString) || []
     
-    const dayBookings = recentBookings.value.filter(booking => {
-      const bookingDate = new Date(booking.start_time)
-      return bookingDate >= startOfDay && bookingDate <= endOfDay
-    })
+    // Анализируем слоты для определения статуса дня
+    const workSlots = daySlots.filter(slot => slot.slot_type === 'work')
+    const availableSlots = workSlots.filter(slot => slot.is_available && !slot.booked)
+    const bookedSlots = workSlots.filter(slot => slot.booked)
+    const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
     
-    const totalBookings = dayBookings.length
-    const pendingBookings = dayBookings.filter(b => b.status === 'pending').length
-    const confirmedBookings = dayBookings.filter(b => b.status === 'confirmed').length
+    // Определяем статус дня на основе слотов
+    let loadLevel = 'non_working' // не рабочий день
+    let dayStatus = 'non_working'
     
-    // Определяем уровень загруженности
-    let loadLevel = 'free' // свободен
-    if (totalBookings > 0) {
-      if (totalBookings >= 8) loadLevel = 'full' // полностью занят
-      else if (totalBookings >= 5) loadLevel = 'busy' // сильно занят
-      else if (totalBookings >= 2) loadLevel = 'moderate' // умеренно занят
-      else loadLevel = 'light' // слабо занят
+    if (workSlots.length > 0) {
+      // Это рабочий день
+      const totalSlots = workSlots.length
+      const occupiedSlots = bookedSlots.length
+      const occupancyRate = totalSlots > 0 ? occupiedSlots / totalSlots : 0
+      
+      if (occupancyRate === 0) {
+        loadLevel = 'free'
+        dayStatus = 'available'
+      } else if (occupancyRate < 0.3) {
+        loadLevel = 'light'
+        dayStatus = 'available'
+      } else if (occupancyRate < 0.7) {
+        loadLevel = 'moderate'
+        dayStatus = 'partial'
+      } else if (occupancyRate < 1) {
+        loadLevel = 'busy'
+        dayStatus = 'partial'
+      } else {
+        loadLevel = 'full'
+        dayStatus = 'busy'
+      }
     }
     
     dates.push({
@@ -587,12 +674,14 @@ const nextMonthDates = computed(() => {
       isToday: date.toDateString() === today.toDateString(),
       isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString(),
       isPast: date < today,
-      hasPendingBookings: pendingBookings > 0,
-      totalBookings: totalBookings,
-      pendingBookings: pendingBookings,
-      confirmedBookings: confirmedBookings,
+      hasPendingBookings: pendingSlots.length > 0,
+      totalSlots: workSlots.length,
+      availableSlots: availableSlots.length,
+      bookedSlots: bookedSlots.length,
+      pendingSlots: pendingSlots.length,
       loadLevel: loadLevel,
-      dayBookings: dayBookings
+      dayStatus: dayStatus,
+      slots: daySlots
     })
   }
   
@@ -604,9 +693,13 @@ onMounted(async () => {
     // Загружаем пользователя
     user.value = authStore.user
     
-    // Загружаем услуги и записи
-    await loadServices()
-    await loadBookings()
+    // Загружаем данные параллельно
+    await Promise.all([
+      loadServices(),
+      loadBookings(),
+      loadWorkingSchedules(),
+      loadSlotsForVisibleDates()
+    ])
   } catch (error) {
     console.error('Error loading dashboard data:', error)
   }
@@ -651,6 +744,99 @@ const loadBookings = async () => {
   } catch (error) {
     console.error('Error loading bookings:', error)
     recentBookings.value = []
+  }
+}
+
+const loadWorkingSchedules = async () => {
+  try {
+    if (!authStore.token) {
+      console.warn('No auth token available')
+      workingSchedules.value = []
+      return
+    }
+
+    const response = await fetch('http://localhost:3000/api/v1/working_schedules', {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`,
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch working schedules')
+    }
+    
+    const schedulesData = await response.json()
+    workingSchedules.value = schedulesData
+  } catch (error) {
+    console.error('Error loading working schedules:', error)
+    workingSchedules.value = []
+  }
+}
+
+const loadSlotsForDate = async (date) => {
+  try {
+    if (!authStore.token) {
+      console.warn('No auth token available')
+      return []
+    }
+
+    const dateString = date.toISOString().split('T')[0]
+    
+    // Проверяем кэш
+    if (slotsCache.value.has(dateString)) {
+      return slotsCache.value.get(dateString)
+    }
+
+    const response = await fetch(`http://localhost:3000/api/v1/time_slots?date=${dateString}`, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`,
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch time slots')
+    }
+    
+    const slotsData = await response.json()
+    
+    // Сохраняем в кэш
+    slotsCache.value.set(dateString, slotsData.slots)
+    
+    return slotsData.slots
+  } catch (error) {
+    console.error('Error loading time slots:', error)
+    return []
+  }
+}
+
+const loadSlotsForVisibleDates = async () => {
+  try {
+    const currentMonth = currentDate.value
+    const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+    
+    // Загружаем слоты для текущего и следующего месяца
+    const dates = []
+    
+    // Дни текущего месяца
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1 - currentMonth.getDay() + i + 1)
+      dates.push(date)
+    }
+    
+    // Дни следующего месяца
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1 - nextMonth.getDay() + i + 1)
+      dates.push(date)
+    }
+    
+    // Убираем дубликаты
+    const uniqueDates = Array.from(new Set(dates.map(d => d.toISOString().split('T')[0])))
+                             .map(dateStr => new Date(dateStr))
+    
+    // Загружаем слоты для всех дат параллельно
+    await Promise.all(uniqueDates.map(date => loadSlotsForDate(date)))
+  } catch (error) {
+    console.error('Error loading slots for visible dates:', error)
   }
 }
 
@@ -827,9 +1013,22 @@ const nextMonth = () => {
   currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
 }
 
-const selectDate = (date) => {
+const selectDate = async (date) => {
   selectedDate.value = date.date
-  loadBookingsForDate(date.date)
+  await loadSlotsForSelectedDate(date.date)
+}
+
+const loadSlotsForSelectedDate = async (date) => {
+  try {
+    const slots = await loadSlotsForDate(date)
+    selectedDateSlots.value = slots
+    
+    // Также загружаем записи для совместимости
+    loadBookingsForDate(date)
+  } catch (error) {
+    console.error('Error loading slots for selected date:', error)
+    selectedDateSlots.value = []
+  }
 }
 
 const loadBookingsForDate = async (date) => {
@@ -913,6 +1112,8 @@ const getDateBgClass = (date) => {
   if (date.isPast) return 'bg-gray-50 border-gray-200'
   
   switch (date.loadLevel) {
+    case 'non_working':
+      return 'bg-gray-100 border-gray-300 cursor-not-allowed'
     case 'free':
       return 'bg-green-50 border-green-200 hover:bg-green-100'
     case 'light':
@@ -932,6 +1133,8 @@ const getDateBorderClass = (date) => {
   if (date.isPast) return 'border-gray-200'
   
   switch (date.loadLevel) {
+    case 'non_working':
+      return 'border-gray-300'
     case 'free':
       return 'border-green-200'
     case 'light':
@@ -949,6 +1152,8 @@ const getDateBorderClass = (date) => {
 
 const getBookingDotClass = (date) => {
   switch (date.loadLevel) {
+    case 'non_working':
+      return 'bg-gray-400'
     case 'light':
       return 'bg-lime-400'
     case 'moderate':
@@ -960,5 +1165,47 @@ const getBookingDotClass = (date) => {
     default:
       return 'bg-gray-400'
   }
+}
+
+// Slot helper functions
+const getSlotTypeText = (slotType) => {
+  const texts = {
+    'work': 'Рабочий слот',
+    'lunch': 'Обеденный перерыв',
+    'blocked': 'Заблокировано'
+  }
+  return texts[slotType] || slotType
+}
+
+const getSlotStatusClass = (slot) => {
+  if (slot.slot_type === 'lunch') {
+    return 'bg-gray-100 text-gray-800'
+  }
+  if (slot.slot_type === 'blocked') {
+    return 'bg-red-100 text-red-800'
+  }
+  if (slot.booked) {
+    return 'bg-blue-100 text-blue-800'
+  }
+  if (slot.is_available) {
+    return 'bg-green-100 text-green-800'
+  }
+  return 'bg-gray-100 text-gray-800'
+}
+
+const getSlotStatusText = (slot) => {
+  if (slot.slot_type === 'lunch') {
+    return 'Обед'
+  }
+  if (slot.slot_type === 'blocked') {
+    return 'Заблокировано'
+  }
+  if (slot.booked) {
+    return 'Занято'
+  }
+  if (slot.is_available) {
+    return 'Свободно'
+  }
+  return 'Недоступно'
 }
 </script> 

@@ -25,6 +25,12 @@ Rails.application.routes.draw do
           patch :update_status
         end
       end
+      
+      # Time slots routes
+      resources :time_slots, only: [:index, :show]
+      
+      # Working schedules routes
+      resources :working_schedules, only: [:index, :show, :update]
     end
   end
 
