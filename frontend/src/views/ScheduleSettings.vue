@@ -245,35 +245,46 @@ const saveSchedule = async () => {
       throw new Error('Не авторизован')
     }
 
+    console.log('Saving schedules:', workingSchedules.value)
+
     // Update each schedule
     const updatePromises = workingSchedules.value.map(async (schedule) => {
+      const scheduleData = {
+        working_schedule: {
+          is_working: schedule.is_working,
+          start_time: schedule.start_time,
+          end_time: schedule.end_time,
+          lunch_start: schedule.lunch_start,
+          lunch_end: schedule.lunch_end,
+          slot_duration_minutes: schedule.slot_duration_minutes
+        }
+      }
+      
+      console.log('Updating schedule:', schedule.id, scheduleData)
+
       const response = await fetch(`http://localhost:3000/api/v1/working_schedules/${schedule.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authStore.token}`,
         },
-        body: JSON.stringify({
-          working_schedule: {
-            is_working: schedule.is_working,
-            start_time: schedule.start_time,
-            end_time: schedule.end_time,
-            lunch_start: schedule.lunch_start,
-            lunch_end: schedule.lunch_end,
-            slot_duration_minutes: schedule.slot_duration_minutes
-          }
-        })
+        body: JSON.stringify(scheduleData)
       })
+      
+      console.log('Response status:', response.status)
       
       if (!response.ok) {
         const errorData = await response.json()
+        console.error('Error response:', errorData)
         const errorMessage = errorData.errors ? 
           (Array.isArray(errorData.errors) ? errorData.errors.join(', ') : errorData.errors) : 
           'Failed to update schedule'
         throw new Error(errorMessage)
       }
       
-      return response.json()
+      const result = await response.json()
+      console.log('Update result:', result)
+      return result
     })
     
     await Promise.all(updatePromises)
@@ -337,22 +348,17 @@ const setFullWeekSchedule = () => {
 
 // Navigation function
 const goBackToDashboard = () => {
-  // Очищаем кэш слотов чтобы календарь перезагрузил данные
   router.push('/master/dashboard')
-  // Принудительно перезагружаем страницу для обновления календаря
-  setTimeout(() => {
-    window.location.reload()
-  }, 100)
 }
 
 // Auto-fill default values when enabling working day
 const handleWorkingDayChange = (schedule) => {
-  if (schedule.is_working && !schedule.start_time) {
-    schedule.start_time = '09:00'
-    schedule.end_time = '19:00'
-    schedule.lunch_start = '13:00'
-    schedule.lunch_end = '14:00'
-    schedule.slot_duration_minutes = 60
+  if (schedule.is_working) {
+    schedule.start_time = schedule.start_time || '09:00'
+    schedule.end_time = schedule.end_time || '19:00'
+    schedule.lunch_start = schedule.lunch_start || '13:00'
+    schedule.lunch_end = schedule.lunch_end || '14:00'
+    schedule.slot_duration_minutes = schedule.slot_duration_minutes || 60
   }
 }
 </script> 

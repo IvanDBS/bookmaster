@@ -477,7 +477,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onActivated, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
@@ -720,6 +720,12 @@ const clearSlotsCache = () => {
   slotsCache.value.clear()
   loadSlotsForVisibleDates()
 }
+
+// Очищаем кэш при активации компонента
+onActivated(() => {
+  slotsCache.value.clear()
+  loadSlotsForVisibleDates()
+})
 
 const loadServices = async () => {
   try {

@@ -3,7 +3,7 @@ class WorkingSchedule < ApplicationRecord
 
   validates :day_of_week, presence: true, inclusion: { in: 0..6 }
   validates :user_id, uniqueness: { scope: :day_of_week }
-  validates :slot_duration_minutes, presence: true, numericality: { greater_than: 0 }
+  validates :slot_duration_minutes, presence: true, numericality: { greater_than: 0 }, if: :is_working
 
   validate :working_hours_logic
   validate :lunch_within_working_hours
