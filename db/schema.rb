@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_05_140411) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_06_053857) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -52,6 +52,24 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_05_140411) do
     t.index ["user_id"], name: "index_services_on_user_id"
   end
 
+  create_table "time_slots", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "date", null: false
+    t.time "start_time", null: false
+    t.time "end_time", null: false
+    t.integer "duration_minutes", default: 60
+    t.boolean "is_available", default: true
+    t.bigint "booking_id"
+    t.string "slot_type", default: "work"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["booking_id"], name: "index_time_slots_on_booking_id"
+    t.index ["date", "is_available"], name: "index_time_slots_on_date_and_is_available"
+    t.index ["user_id", "date", "start_time"], name: "index_time_slots_on_user_id_and_date_and_start_time", unique: true
+    t.index ["user_id", "date"], name: "index_time_slots_on_user_id_and_date"
+    t.index ["user_id"], name: "index_time_slots_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -71,7 +89,25 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_05_140411) do
     t.index ["role"], name: "index_users_on_role"
   end
 
+  create_table "working_schedules", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "day_of_week", null: false
+    t.time "start_time"
+    t.time "end_time"
+    t.time "lunch_start"
+    t.time "lunch_end"
+    t.boolean "is_working", default: true
+    t.integer "slot_duration_minutes", default: 60
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "day_of_week"], name: "index_working_schedules_on_user_id_and_day_of_week", unique: true
+    t.index ["user_id"], name: "index_working_schedules_on_user_id"
+  end
+
   add_foreign_key "bookings", "services"
   add_foreign_key "bookings", "users"
   add_foreign_key "services", "users"
+  add_foreign_key "time_slots", "bookings"
+  add_foreign_key "time_slots", "users"
+  add_foreign_key "working_schedules", "users"
 end

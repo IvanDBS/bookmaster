@@ -2,9 +2,11 @@
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
 puts "Clearing existing data..."
-User.destroy_all
-Service.destroy_all
+TimeSlot.destroy_all
+WorkingSchedule.destroy_all
 Booking.destroy_all
+Service.destroy_all
+User.destroy_all
 
 puts "Creating masters..."
 
@@ -65,6 +67,10 @@ masters = [
 masters.each do |master_data|
   user = User.create!(master_data)
   puts "Created master: #{user.full_name}"
+  
+  # Создаем базовое рабочее расписание для мастера
+  user.create_default_schedule!
+  puts "Created default schedule for #{user.full_name}"
 end
 
 puts "Creating services for masters..."
@@ -209,6 +215,18 @@ clients.each do |client_data|
   user = User.create!(client_data)
   puts "Created client: #{user.full_name}"
 end
+
+puts "Generating time slots for masters..."
+
+# Generate time slots for the next 14 days for all masters
+masters = User.where(role: 'master')
+(0..13).each do |day_offset|
+  date = day_offset.days.from_now.to_date
+  masters.each do |master|
+    master.ensure_slots_for_date(date)
+  end
+end
+puts "Generated time slots for #{masters.count} masters for 14 days"
 
 puts "Creating bookings..."
 
