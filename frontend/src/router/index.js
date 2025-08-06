@@ -5,6 +5,7 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ClientDashboard from '../views/ClientDashboard.vue'
 import MasterDashboard from '../views/MasterDashboard.vue'
+import ScheduleSettings from '../views/ScheduleSettings.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +37,12 @@ const router = createRouter({
       path: '/master/dashboard',
       name: 'master-dashboard',
       component: MasterDashboard,
+      meta: { requiresAuth: true, role: 'master' }
+    },
+    {
+      path: '/master/schedule',
+      name: 'schedule-settings',
+      component: ScheduleSettings,
       meta: { requiresAuth: true, role: 'master' }
     }
   ]

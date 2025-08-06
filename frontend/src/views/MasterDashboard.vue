@@ -25,7 +25,15 @@
       <!-- Calendar Section -->
       <div id="calendar" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">Календарь записей</h3>
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">Календарь записей</h3>
+            <button 
+              @click="goToScheduleSettings"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+            >
+              ⚙️ Настройки расписания
+            </button>
+          </div>
         </div>
         <div class="p-6">
           <!-- Two Months Calendar -->
@@ -1207,5 +1215,10 @@ const getSlotStatusText = (slot) => {
     return 'Свободно'
   }
   return 'Недоступно'
+}
+
+// Navigation function
+const goToScheduleSettings = () => {
+  window.location.href = '/master/schedule'
 }
 </script> 
