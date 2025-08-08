@@ -35,6 +35,8 @@ Rails.application.routes.draw do
         collection do
           # Публичная выдача слотов для мастера по дате (для клиента)
           get :public, to: 'time_slots#public_index'
+          # Добавление нового слота после последнего на дату
+          post :add_slot, to: 'time_slots#add_slot'
         end
       end
       

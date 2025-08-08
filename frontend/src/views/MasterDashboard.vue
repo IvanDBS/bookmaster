@@ -303,6 +303,22 @@
                 </div>
               </div>
             </div>
+            
+            <!-- Кнопка добавления нового слота -->
+            <div v-if="selectedDateSlots.length > 0" class="mt-4 flex justify-center">
+              <button 
+                @click="addNewSlot"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm flex items-center space-x-2"
+                :disabled="isAddingSlot"
+              >
+                <svg v-if="isAddingSlot" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span v-else>➕</span>
+                <span>{{ isAddingSlot ? 'Добавляем...' : 'ДОБАВИТЬ ОКОШКО' }}</span>
+              </button>
+            </div>
           </div>
 
           <!-- Selected Date Bookings - СКРЫТО, записи показываются только в слотах -->
@@ -595,6 +611,7 @@ const workingDayExceptions = ref([]) // Исключения по дням
 const showConfirmationModal = ref(false)
 const modalType = ref('confirm')
 const selectedBooking = ref(null)
+const isAddingSlot = ref(false)
 
 // Computed properties
 const filteredBookings = computed(() => {
@@ -1644,6 +1661,45 @@ const onToggleSlotBreak = async (slot, isBreakNext) => {
     if (dateKey) slotsCache.value.set(dateKey, prevSlots)
     console.error('Failed to toggle break for slot', slot.id, e)
     alert('Не удалось изменить статус слота: ' + e.message)
+  }
+}
+
+const addNewSlot = async () => {
+  if (!selectedDate.value || !authStore.token) {
+    console.warn('No selected date or auth token')
+    return
+  }
+
+  isAddingSlot.value = true
+  
+  try {
+    const dateString = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
+    
+    const response = await fetch(`http://localhost:3000/api/v1/time_slots/add_slot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`
+      },
+      body: JSON.stringify({ date: dateString })
+    })
+    
+    const json = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(json.error || 'Не удалось добавить новый слот')
+    }
+    
+    // Очищаем кэш и перезагружаем слоты
+    slotsCache.value.delete(dateString)
+    await loadSlotsForSelectedDate(selectedDate.value)
+    
+    console.log('New slot added successfully:', json)
+  } catch (error) {
+    console.error('Error adding new slot:', error)
+    alert('Ошибка при добавлении нового слота: ' + error.message)
+  } finally {
+    isAddingSlot.value = false
   }
 }
 

@@ -125,6 +125,56 @@ class Api::V1::TimeSlotsController < Api::V1::BaseController
     }
   end
 
+  # POST /api/v1/time_slots/add_slot
+  # Добавляет новый слот на 1 час после последнего слота на указанную дату
+  def add_slot
+    date = params[:date] ? Date.parse(params[:date]) : Date.current
+    
+    # Получаем все слоты на дату, отсортированные по времени начала
+    existing_slots = current_user.time_slots.for_date(date).order(:start_time)
+    
+    if existing_slots.empty?
+      return render json: { error: 'Нет существующих слотов для определения времени нового слота' }, status: :unprocessable_entity
+    end
+    
+    # Находим последний слот
+    last_slot = existing_slots.last
+    
+    # Вычисляем время начала нового слота (конец последнего слота)
+    new_start_time = last_slot.end_time
+    
+    # Проверяем, что новый слот не выходит за пределы рабочего дня (до 23:59)
+    if new_start_time.hour >= 23
+      return render json: { error: 'Нельзя добавить слот после 23:00' }, status: :unprocessable_entity
+    end
+    
+    # Вычисляем время окончания нового слота (1 час после начала)
+    new_end_time = Time.zone.parse("2000-01-01 #{new_start_time.strftime('%H:%M')}") + 1.hour
+    
+    # Создаем новый слот
+    new_slot = current_user.time_slots.create!(
+      date: date,
+      start_time: new_start_time,
+      end_time: new_end_time,
+      duration_minutes: 60,
+      is_available: true,
+      slot_type: 'work'
+    )
+    
+    Rails.logger.info "Created new slot: #{new_slot.attributes}"
+    
+    render json: {
+      id: new_slot.id,
+      start_time: new_slot.start_time.strftime('%H:%M'),
+      end_time: new_slot.end_time.strftime('%H:%M'),
+      duration_minutes: new_slot.duration_minutes,
+      is_available: new_slot.is_available,
+      slot_type: new_slot.slot_type,
+      booked: new_slot.booked?,
+      booking: nil
+    }, status: :created
+  end
+
   private
 
   def booking_details(booking)
