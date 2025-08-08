@@ -53,6 +53,16 @@ class ApiService {
     return await response.json()
   }
 
+  async getServicesByType(serviceType) {
+    const url = new URL(`${this.baseURL}/services`)
+    if (serviceType) url.searchParams.set('service_type', serviceType)
+    const response = await fetch(url.toString())
+    if (!response.ok) {
+      throw new Error('Failed to fetch services by type')
+    }
+    return await response.json()
+  }
+
   async getServiceTypes() {
     const response = await fetch(`${this.baseURL}/services/service_types`)
     if (!response.ok) {
@@ -123,24 +133,26 @@ class ApiService {
     return await response.json()
   }
 
-  async createBooking(bookingData) {
+  async createBooking({ master_id, time_slot_id, booking }, token = null) {
     const response = await fetch(`${this.baseURL}/bookings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
-      body: JSON.stringify({ booking: bookingData }),
+      body: JSON.stringify({ master_id, time_slot_id, booking }),
     })
     
+    const text = await response.text()
+    const json = text ? JSON.parse(text) : {}
     if (!response.ok) {
-      throw new Error('Failed to create booking')
+      throw new Error(json.error || (json.errors && json.errors.join(', ')) || 'Failed to create booking')
     }
-    
-    return await response.json()
+    return json
   }
 
   async updateBookingStatus(id, status, token) {
-    const response = await fetch(`${this.baseURL}/bookings/${id}/status`, {
+    const response = await fetch(`${this.baseURL}/bookings/${id}/update_status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -154,6 +166,34 @@ class ApiService {
     }
     
     return await response.json()
+  }
+
+  // Public time slots for a master by date (client flow)
+  async getPublicSlots(masterId, date) {
+    const url = new URL(`${this.baseURL}/time_slots/public`)
+    url.searchParams.set('master_id', masterId)
+    if (date) url.searchParams.set('date', date)
+    const response = await fetch(url.toString())
+    if (!response.ok) {
+      throw new Error('Failed to fetch public time slots')
+    }
+    return await response.json()
+  }
+
+  async updateTimeSlot(id, { is_break }, token = null) {
+    const response = await fetch(`${this.baseURL}/time_slots/${id}`, {
+      method: 'PATCH',
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ is_break })
+    })
+    const json = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      throw new Error(json.error || 'Failed to update slot')
+    }
+    return json
   }
 
   async logout(token) {

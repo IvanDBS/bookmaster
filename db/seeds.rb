@@ -80,8 +80,8 @@ anna = User.find_by(email: 'anna@example.com')
 if anna
   services = [
     { name: 'Классический маникюр', description: 'Базовый маникюр с покрытием гель-лаком', price: 1500, duration: 60, service_type: 'маникюр' },
-    { name: 'Дизайн-маникюр', description: 'Маникюр с художественным дизайном', price: 2500, duration: 90, service_type: 'маникюр' },
-    { name: 'SPA-маникюр', description: 'Маникюр с уходом за кожей рук', price: 2000, duration: 75, service_type: 'маникюр' }
+    { name: 'Дизайн-маникюр', description: 'Маникюр с художественным дизайном', price: 2500, duration: 60, service_type: 'маникюр' },
+    { name: 'SPA-маникюр', description: 'Маникюр с уходом за кожей рук', price: 2000, duration: 60, service_type: 'маникюр' }
   ]
   
   services.each do |service_data|
@@ -95,8 +95,8 @@ maria = User.find_by(email: 'maria@example.com')
 if maria
   services = [
     { name: 'Классический педикюр', description: 'Базовый педикюр с покрытием', price: 2000, duration: 60, service_type: 'педикюр' },
-    { name: 'Аппаратный педикюр', description: 'Педикюр с использованием аппарата', price: 3000, duration: 90, service_type: 'педикюр' },
-    { name: 'SPA-педикюр', description: 'Педикюр с уходом за кожей ног', price: 3500, duration: 120, service_type: 'педикюр' }
+    { name: 'Аппаратный педикюр', description: 'Педикюр с использованием аппарата', price: 3000, duration: 60, service_type: 'педикюр' },
+    { name: 'SPA-педикюр', description: 'Педикюр с уходом за кожей ног', price: 3500, duration: 60, service_type: 'педикюр' }
   ]
   
   services.each do |service_data|
@@ -110,8 +110,8 @@ elena = User.find_by(email: 'elena@example.com')
 if elena
   services = [
     { name: 'Классический массаж', description: 'Расслабляющий массаж всего тела', price: 3000, duration: 60, service_type: 'массаж' },
-    { name: 'Массаж спины', description: 'Специализированный массаж спины', price: 2000, duration: 45, service_type: 'массаж' },
-    { name: 'SPA-массаж', description: 'Массаж с ароматическими маслами', price: 4000, duration: 90, service_type: 'массаж' }
+    { name: 'Массаж спины', description: 'Специализированный массаж спины', price: 2000, duration: 60, service_type: 'массаж' },
+    { name: 'SPA-массаж', description: 'Массаж с ароматическими маслами', price: 4000, duration: 60, service_type: 'массаж' }
   ]
   
   services.each do |service_data|
@@ -125,8 +125,8 @@ end
 irina = User.find_by(email: 'irina@example.com')
 if irina
   services = [
-    { name: 'Французский маникюр', description: 'Элегантный французский маникюр', price: 1800, duration: 75, service_type: 'маникюр' },
-    { name: 'Гелевое наращивание', description: 'Наращивание ногтей гелем', price: 3000, duration: 120, service_type: 'маникюр' }
+    { name: 'Французский маникюр', description: 'Элегантный французский маникюр', price: 1800, duration: 60, service_type: 'маникюр' },
+    { name: 'Гелевое наращивание', description: 'Наращивание ногтей гелем', price: 3000, duration: 60, service_type: 'маникюр' }
   ]
   
   services.each do |service_data|
@@ -139,7 +139,7 @@ end
 svetlana = User.find_by(email: 'svetlana@example.com')
 if svetlana
   services = [
-    { name: 'Лимфодренажный массаж', description: 'Массаж для улучшения лимфотока', price: 3500, duration: 75, service_type: 'массаж' },
+    { name: 'Лимфодренажный массаж', description: 'Массаж для улучшения лимфотока', price: 3500, duration: 60, service_type: 'массаж' },
     { name: 'Расслабляющий массаж', description: 'Антистресс массаж для релаксации', price: 2800, duration: 60, service_type: 'массаж' }
   ]
   
@@ -222,98 +222,56 @@ masters = User.where(role: 'master')
 end
 puts "Generated time slots for #{masters.count} masters for 14 days"
 
-puts "Creating bookings..."
+puts "Creating bookings aligned to slots..."
 
-# Create bookings
 if User.exists?(role: 'master') && User.exists?(role: 'client')
   masters = User.where(role: 'master')
-  clients = User.where(role: 'client')
-  
-  # Get some services
-  services = Service.all
-  
-  # Create bookings for the next few days
+  clients = User.where(role: 'client').to_a
+
+  # Фиксированные времена для записей
+  booking_times = ['09:00', '10:00', '11:00']
+
   (1..14).each do |day_offset|
-    masters.each_with_index do |master, master_index|
-      master.services.each_with_index do |service, service_index|
-        client = clients[master_index % clients.length]
+    date = day_offset.days.from_now.to_date
+    masters.each do |master|
+      # Генерируем/гарантируем слоты только для рабочих дней
+      master.ensure_slots_for_date(date)
+      
+      booking_times.each_with_index do |time_str, index|
+        # Находим слот для этого времени
+        slot = master.time_slots.for_date(date)
+                           .work_slots
+                           .available
+                           .where('EXTRACT(HOUR FROM start_time) = ? AND EXTRACT(MINUTE FROM start_time) = ?', 
+                                  time_str.split(':')[0].to_i, time_str.split(':')[1].to_i)
+                           .first
         
-        # Добавляем больше интервала между записями
-        start_time = day_offset.days.from_now + (10 + service_index * 3).hours
-        end_time = start_time + service.duration.minutes
+        next unless slot # Пропускаем если слот не найден
         
-        # Проверяем, нет ли конфликта
-        conflicting_booking = Booking.where(
+        service = master.services.sample
+        client = clients.sample
+
+        start_dt = Time.zone.parse("#{slot.date} #{time_str}")
+        end_dt = start_dt + service.duration.minutes
+
+        booking = Booking.create!(
           user: master,
-          start_time: start_time..end_time
-        ).or(
-          Booking.where(
-            user: master,
-            end_time: start_time..end_time
-          )
-        ).first
-        
-        unless conflicting_booking
-          booking = Booking.create!(
-            user: master,
-            service: service,
-            start_time: start_time,
-            end_time: end_time,
-            client_name: client.full_name,
-            client_email: client.email,
-            client_phone: client.phone,
-            status: ['pending', 'confirmed', 'cancelled'].sample
-          )
-          
-          puts "Created booking: #{client.full_name} -> #{master.full_name} (#{service.name}) on #{start_time.strftime('%d.%m.%Y %H:%M')}"
-        else
-          puts "Skipped booking due to time conflict: #{client.full_name} -> #{master.full_name} (#{service.name})"
-        end
+          service: service,
+          start_time: start_dt,
+          end_time: end_dt,
+          client_name: client.full_name,
+          client_email: client.email,
+          client_phone: client.phone,
+          status: ['pending', 'confirmed'].sample
+        )
+
+        # Правильно связываем слот с записью
+        slot.update!(booking_id: booking.id, is_available: false)
+        puts "Created booking #{index + 1}/3: #{client.full_name} -> #{master.full_name} (#{service.name}) on #{start_dt.strftime('%d.%m.%Y %H:%M')}"
       end
-    end
-  end
-  
-  # Добавляем дополнительные записи для Анны Петровой
-  anna = User.find_by(email: 'anna@example.com')
-  if anna
-    anna_services = anna.services
-    clients.each do |client|
-      # Создаем записи на сегодня и завтра для Анны
-      [0, 1].each do |day_offset|
-        anna_services.each_with_index do |service, index|
-          # Увеличиваем интервал между записями
-          start_time = day_offset.days.from_now + (9 + index * 4).hours
-          end_time = start_time + service.duration.minutes
-          
-          # Проверяем конфликт
-          conflicting_booking = Booking.where(
-            user: anna,
-            start_time: start_time..end_time
-          ).or(
-            Booking.where(
-              user: anna,
-              end_time: start_time..end_time
-            )
-          ).first
-          
-          unless conflicting_booking
-            booking = Booking.create!(
-              user: anna,
-              service: service,
-              start_time: start_time,
-              end_time: end_time,
-              client_name: client.full_name,
-              client_email: client.email,
-              client_phone: client.phone,
-              status: ['pending', 'confirmed'].sample
-            )
-            
-            puts "Created additional booking for Anna: #{client.full_name} -> #{service.name} on #{start_time.strftime('%d.%m.%Y %H:%M')}"
-          else
-            puts "Skipped additional booking for Anna due to conflict: #{client.full_name} -> #{service.name}"
-          end
-        end
-      end
+      
+      # Запускаем синхронизацию для правильной связи
+      master.reconcile_bookings_with_slots_for_date(date)
     end
   end
 end

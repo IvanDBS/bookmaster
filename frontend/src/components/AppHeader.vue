@@ -2,7 +2,7 @@
   <header class="bg-white border-b border-gray-100 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6">
       <div class="flex justify-between items-center h-20">
-        <!-- Logo -->
+        <!-- Logo (match HomeView) -->
         <div class="flex items-center space-x-3">
           <div class="flex space-x-1">
             <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -40,7 +40,7 @@
             </div>
             <span class="text-gray-600 font-medium">{{ user?.first_name }} {{ user?.last_name }}</span>
           </div>
-          <button @click="handleLogout" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-sm">
+          <button @click="handleLogout" class="btn-primary px-6 py-2">
             Выйти
           </button>
         </div>

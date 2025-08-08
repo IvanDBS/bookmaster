@@ -49,11 +49,16 @@ const router = createRouter({
 })
 
 // Navigation Guards
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
   // Проверка для страниц, требующих аутентификации
   if (to.meta.requiresAuth) {
+    // Если есть токен, но профиль еще не загружен — подтягиваем, чтобы не выкидывало после refresh
+    if (authStore.token && !authStore.user) {
+      try { await authStore.getCurrentUser() } catch (_) {}
+    }
+
     if (!authStore.isAuthenticated) {
       next('/login')
       return

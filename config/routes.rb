@@ -31,7 +31,12 @@ Rails.application.routes.draw do
       end
       
       # Time slots routes
-      resources :time_slots, only: [:index, :show]
+      resources :time_slots, only: [:index, :show, :update] do
+        collection do
+          # Публичная выдача слотов для мастера по дате (для клиента)
+          get :public, to: 'time_slots#public_index'
+        end
+      end
       
       # Working schedules routes
       resources :working_schedules, only: [:index, :show, :update]

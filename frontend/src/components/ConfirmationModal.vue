@@ -47,15 +47,15 @@
             </div>
           </div>
           
-          <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div v-if="booking" class="bg-gray-50 rounded-lg p-4 mb-6">
             <div class="flex justify-between items-center">
               <div>
-                <p class="font-semibold text-gray-900">{{ booking.service?.name }}</p>
-                <p class="text-sm text-gray-600">{{ booking.client_name }}</p>
-                <p class="text-sm text-gray-600">{{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}</p>
+                <p class="font-semibold text-gray-900">{{ booking?.service?.name }}</p>
+                <p class="text-sm text-gray-600">{{ booking?.client_name }}</p>
+                <p class="text-sm text-gray-600">{{ formatTime(booking?.start_time) }} - {{ formatTime(booking?.end_time) }}</p>
               </div>
               <div class="text-right">
-                <p class="text-lg font-bold text-gray-900">₽{{ booking.service?.price }}</p>
+                <p class="text-lg font-bold text-gray-900">₽{{ booking?.service?.price }}</p>
               </div>
             </div>
           </div>
@@ -96,7 +96,8 @@ const props = defineProps({
   },
   booking: {
     type: Object,
-    required: true
+    required: false,
+    default: null
   }
 })
 

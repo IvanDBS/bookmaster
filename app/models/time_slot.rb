@@ -26,11 +26,11 @@ class TimeSlot < ApplicationRecord
   end
 
   def datetime_start
-    DateTime.parse("#{date} #{start_time}")
+    Time.zone.parse("#{date} #{start_time}")
   end
 
   def datetime_end
-    DateTime.parse("#{date} #{end_time}")
+    Time.zone.parse("#{date} #{end_time}")
   end
 
   def can_be_booked?

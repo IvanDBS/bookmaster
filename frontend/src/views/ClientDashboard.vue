@@ -47,35 +47,123 @@
         </div>
       </div>
 
-      <!-- Search Masters Section -->
-      <div id="search" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">Поиск мастеров</h3>
+      <!-- Booking Wizard (минималистичный) -->
+      <div id="search" class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Запись на услугу</h3>
         </div>
-        <div class="p-6">
-          <div class="flex items-end space-x-4">
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Услуга</label>
-              <select v-model="search.service" @change="filterMastersByService" class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500 appearance-none bg-white bg-no-repeat bg-right-2 bg-center" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xLjQxIDAuNTlMNiA1LjE3TDEwLjU5IDAuNTlMMTIgMkw2IDhMMCAyWiIgZmlsbD0iIzY2NiIvPgo8L3N2Zz4K')">
-                <option value="">Все услуги</option>
-                <option value="manicure">Маникюр</option>
-                <option value="pedicure">Педикюр</option>
-                <option value="massage">Массаж</option>
-              </select>
+        <div class="p-6 space-y-8">
+          <!-- Stepper -->
+          <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-2" :class="currentStep >= 1 ? 'text-lime-600' : 'text-gray-400'">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center border" :class="currentStep>=1?'border-lime-500':'border-gray-300'">1</div>
+              <span class="text-sm">Выбор услуги</span>
             </div>
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Мастер</label>
-              <select v-model="search.master" class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500 appearance-none bg-white bg-no-repeat bg-right-2 bg-center" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xLjQxIDAuNTlMNiA1LjE3TDEwLjU5IDAuNTlMMTIgMkw2IDhMMCAyWiIgZmlsbD0iIzY2NiIvPgo8L3N2Zz4K')">
-                <option value="">Все мастера</option>
-                <option v-for="master in filteredMasters" :key="master.id" :value="master.id">
-                  {{ master.first_name }} {{ master.last_name }}
-                </option>
-              </select>
+            <div class="h-px flex-1 bg-gray-200"></div>
+            <div class="flex items-center space-x-2" :class="currentStep >= 2 ? 'text-lime-600' : 'text-gray-400'">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center border" :class="currentStep>=2?'border-lime-500':'border-gray-300'">2</div>
+              <span class="text-sm">Мастер</span>
             </div>
-            <div class="flex-shrink-0">
-              <button @click="searchMasters" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
-                Записаться
+            <div class="h-px flex-1 bg-gray-200"></div>
+            <div class="flex items-center space-x-2" :class="currentStep >= 3 ? 'text-lime-600' : 'text-gray-400'">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center border" :class="currentStep>=3?'border-lime-500':'border-gray-300'">3</div>
+              <span class="text-sm">Время</span>
+            </div>
+            <div class="h-px flex-1 bg-gray-200"></div>
+            <div class="flex items-center space-x-2" :class="currentStep >= 4 ? 'text-lime-600' : 'text-gray-400'">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center border" :class="currentStep>=4?'border-lime-500':'border-gray-300'">4</div>
+              <span class="text-sm">Подтверждение</span>
+            </div>
+          </div>
+
+          <!-- Step 1: choose service type -->
+          <div v-if="currentStep === 1" class="space-y-5">
+            <h4 class="text-sm font-semibold text-gray-900">Выберите тип услуги</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <button v-for="type in serviceTypes" :key="type" @click="selectServiceType(type)"
+                      :class="['flex flex-col items-center justify-center rounded-xl border p-5 text-center transition', selectedServiceType===type? 'border-lime-500 bg-lime-50' : 'border-gray-200 hover:border-gray-300']">
+                <span class="text-2xl mb-1" v-if="type==='маникюр'">💅</span>
+                <span class="text-2xl mb-1" v-else-if="type==='педикюр'">🦶</span>
+                <span class="text-2xl mb-1" v-else>💆‍♀️</span>
+                <span class="font-semibold text-gray-900">{{ type.charAt(0).toUpperCase() + type.slice(1) }}</span>
+                <span class="text-xs text-gray-500 mt-1">Выбор категории</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Step 2: choose master -->
+          <div v-if="currentStep === 2" class="space-y-5">
+            <h4 class="text-sm font-semibold text-gray-900">Выберите мастера</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <button v-for="master in mastersForType" :key="master.id" @click="selectMaster(master)"
+                      :class="['rounded-xl border p-4 text-left transition', selectedMaster?.id===master.id? 'border-lime-500 bg-lime-50' : 'border-gray-200 hover:border-gray-300']">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center text-lime-600 font-semibold">
+                    {{ master.user.first_name[0] }}
+                  </div>
+                  <div class="flex-1">
+                    <div class="font-semibold text-gray-900">{{ master.user.first_name }} {{ master.user.last_name }}</div>
+                    <div class="text-xs text-gray-500">{{ master.services.length }} услуг</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-gray-900">от ₽{{ minPrice(master.services) }}</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+            <div class="flex justify-between">
+              <button class="text-sm text-gray-600" @click="currentStep=1">← Назад</button>
+            </div>
+          </div>
+
+          <!-- Step 3: choose concrete service -->
+          <div v-if="currentStep === 3" class="space-y-5">
+            <h4 class="text-sm font-semibold text-gray-900">Выберите услугу у {{ selectedMaster?.user.first_name }}</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <button v-for="srv in selectedMasterServices" :key="srv.id" @click="selectConcreteService(srv)"
+                      :class="['rounded-xl border p-4 text-left transition', selectedService?.id===srv.id? 'border-lime-500 bg-lime-50' : 'border-gray-200 hover:border-gray-300']">
+                <div class="font-semibold text-gray-900">{{ srv.name }}</div>
+                <div class="text-xs text-gray-500">{{ srv.duration }} мин</div>
+                <div class="mt-1 font-semibold text-gray-900">₽{{ srv.price }}</div>
+              </button>
+            </div>
+            <div class="flex justify-between">
+              <button class="text-sm text-gray-600" @click="currentStep=2">← Назад</button>
+            </div>
+          </div>
+
+          <!-- Step 4: choose time slot -->
+          <div v-if="currentStep === 4" class="space-y-5">
+            <h4 class="text-sm font-semibold text-gray-900">Выберите время</h4>
+            <div class="flex items-center space-x-3">
+              <input type="date" v-model="selectedDate" class="px-3 py-2 border rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500 text-sm"/>
+              <button class="text-sm text-gray-600" @click="currentStep=3">← Назад</button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button v-for="slot in daySlots" :key="slot.id" @click="selectSlot(slot)"
+                      :disabled="!(slot.is_available && !slot.booked && slot.slot_type==='work')"
+                      :class="['rounded-lg border px-3 py-2 text-sm transition',
+                               selectedSlot?.id===slot.id ? 'border-lime-500 bg-lime-50' : 'border-gray-200 hover:border-gray-300',
+                               !(slot.is_available && !slot.booked && slot.slot_type==='work') ? 'opacity-40 cursor-not-allowed' : '']">
+                {{ slot.start_time }} - {{ slot.end_time }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 5: confirm -->
+          <div v-if="currentStep === 5" class="space-y-5">
+            <h4 class="text-sm font-semibold text-gray-900">Подтверждение</h4>
+            <div class="rounded-xl border border-gray-200 p-4">
+              <div class="text-sm text-gray-700">Услуга</div>
+              <div class="font-semibold text-gray-900">{{ selectedService.name }} — ₽{{ selectedService.price }} ({{ selectedService.duration }} мин)</div>
+              <div class="mt-2 text-sm text-gray-700">Мастер</div>
+              <div class="font-semibold text-gray-900">{{ selectedMaster.user.first_name }} {{ selectedMaster.user.last_name }}</div>
+              <div class="mt-2 text-sm text-gray-700">Время</div>
+              <div class="font-semibold text-gray-900">{{ selectedDate }} • {{ selectedSlot.start_time }}–{{ selectedSlot.end_time }}</div>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="text-sm text-gray-600" @click="currentStep=4">← Назад</button>
+              <button @click="submitBooking" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors text-sm">Подтвердить запись</button>
             </div>
           </div>
         </div>
@@ -233,150 +321,172 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
+import api from '../services/api'
 
 const authStore = useAuthStore()
 
 const user = computed(() => authStore.user)
 const myMasters = ref([])
-const availableMasters = ref([])
-const filteredMasters = ref([])
 const currentBookings = ref([])
 const bookingHistory = ref([])
-const search = ref({
-  service: '',
-  master: ''
-})
+
+// Booking wizard state
+const currentStep = ref(1)
+const serviceTypes = ref(['маникюр', 'педикюр', 'массаж'])
+const selectedServiceType = ref(null)
+const mastersForType = ref([])
+const selectedMaster = ref(null)
+const selectedMasterServices = ref([])
+const selectedService = ref(null)
+const selectedDate = ref(new Date().toISOString().slice(0,10))
+const daySlots = ref([])
+const selectedSlot = ref(null)
+// Для клиента, авторизованного в системе, backend возьмет email/имя из профиля,
+// поэтому дополнительных полей на фронте не требуется
 
 onMounted(async () => {
-  await loadData()
+  await loadServiceTypes()
+  // Загружаем пользователя и восстанавливаем сессию, чтобы не выкидывало на главную после refresh
+  if (authStore.token && !authStore.user) {
+    await authStore.getCurrentUser().catch(()=>{})
+  }
+  await loadCurrentBookings()
 })
 
-const loadData = async () => {
-  await loadMyMasters()
-  await loadAvailableMasters()
-  await loadCurrentBookings()
-  await loadBookingHistory()
-  // Инициализируем отфильтрованных мастеров
-  filteredMasters.value = availableMasters.value
+const loadServiceTypes = async () => {
+  try {
+    const data = await api.getServiceTypes()
+    serviceTypes.value = data.service_types || serviceTypes.value
+  } catch (_) {}
 }
 
 const loadMyMasters = async () => {
-  try {
-    // Здесь будет загрузка избранных мастеров с API
-    // Пока возвращаем пустой список - будет реализовано позже
-    myMasters.value = []
-  } catch (error) {
-    console.error('Error loading my masters:', error)
-    myMasters.value = []
-  }
-}
-
-const loadAvailableMasters = async () => {
-  try {
-    // Здесь будет загрузка всех доступных мастеров с API
-    // Пока возвращаем пустой список - будет реализовано позже
-    availableMasters.value = []
-    filteredMasters.value = []
-  } catch (error) {
-    console.error('Error loading available masters:', error)
-    availableMasters.value = []
-    filteredMasters.value = []
-  }
-}
-
-const filterMastersByService = () => {
-  if (!search.value.service) {
-    filteredMasters.value = availableMasters.value
-  } else {
-    filteredMasters.value = availableMasters.value.filter(master => 
-      master.services.includes(search.value.service)
-    )
-  }
-  // Сбрасываем выбранного мастера при смене услуги
-  search.value.master = ''
+  myMasters.value = []
 }
 
 const loadCurrentBookings = async () => {
   try {
-    // Здесь будет загрузка текущих записей с API
-    // Пока возвращаем пустой список - будет реализовано позже
-    currentBookings.value = []
-  } catch (error) {
-    console.error('Error loading current bookings:', error)
+    if (!authStore.token) return
+    const res = await fetch('http://localhost:3000/api/v1/bookings', {
+      headers: { 'Authorization': `Bearer ${authStore.token}` }
+    })
+    if (!res.ok) throw new Error('Failed to load bookings')
+    const data = await res.json()
+    // Новые записи первыми: сортируем по created_at desc, если нет — по start_time desc
+    currentBookings.value = [...data].sort((a,b) => {
+      const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0
+      const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0
+      if (aCreated !== 0 || bCreated !== 0) return bCreated - aCreated
+      return new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+    })
+  } catch (e) {
+    console.error('Failed to load client bookings:', e)
     currentBookings.value = []
   }
 }
 
 const loadBookingHistory = async () => {
+  bookingHistory.value = []
+}
+
+const selectServiceType = async (type) => {
+  selectedServiceType.value = type
+  const services = await api.getServicesByType(type)
+  const byMasterId = new Map()
+  services.forEach(s => {
+    if (!byMasterId.has(s.user.id)) {
+      byMasterId.set(s.user.id, { id: s.user.id, user: s.user, services: [] })
+    }
+    byMasterId.get(s.user.id).services.push(s)
+  })
+  mastersForType.value = Array.from(byMasterId.values())
+  selectedMaster.value = null
+  selectedMasterServices.value = []
+  selectedService.value = null
+  currentStep.value = 2
+}
+
+const minPrice = (services) => Math.min(...services.map(s => s.price))
+
+const selectMaster = (master) => {
+  selectedMaster.value = master
+  selectedMasterServices.value = master.services
+  selectedService.value = null
+  currentStep.value = 3
+}
+
+const selectConcreteService = (srv) => {
+  selectedService.value = srv
+  selectedSlot.value = null
+  daySlots.value = []
+  fetchSlots()
+  currentStep.value = 4
+}
+
+const fetchSlots = async () => {
+  if (!selectedMaster.value) return
+  const res = await api.getPublicSlots(selectedMaster.value.id, selectedDate.value)
+  daySlots.value = res.slots || []
+}
+
+watch(selectedDate, fetchSlots)
+
+const selectSlot = (slot) => {
+  selectedSlot.value = slot
+  currentStep.value = 5
+}
+
+const submitBooking = async () => {
   try {
-    // Здесь будет загрузка истории записей с API
-    // Пока возвращаем пустой список - будет реализовано позже
-    bookingHistory.value = []
-  } catch (error) {
-    console.error('Error loading booking history:', error)
-    bookingHistory.value = []
+    const payload = {
+      master_id: selectedMaster.value.id,
+      time_slot_id: selectedSlot.value.id,
+      booking: {
+        service_id: selectedService.value.id
+        // имя/email/телефон возьмем из профиля пользователя на бэкенде
+      }
+    }
+    await api.createBooking(payload, authStore.token)
+    alert('Запись создана!')
+    currentStep.value = 1
+    selectedServiceType.value = null
+    selectedMaster.value = null
+    selectedService.value = null
+    selectedSlot.value = null
+  } catch (e) {
+    alert('Не удалось создать запись: ' + e.message)
   }
 }
 
-const searchMasters = () => {
-  console.log('Searching masters:', search.value)
-  // Здесь будет логика поиска и записи
-}
-
-const bookService = (master) => {
-  console.log('Booking service for master:', master)
-  // Здесь будет логика записи
-}
-
-const cancelBooking = (bookingId) => {
-  console.log('Cancelling booking:', bookingId)
-  // Здесь будет логика отмены записи
-}
-
-const deleteBooking = (bookingId) => {
-  console.log('Deleting booking:', bookingId)
-  // Здесь будет логика удаления записи из истории
-}
-
-const clearHistory = () => {
-  console.log('Clearing booking history')
-  // Здесь будет логика очистки истории
-}
+const bookService = (master) => {}
+const cancelBooking = (bookingId) => {}
+const deleteBooking = (bookingId) => {}
+const clearHistory = () => {}
 
 const handleScrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId);
+  const element = document.getElementById(sectionId)
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth' });
+    element.scrollIntoView({ behavior: 'smooth' })
   }
-};
-
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('ru-RU')
 }
 
-const formatTime = (dateString) => {
-  return new Date(dateString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-}
+const formatDate = (dateString) => new Date(dateString).toLocaleDateString('ru-RU')
+const formatTime = (dateString) => new Date(dateString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
 const getStatusClass = (status) => {
   const classes = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'confirmed': 'bg-green-100 text-green-800',
-    'cancelled': 'bg-red-100 text-red-800'
+    pending: 'bg-yellow-100 text-yellow-800',
+    confirmed: 'bg-green-100 text-green-800',
+    cancelled: 'bg-red-100 text-red-800'
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
 }
 
 const getStatusText = (status) => {
-  const texts = {
-    'pending': 'Ожидает подтверждения',
-    'confirmed': 'Подтверждено',
-    'cancelled': 'Отменено'
-  }
+  const texts = { pending: 'Ожидает подтверждения', confirmed: 'Подтверждено', cancelled: 'Отменено' }
   return texts[status] || status
 }
-</script> 
+</script>

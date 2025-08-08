@@ -33,10 +33,10 @@
               </div>
               <span class="text-gray-600 font-medium">+7 999 123-45-67</span>
             </div>
-            <button @click="handleLogin" class="text-gray-700 font-semibold px-4 py-2 rounded-lg border border-lime-500 hover:bg-lime-50 transition-colors">
+            <button @click="handleLogin" class="btn-outline">
               Войти
             </button>
-            <button @click="handleRegister" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-sm">
+            <button @click="handleRegister" class="btn-primary px-6 py-2">
               Регистрация
             </button>
           </div>
@@ -62,7 +62,7 @@
               Мастерам: полный контроль над расписанием и клиентской базой в одном месте.<br>
               Клиентам: быстрая и удобная запись к любимому мастеру в любое время.
             </p>
-            <button @click="handleStartFree" class="bg-lime-500 hover:bg-lime-600 text-white font-bold px-8 py-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+            <button @click="handleStartFree" class="btn-primary px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
               Начать бесплатно
             </button>
           </div>
@@ -337,10 +337,10 @@
           Присоединяйтесь к тысячам мастеров и клиентов, которые уже используют BookMaster
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button @click="handleCreateAccount" class="bg-lime-500 hover:bg-lime-600 text-white font-bold px-8 py-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+          <button @click="handleCreateAccount" class="btn-primary px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
             Создать аккаунт
           </button>
-          <button @click="handleContactUs" class="border-2 border-gray-600 hover:border-gray-500 text-white font-semibold px-8 py-4 rounded-lg transition-all duration-200">
+          <button @click="handleContactUs" class="btn-outline text-white border-gray-600 hover:border-gray-500 px-8 py-4">
             Связаться с нами
           </button>
         </div>
@@ -352,12 +352,12 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <div class="flex items-center space-x-3 mb-6">
-              <div class="flex space-x-1">
-                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-              </div>
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="flex space-x-1">
+              <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-blue)"></div>
+              <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-yellow)"></div>
+              <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-red)"></div>
+            </div>
               <h4 class="text-lg font-bold">BookMaster</h4>
             </div>
             <p class="text-gray-400 leading-relaxed">

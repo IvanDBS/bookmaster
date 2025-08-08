@@ -278,6 +278,13 @@ export function useCalendar() {
     }
   }
 
+  // Инвалидация кэша слотов для конкретной даты
+  const invalidateCacheForDate = (date) => {
+    if (!date) return
+    const key = date.toISOString().split('T')[0]
+    slotsCache.value.delete(key)
+  }
+
   const refreshCalendar = async () => {
     console.log('Refreshing calendar...')
     slotsCache.value.clear()
@@ -419,6 +426,7 @@ export function useCalendar() {
     loadSlotsForDate,
     loadSlotsForVisibleDates,
     loadSlotsForSelectedDate,
+    invalidateCacheForDate,
     refreshCalendar,
     previousMonth,
     nextMonth,

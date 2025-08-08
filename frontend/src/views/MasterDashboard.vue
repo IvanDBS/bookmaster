@@ -250,9 +250,39 @@
                       {{ getSlotTypeText(slot.slot_type) }}
                     </p>
                   </div>
-                  <span :class="getSlotStatusClass(slot)" class="px-2 py-1 rounded-full text-xs font-semibold ml-2">
-                    {{ getSlotStatusText(slot) }}
-                  </span>
+                  <div class="flex items-center space-x-2 ml-2">
+                    <!-- Переключатель перерыва для свободных слотов -->
+                    <button
+                      v-if="!slot.booked"
+                      @click="onToggleSlotBreak(slot, !isBreak(slot))"
+                      :class="[
+                        'relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                        isBreak(slot) ? 'bg-red-500' : 'bg-gray-200'
+                      ]"
+                      :title="isBreak(slot) ? 'Сделать свободным' : 'Отметить как перерыв'"
+                    >
+                      <span
+                        :class="[
+                          'inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 ease-in-out',
+                          isBreak(slot) ? 'translate-x-5' : 'translate-x-1'
+                        ]"
+                      />
+                    </button>
+
+                    <span :class="getSlotStatusClass(slot)" class="px-2 py-1 rounded-full text-xs font-semibold">
+                      {{ getSlotStatusText(slot) }}
+                    </span>
+
+                    <!-- Кнопки принять/отменить для pending -->
+                    <div v-if="slot.booking && slot.booking.status === 'pending'" class="flex space-x-1">
+                      <button @click="showConfirmModal(slot.booking)" class="text-green-600 hover:text-green-700 text-xs font-medium" title="Принять">
+                        ✓
+                      </button>
+                      <button @click="showCancelModal(slot.booking)" class="text-red-600 hover:text-red-700 text-xs font-medium" title="Отменить">
+                        ✕
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div v-if="slot.booking" class="mt-2 p-2 bg-blue-50 rounded">
                   <p class="text-xs text-gray-700">
@@ -1246,9 +1276,20 @@ const handleModalConfirm = async (bookingId) => {
     
     // Обновляем записи
     await loadBookings()
+    
+    // Принудительно очищаем кеш для всех дат
     if (selectedDate.value) {
+      // Очищаем кеш для выбранной даты
+      const dateKey = selectedDate.value.toISOString().split('T')[0]
+      slotsCache.value.delete(dateKey)
+      
+      // Перезагружаем данные
+      await loadSlotsForSelectedDate(selectedDate.value)
       await loadBookingsForDate(selectedDate.value)
     }
+    
+    // Обновляем календарь
+    await loadSlotsForVisibleDates()
     
     closeConfirmationModal()
   } catch (error) {
@@ -1442,8 +1483,8 @@ const getBookingDotClass = (date) => {
 const getSlotTypeText = (slotType) => {
   const texts = {
     'work': 'Рабочий слот',
-    'lunch': 'Обеденный перерыв',
-    'blocked': 'Заблокировано'
+    'lunch': 'Перерыв',
+    'blocked': 'Перерыв'
   }
   return texts[slotType] || slotType
 }
@@ -1466,10 +1507,10 @@ const getSlotStatusClass = (slot) => {
 
 const getSlotStatusText = (slot) => {
   if (slot.slot_type === 'lunch') {
-    return 'Обед'
+    return 'Перерыв'
   }
   if (slot.slot_type === 'blocked') {
-    return 'Заблокировано'
+    return 'Перерыв'
   }
   if (slot.booked) {
     return 'Занято'
@@ -1478,6 +1519,34 @@ const getSlotStatusText = (slot) => {
     return 'Свободно'
   }
   return 'Недоступно'
+}
+
+const isBreak = (slot) => slot.slot_type === 'blocked' || slot.slot_type === 'lunch'
+
+const onToggleSlotBreak = async (slot, isBreakNext) => {
+  try {
+    if (!authStore.token) throw new Error('Не авторизован')
+    const response = await fetch(`http://localhost:3000/api/v1/time_slots/${slot.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`
+      },
+      body: JSON.stringify({ is_break: isBreakNext })
+    })
+    const json = await response.json()
+    if (!response.ok) {
+      throw new Error(json.error || 'Не удалось обновить слот')
+    }
+    if (selectedDate.value) {
+      const dateKey = selectedDate.value.toISOString().split('T')[0]
+      slotsCache.value.delete(dateKey)
+      await loadSlotsForSelectedDate(selectedDate.value)
+    }
+  } catch (e) {
+    console.error('Failed to toggle break for slot', slot.id, e)
+    alert('Не удалось изменить статус слота: ' + e.message)
+  }
 }
 
 // Navigation function

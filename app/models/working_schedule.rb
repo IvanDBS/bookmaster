@@ -41,8 +41,8 @@ class WorkingSchedule < ApplicationRecord
   end
 
   def total_slots_count
-    return 0 unless slot_duration_minutes && slot_duration_minutes > 0
-    working_duration_minutes / slot_duration_minutes
+    # Фиксируем продолжительность рабочего слота как 60 минут
+    working_duration_minutes / 60
   end
 
   # Генерация слотов для конкретной даты
@@ -59,31 +59,32 @@ class WorkingSchedule < ApplicationRecord
 
     slots = []
     current_time = start_time
+    slot_minutes = 60
     
     # Генерируем рабочие слоты
     while current_time < end_time
-      slot_end = add_minutes_to_time(current_time, slot_duration_minutes)
+      slot_end = add_minutes_to_time(current_time, slot_minutes)
       break if slot_end > end_time
 
       # Проверяем, не попадает ли слот на обеденное время
       if lunch_start && lunch_end
         if overlaps_with_lunch?(current_time, slot_end)
-          current_time = add_minutes_to_time(current_time, slot_duration_minutes)
+          current_time = add_minutes_to_time(current_time, slot_minutes)
           next
         end
       end
 
-      slots << {
+       slots << {
         user: user,
         date: date,
         start_time: current_time,
         end_time: slot_end,
-        duration_minutes: slot_duration_minutes,
+        duration_minutes: 60,
         is_available: true,
         slot_type: 'work'
       }
 
-      current_time = add_minutes_to_time(current_time, slot_duration_minutes)
+      current_time = add_minutes_to_time(current_time, slot_minutes)
     end
 
     # Добавляем обеденный слот если есть
@@ -93,7 +94,7 @@ class WorkingSchedule < ApplicationRecord
         date: date,
         start_time: lunch_start,
         end_time: lunch_end,
-        duration_minutes: lunch_duration_minutes,
+        duration_minutes: 60,
         is_available: false,
         slot_type: 'lunch'
       }
@@ -138,16 +139,19 @@ class WorkingSchedule < ApplicationRecord
   end
 
   def time_diff_in_minutes(end_time, start_time)
-    ((end_time.hour * 60 + end_time.min) - (start_time.hour * 60 + start_time.min)).abs
+    total_end_minutes = (end_time.hour * 60) + end_time.min
+    total_start_minutes = (start_time.hour * 60) + start_time.min
+    (total_end_minutes - total_start_minutes).abs
   end
 
   def add_minutes_to_time(time, minutes)
     # Используем правильную логику для добавления минут к времени
-    total_minutes = time.hour * 60 + time.min + minutes
+    total_minutes = (time.hour * 60) + time.min + minutes
     hours = total_minutes / 60
     mins = total_minutes % 60
     
     # Создаем новое время с правильными часами и минутами
-    Time.utc(2000, 1, 1, hours, mins, 0)
+    # Используем Time.zone.parse для корректной работы с часовыми поясами
+    Time.zone.parse("2000-01-01 #{hours.to_s.rjust(2, '0')}:#{mins.to_s.rjust(2, '0')}:00")
   end
 end

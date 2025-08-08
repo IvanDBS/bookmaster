@@ -50,6 +50,9 @@
         :is-day-working="isDayWorking"
         :format-selected-date="formatSelectedDate"
         @toggle-day-status="toggleDayStatus"
+        @confirm-booking="showConfirmModal"
+        @cancel-booking="showCancelModal"
+        @toggle-slot-break="onToggleSlotBreak"
       />
 
       <!-- Selected Date Bookings -->
@@ -104,6 +107,8 @@
 import { useRouter } from 'vue-router'
 import { useCalendar } from '../../../composables/useCalendar'
 import { useBookings } from '../../../composables/useBookings'
+import api from '../../../services/api'
+import { useAuthStore } from '../../../stores/auth'
 import CalendarMonth from './CalendarMonth.vue'
 import CalendarLegend from './CalendarLegend.vue'
 import CalendarSlots from './CalendarSlots.vue'
@@ -131,7 +136,9 @@ const {
   getDateBgClass,
   getDateBorderClass,
   getBookingDotClass,
-  formatSelectedDate
+  formatSelectedDate,
+  loadSlotsForSelectedDate,
+  invalidateCacheForDate
 } = useCalendar()
 
 const {
@@ -152,5 +159,21 @@ const {
 // Navigation function
 const goToScheduleSettings = () => {
   router.push('/master/schedule')
+}
+
+// Toggle per-slot break
+const onToggleSlotBreak = async ({ slot, isBreak }) => {
+  try {
+    const date = selectedDate.value
+    if (!date) return
+    const authStore = useAuthStore()
+    await api.updateTimeSlot(slot.id, { is_break: isBreak }, authStore.token)
+    // Refresh slots for selected date only с инвалидированием кэша
+    invalidateCacheForDate(date)
+    await loadSlotsForSelectedDate(date)
+  } catch (e) {
+    console.error('Failed to toggle break for slot', slot.id, e)
+    alert('Не удалось изменить статус слота: ' + e.message)
+  }
 }
 </script> 

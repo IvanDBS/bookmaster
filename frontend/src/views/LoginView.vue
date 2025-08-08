@@ -3,9 +3,9 @@
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
       <div class="flex justify-center">
         <div class="flex space-x-1">
-          <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-          <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+          <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-blue)"></div>
+          <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-yellow)"></div>
+          <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-red)"></div>
         </div>
       </div>
       <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">

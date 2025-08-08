@@ -1,4 +1,5 @@
 class Booking < ApplicationRecord
+  has_many :time_slots, dependent: :nullify
   belongs_to :user
   belongs_to :service
 
@@ -61,8 +62,9 @@ class Booking < ApplicationRecord
   private
 
   def set_end_time
-    return unless start_time && service
-    self.end_time = start_time + service.duration.minutes
+    return unless start_time
+    # Фиксируем длительность брони на 60 минут согласно текущему требованию
+    self.end_time = start_time + 60.minutes
   end
 
   def start_time_in_future

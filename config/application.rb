@@ -21,7 +21,9 @@ module Bookmaster
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # Устанавливаем целевую таймзону приложения. ActiveRecord продолжит хранить в UTC,
+    # но все парсинги через Time.zone будут интерпретироваться в указанной зоне.
+    config.time_zone = "Europe/Moscow"
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Only loads a smaller set of middleware suitable for API only apps.
