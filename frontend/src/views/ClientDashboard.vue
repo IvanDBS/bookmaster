@@ -1,112 +1,166 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
     <!-- Header -->
     <AppHeader :show-navigation="true" user-type="client" :pending-bookings-count="0" @scroll-to-section="handleScrollToSection" />
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 py-8 mt-20">
+    <div class="max-w-7xl mx-auto px-6 py-6">
       <!-- Welcome Section -->
-      <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
           Добро пожаловать, {{ user?.first_name }}!
         </h2>
-        <p class="text-gray-600">Управляйте своими записями и находите новых мастеров</p>
+        <p class="text-gray-600 text-lg">Управляйте своими записями и находите новых мастеров</p>
       </div>
 
       <!-- My Masters Section -->
-      <div id="masters" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+      <div v-if="currentStep < 4" id="masters" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">Мои мастера</h3>
+          <h3 class="text-lg font-semibold text-gray-900">
+            {{ selectedMasterForBooking ? 'Выберите услугу' : 'Мои мастера' }}
+          </h3>
         </div>
         <div class="p-6">
           <div v-if="myMasters.length === 0" class="text-center py-8">
             <p class="text-gray-500">У вас пока нет избранных мастеров</p>
           </div>
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="master in myMasters" :key="master.id" class="bg-gray-50 rounded-lg p-4">
-              <div class="flex items-center space-x-4 mb-3">
-                <div class="w-12 h-12 bg-lime-100 rounded-full flex items-center justify-center">
-                  <span class="text-lime-600 font-semibold text-lg">{{ master.first_name[0] }}{{ master.last_name[0] }}</span>
-                </div>
-                <div>
-                  <h4 class="font-semibold text-gray-900">{{ master.first_name }} {{ master.last_name }}</h4>
-                  <p class="text-sm text-gray-600">{{ master.services?.length || 0 }} услуг</p>
-                </div>
+          <div v-else>
+            <!-- Показываем только выбранного мастера или всех мастеров -->
+            <div v-if="selectedMasterForBooking" class="grid grid-cols-1 gap-6">
+                          <!-- Показываем только выбранного мастера -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+              <div class="flex items-center justify-between mb-6">
+                <h4 class="font-bold text-gray-900 text-xl">Выберите услугу</h4>
+                <button @click="cancelMasterSelection" class="text-gray-400 hover:text-gray-600 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
               </div>
-              <div class="space-y-1 mb-3">
-                <div v-for="service in master.services?.slice(0, 2)" :key="service.id" class="flex justify-between items-center text-sm">
-                  <span class="text-gray-700">{{ service.name }}</span>
-                  <span class="font-semibold text-gray-900">₽{{ service.price }}</span>
-                </div>
+              
+              <div class="space-y-3">
+                <button v-for="service in selectedMasterForBooking.services" :key="service.id" 
+                        @click="selectServiceAndGoToTime(selectedMasterForBooking, service)"
+                        class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-lime-400 hover:bg-gradient-to-r hover:from-lime-50 hover:to-lime-100 transition-all duration-300 shadow-sm hover:shadow-md">
+                  <div class="flex justify-between items-center">
+                    <div>
+                      <div class="font-bold text-gray-900 text-lg">{{ service.name }}</div>
+                      <div class="text-sm text-gray-500">{{ service.duration }} мин</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="font-bold text-lime-600 text-lg">₽{{ service.price }}</div>
+                    </div>
+                  </div>
+                </button>
               </div>
-              <button @click="bookService(master)" class="w-full bg-lime-500 hover:bg-lime-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
-                Записаться
-              </button>
+            </div>
+            </div>
+            
+            <!-- Показываем всех мастеров если никто не выбран -->
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div v-for="master in myMasters" :key="master.id" class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 p-6">
+                <div class="flex items-center space-x-4 mb-4">
+                  <div class="w-14 h-14 bg-gradient-to-br from-lime-400 to-lime-600 rounded-full flex items-center justify-center shadow-md">
+                    <span class="text-white font-bold text-lg">{{ master.first_name[0] }}{{ master.last_name[0] }}</span>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-gray-900 text-lg">{{ master.first_name }} {{ master.last_name }}</h4>
+                    <p class="text-sm text-gray-500">{{ master.services?.length || 0 }} услуг</p>
+                  </div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div v-for="service in master.services?.slice(0, 2)" :key="service.id" class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                    <span class="text-gray-700 font-medium">{{ service.name }}</span>
+                    <span class="font-bold text-lime-600">₽{{ service.price }}</span>
+                  </div>
+                </div>
+                <button @click="selectMasterForBooking(master)" class="w-full bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 text-sm shadow-md hover:shadow-lg transform hover:scale-105">
+                  Записаться
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Booking Wizard (минималистичный) -->
-      <div id="search" class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">Запись на услугу</h3>
+      <div id="search" class="bg-white rounded-xl shadow-lg border border-gray-100 mb-8">
+        <div class="px-8 py-6 border-b border-gray-100">
+          <h3 class="text-2xl font-bold text-gray-900">Запись на услугу</h3>
         </div>
         <div class="p-6 space-y-8">
           <!-- Stepper -->
-          <div class="flex items-center space-x-6">
+          <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2" :class="currentStep >= 1 ? 'text-lime-600' : 'text-gray-400'">
-              <div class="w-6 h-6 rounded-full flex items-center justify-center border" :class="currentStep>=1?'border-lime-500':'border-gray-300'">1</div>
-              <span class="text-sm">Выбор услуги</span>
+              <div class="w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold" 
+                   :class="currentStep >= 1 ? 'border-lime-500 bg-lime-50' : 'border-gray-300'">
+                <span v-if="currentStep > 1">✓</span>
+                <span v-else>1</span>
+              </div>
+              <span class="text-sm font-medium">Выбор услуги</span>
             </div>
-            <div class="h-px flex-1 bg-gray-200"></div>
+            
             <div class="flex items-center space-x-2" :class="currentStep >= 2 ? 'text-lime-600' : 'text-gray-400'">
-              <div class="w-6 h-6 rounded-full flex items-center justify-center border" :class="currentStep>=2?'border-lime-500':'border-gray-300'">2</div>
-              <span class="text-sm">Мастер</span>
+              <div class="w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold" 
+                   :class="currentStep >= 2 ? 'border-lime-500 bg-lime-50' : 'border-gray-300'">
+                <span v-if="currentStep > 2">✓</span>
+                <span v-else>2</span>
+              </div>
+              <span class="text-sm font-medium">Мастер</span>
             </div>
-            <div class="h-px flex-1 bg-gray-200"></div>
+            
             <div class="flex items-center space-x-2" :class="currentStep >= 3 ? 'text-lime-600' : 'text-gray-400'">
-              <div class="w-6 h-6 rounded-full flex items-center justify-center border" :class="currentStep>=3?'border-lime-500':'border-gray-300'">3</div>
-              <span class="text-sm">Время</span>
+              <div class="w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold" 
+                   :class="currentStep >= 3 ? 'border-lime-500 bg-lime-50' : 'border-gray-300'">
+                <span v-if="currentStep > 3">✓</span>
+                <span v-else>3</span>
+              </div>
+              <span class="text-sm font-medium">Время</span>
             </div>
-            <div class="h-px flex-1 bg-gray-200"></div>
+            
             <div class="flex items-center space-x-2" :class="currentStep >= 4 ? 'text-lime-600' : 'text-gray-400'">
-              <div class="w-6 h-6 rounded-full flex items-center justify-center border" :class="currentStep>=4?'border-lime-500':'border-gray-300'">4</div>
-              <span class="text-sm">Подтверждение</span>
+              <div class="w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold" 
+                   :class="currentStep >= 4 ? 'border-lime-500 bg-lime-50' : 'border-gray-300'">
+                <span v-if="currentStep > 4">✓</span>
+                <span v-else>4</span>
+              </div>
+              <span class="text-sm font-medium">Подтверждение</span>
             </div>
           </div>
 
           <!-- Step 1: choose service type -->
           <div v-if="currentStep === 1" class="space-y-5">
             <h4 class="text-sm font-semibold text-gray-900">Выберите тип услуги</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button v-for="type in serviceTypes" :key="type" @click="selectServiceType(type)"
-                      :class="['flex flex-col items-center justify-center rounded-xl border p-5 text-center transition', selectedServiceType===type? 'border-lime-500 bg-lime-50' : 'border-gray-200 hover:border-gray-300']">
-                <span class="text-2xl mb-1" v-if="type==='маникюр'">💅</span>
-                <span class="text-2xl mb-1" v-else-if="type==='педикюр'">🦶</span>
-                <span class="text-2xl mb-1" v-else>💆‍♀️</span>
-                <span class="font-semibold text-gray-900">{{ type.charAt(0).toUpperCase() + type.slice(1) }}</span>
-                <span class="text-xs text-gray-500 mt-1">Выбор категории</span>
+                      :class="['flex flex-col items-center justify-center rounded-xl border-2 p-6 text-center transition-all duration-300 transform hover:scale-105', selectedServiceType===type? 'border-lime-500 bg-gradient-to-br from-lime-50 to-lime-100 shadow-lg' : 'border-gray-200 hover:border-lime-300 hover:shadow-md']">
+                <span class="text-3xl mb-2" v-if="type==='маникюр'">💅</span>
+                <span class="text-3xl mb-2" v-else-if="type==='педикюр'">🦶</span>
+                <span class="text-3xl mb-2" v-else>💆‍♀️</span>
+                <span class="font-bold text-gray-900 text-lg">{{ type.charAt(0).toUpperCase() + type.slice(1) }}</span>
+                <span class="text-sm text-gray-500 mt-1">Выбор категории</span>
               </button>
             </div>
           </div>
 
           <!-- Step 2: choose master -->
           <div v-if="currentStep === 2" class="space-y-5">
-            <h4 class="text-sm font-semibold text-gray-900">Выберите мастера</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <h4 class="text-sm font-semibold text-gray-900">
+              Выберите мастера для услуги "{{ selectedServiceType }}"
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button v-for="master in mastersForType" :key="master.id" @click="selectMaster(master)"
-                      :class="['rounded-xl border p-4 text-left transition', selectedMaster?.id===master.id? 'border-lime-500 bg-lime-50' : 'border-gray-200 hover:border-gray-300']">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center text-lime-600 font-semibold">
+                      :class="['rounded-xl border-2 p-5 text-left transition-all duration-300 transform hover:scale-105', selectedMaster?.id===master.id? 'border-lime-500 bg-gradient-to-br from-lime-50 to-lime-100 shadow-lg' : 'border-gray-200 hover:border-lime-300 hover:shadow-md']">
+                <div class="flex items-center space-x-4">
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-lime-400 to-lime-600 flex items-center justify-center text-white font-bold shadow-md">
                     {{ master.user.first_name[0] }}
                   </div>
                   <div class="flex-1">
-                    <div class="font-semibold text-gray-900">{{ master.user.first_name }} {{ master.user.last_name }}</div>
-                    <div class="text-xs text-gray-500">{{ master.services.length }} услуг</div>
+                    <div class="font-bold text-gray-900 text-lg">{{ master.user.first_name }} {{ master.user.last_name }}</div>
+                    <div class="text-sm text-gray-500">{{ master.services.length }} услуг</div>
                   </div>
                   <div class="text-right">
-                    <div class="text-sm font-semibold text-gray-900">от ₽{{ minPrice(master.services) }}</div>
+                    <div class="text-sm font-bold text-lime-600">от ₽{{ minPrice(master.services) }}</div>
                   </div>
                 </div>
               </button>
@@ -118,35 +172,50 @@
 
           <!-- Step 3: choose concrete service -->
           <div v-if="currentStep === 3" class="space-y-5">
-            <h4 class="text-sm font-semibold text-gray-900">Выберите услугу у {{ selectedMaster?.user.first_name }}</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-semibold text-gray-900">
+                {{ selectedMaster?.user?.first_name }} {{ selectedMaster?.user?.last_name }}
+              </h4>
+              <button class="text-sm text-gray-500 hover:text-gray-700" @click="resetToStep1">
+                Выбрать другого мастера
+              </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button v-for="srv in selectedMasterServices" :key="srv.id" @click="selectConcreteService(srv)"
-                      :class="['rounded-xl border p-4 text-left transition', selectedService?.id===srv.id? 'border-lime-500 bg-lime-50' : 'border-gray-200 hover:border-gray-300']">
-                <div class="font-semibold text-gray-900">{{ srv.name }}</div>
-                <div class="text-xs text-gray-500">{{ srv.duration }} мин</div>
-                <div class="mt-1 font-semibold text-gray-900">₽{{ srv.price }}</div>
+                      :class="['rounded-xl border-2 p-5 text-left transition-all duration-300 transform hover:scale-105', selectedService?.id===srv.id? 'border-lime-500 bg-gradient-to-br from-lime-50 to-lime-100 shadow-lg' : 'border-gray-200 hover:border-lime-300 hover:shadow-md']">
+                <div class="font-bold text-gray-900 text-lg">{{ srv.name }}</div>
+                <div class="text-sm text-gray-500">{{ srv.duration }} мин</div>
+                <div class="mt-2 font-bold text-lime-600 text-lg">₽{{ srv.price }}</div>
               </button>
             </div>
             <div class="flex justify-between">
-              <button class="text-sm text-gray-600" @click="currentStep=2">← Назад</button>
+              <button class="text-sm text-gray-600" @click="currentStep=2">← Назад к выбору мастера</button>
             </div>
           </div>
 
           <!-- Step 4: choose time slot -->
           <div v-if="currentStep === 4" class="space-y-5">
             <h4 class="text-sm font-semibold text-gray-900">Выберите время</h4>
-            <div class="flex items-center space-x-3">
-              <input type="date" v-model="selectedDate" class="px-3 py-2 border rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500 text-sm"/>
-              <button class="text-sm text-gray-600" @click="currentStep=3">← Назад</button>
+            
+            <!-- Calendar and Time Slots -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Calendar -->
+              <ClientCalendar 
+                :master-id="selectedMaster?.id" 
+                @date-selected="onDateSelected"
+              />
+              
+              <!-- Time Slots -->
+              <ClientTimeSlots 
+                v-if="selectedCalendarDate"
+                :selected-date="selectedCalendarDate"
+                :master-id="selectedMaster?.id"
+                @slot-selected="onSlotSelected"
+              />
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <button v-for="slot in daySlots" :key="slot.id" @click="selectSlot(slot)"
-                      :disabled="!(slot.is_available && !slot.booked && slot.slot_type==='work')"
-                      :class="['rounded-lg border px-3 py-2 text-sm transition',
-                               selectedSlot?.id===slot.id ? 'border-lime-500 bg-lime-50' : 'border-gray-200 hover:border-gray-300',
-                               !(slot.is_available && !slot.booked && slot.slot_type==='work') ? 'opacity-40 cursor-not-allowed' : '']">
-                {{ slot.start_time }} - {{ slot.end_time }}
-              </button>
+            
+            <div class="flex justify-between">
+              <button class="text-sm text-gray-600" @click="goBackToMasters">← Назад к выбору мастера</button>
             </div>
           </div>
 
@@ -159,47 +228,39 @@
               <div class="mt-2 text-sm text-gray-700">Мастер</div>
               <div class="font-semibold text-gray-900">{{ selectedMaster.user.first_name }} {{ selectedMaster.user.last_name }}</div>
               <div class="mt-2 text-sm text-gray-700">Время</div>
-              <div class="font-semibold text-gray-900">{{ selectedDate }} • {{ selectedSlot.start_time }}–{{ selectedSlot.end_time }}</div>
+              <div class="font-semibold text-gray-900">{{ formatBookingDate(selectedDate) }} • {{ formatBookingTime(selectedSlot.start_time) }}–{{ formatBookingTime(selectedSlot.end_time) }}</div>
             </div>
             <div class="flex items-center justify-between">
               <button class="text-sm text-gray-600" @click="currentStep=4">← Назад</button>
-              <button @click="submitBooking" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors text-sm">Подтвердить запись</button>
+              <button @click="submitBooking" class="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white font-bold px-8 py-3 rounded-lg transition-all duration-300 text-sm shadow-md hover:shadow-lg transform hover:scale-105">Подтвердить запись</button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- My Current Bookings -->
-      <div id="bookings" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">Мои записи</h3>
+      <div id="bookings" class="bg-white rounded-xl shadow-lg border border-gray-100 mb-8">
+        <div class="px-8 py-6 border-b border-gray-100">
+          <h3 class="text-2xl font-bold text-gray-900">Мои записи</h3>
         </div>
         <div class="p-6">
           <div v-if="currentBookings.length === 0" class="text-center py-8">
             <p class="text-gray-500">У вас пока нет активных записей</p>
           </div>
           <div v-else class="space-y-4">
-            <div v-for="booking in currentBookings" :key="booking.id" class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+            <div v-for="booking in currentBookings" :key="booking.id" class="flex justify-between items-center p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300">
               <div class="flex-1">
-                <div class="flex items-center space-x-4">
-                  <div class="w-10 h-10 bg-lime-100 rounded-full flex items-center justify-center">
-                    <span class="text-lime-600 font-semibold text-sm">{{ booking.master?.first_name[0] }}{{ booking.master?.last_name[0] }}</span>
-                  </div>
-                  <div>
-                    <h4 class="font-semibold text-gray-900">{{ booking.service?.name }}</h4>
-                    <p class="text-sm text-gray-600">{{ booking.master?.first_name }} {{ booking.master?.last_name }}</p>
-                    <p class="text-sm text-gray-600">{{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}</p>
-                  </div>
+                <div>
+                  <h4 class="font-bold text-gray-900 text-lg">{{ booking.service?.name }}</h4>
+                  <p class="text-sm text-gray-600">{{ booking.master?.first_name }} {{ booking.master?.last_name }}</p>
+                  <p class="text-sm text-gray-600">{{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}</p>
                 </div>
               </div>
               <div class="text-right">
-                <span :class="getStatusClass(booking.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
+                <span :class="getStatusClass(booking.status)" class="px-4 py-2 rounded-full text-xs font-bold shadow-sm">
                   {{ getStatusText(booking.status) }}
                 </span>
-                <p class="text-sm font-semibold text-gray-900 mt-1">₽{{ booking.service?.price }}</p>
-                <button @click="cancelBooking(booking.id)" class="mt-2 text-red-600 hover:text-red-700 text-sm font-medium">
-                  Отменить запись
-                </button>
+                <p class="text-lg font-bold text-gray-900 mt-2">₽{{ booking.service?.price }}</p>
               </div>
             </div>
           </div>
@@ -324,6 +385,8 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
+import ClientCalendar from '../components/master/Calendar/ClientCalendar.vue'
+import ClientTimeSlots from '../components/master/Calendar/ClientTimeSlots.vue'
 import api from '../services/api'
 
 const authStore = useAuthStore()
@@ -342,8 +405,10 @@ const selectedMaster = ref(null)
 const selectedMasterServices = ref([])
 const selectedService = ref(null)
 const selectedDate = ref(new Date().toISOString().slice(0,10))
+const selectedCalendarDate = ref(null)
 const daySlots = ref([])
 const selectedSlot = ref(null)
+const selectedMasterForBooking = ref(null)
 // Для клиента, авторизованного в системе, backend возьмет email/имя из профиля,
 // поэтому дополнительных полей на фронте не требуется
 
@@ -353,7 +418,8 @@ onMounted(async () => {
   if (authStore.token && !authStore.user) {
     await authStore.getCurrentUser().catch(()=>{})
   }
-  await loadCurrentBookings()
+  await loadCurrentBookings() // Это теперь загружает и активные записи, и историю
+  await loadMyMasters()
 })
 
 const loadServiceTypes = async () => {
@@ -364,32 +430,96 @@ const loadServiceTypes = async () => {
 }
 
 const loadMyMasters = async () => {
-  myMasters.value = []
+  try {
+    // Получаем мастеров, к которым клиент записывался
+    const response = await fetch('http://localhost:3000/api/v1/bookings', {
+      headers: { 'Authorization': `Bearer ${authStore.token}` }
+    })
+    
+    if (response.ok) {
+      const bookings = await response.json()
+      
+      // Создаем Map для уникальных мастеров
+      const mastersMap = new Map()
+      
+      bookings.forEach(booking => {
+        if (booking.user && !mastersMap.has(booking.user.id)) {
+          mastersMap.set(booking.user.id, {
+            id: booking.user.id,
+            first_name: booking.user.first_name,
+            last_name: booking.user.last_name,
+            services: [] // Инициализируем пустой массив услуг
+          })
+        }
+      })
+      
+      // Загружаем услуги для каждого мастера
+      for (const master of mastersMap.values()) {
+        try {
+          console.log(`Loading services for master ${master.first_name} (ID: ${master.id})`)
+          const servicesResponse = await fetch(`http://localhost:3000/api/v1/services?master_id=${master.id}`, {
+            headers: { 'Authorization': `Bearer ${authStore.token}` }
+          })
+          if (servicesResponse.ok) {
+            const services = await servicesResponse.json()
+            master.services = services
+            console.log(`Loaded ${services.length} services for master ${master.first_name}:`, services.map(s => s.name))
+          } else {
+            console.error(`Failed to load services for master ${master.first_name}:`, servicesResponse.status)
+            master.services = []
+          }
+        } catch (error) {
+          console.error(`Error loading services for master ${master.id}:`, error)
+          master.services = []
+        }
+      }
+      
+      myMasters.value = Array.from(mastersMap.values())
+      console.log('Loaded my masters:', myMasters.value.length)
+    }
+  } catch (error) {
+    console.error('Error loading my masters:', error)
+    myMasters.value = []
+  }
 }
 
 const loadCurrentBookings = async () => {
   try {
-    if (!authStore.token) return
+    if (!authStore.token) {
+      console.log('No auth token, skipping loadCurrentBookings')
+      return
+    }
+    console.log('Loading current bookings...')
     const res = await fetch('http://localhost:3000/api/v1/bookings', {
       headers: { 'Authorization': `Bearer ${authStore.token}` }
     })
     if (!res.ok) throw new Error('Failed to load bookings')
     const data = await res.json()
-    // Новые записи первыми: сортируем по created_at desc, если нет — по start_time desc
-    currentBookings.value = [...data].sort((a,b) => {
-      const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0
-      const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0
-      if (aCreated !== 0 || bCreated !== 0) return bCreated - aCreated
-      return new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-    })
+    console.log('Loaded bookings:', data)
+    
+    // Разделяем записи на активные и историю
+    const activeBookings = data.filter(booking => 
+      booking.status === 'pending' || booking.status === 'confirmed'
+    )
+    const historyBookings = data.filter(booking => 
+      booking.status === 'cancelled' || booking.status === 'completed'
+    )
+    
+    currentBookings.value = activeBookings
+    bookingHistory.value = historyBookings
+    
+    console.log('Active bookings:', currentBookings.value.length)
+    console.log('History bookings:', bookingHistory.value.length)
   } catch (e) {
     console.error('Failed to load client bookings:', e)
     currentBookings.value = []
+    bookingHistory.value = []
   }
 }
 
 const loadBookingHistory = async () => {
-  bookingHistory.value = []
+  // История загружается вместе с активными записями в loadCurrentBookings
+  console.log('Booking history loaded:', bookingHistory.value.length)
 }
 
 const selectServiceType = async (type) => {
@@ -418,6 +548,16 @@ const selectMaster = (master) => {
   currentStep.value = 3
 }
 
+const resetToStep1 = () => {
+  // Сброс к началу для выбора другого мастера
+  selectedServiceType.value = null
+  selectedMaster.value = null
+  selectedMasterServices.value = []
+  selectedService.value = null
+  selectedSlot.value = null
+  currentStep.value = 1
+}
+
 const selectConcreteService = (srv) => {
   selectedService.value = srv
   selectedSlot.value = null
@@ -439,8 +579,42 @@ const selectSlot = (slot) => {
   currentStep.value = 5
 }
 
+const onDateSelected = (date) => {
+  console.log('Date selected in dashboard:', date)
+  selectedCalendarDate.value = date
+}
+
+const onSlotSelected = (slot) => {
+  selectedSlot.value = slot
+  currentStep.value = 5
+}
+
 const submitBooking = async () => {
   try {
+    // Проверяем, что выбранная услуга принадлежит выбранному мастеру
+    if (!selectedMaster.value || !selectedService.value) {
+      throw new Error('Не выбран мастер или услуга')
+    }
+    
+    console.log('Debug submitBooking:', {
+      selectedMaster: selectedMaster.value,
+      selectedService: selectedService.value,
+      masterServices: selectedMaster.value.services,
+      selectedMasterServices: selectedMasterServices.value,
+      selectedMasterId: selectedMaster.value?.id,
+      selectedServiceId: selectedService.value?.id
+    })
+    
+    // Проверяем, что услуга принадлежит мастеру
+    const masterServices = selectedMaster.value.services || selectedMasterServices.value || []
+    const serviceBelongsToMaster = masterServices.some(s => s.id === selectedService.value.id)
+    
+    console.log('Service belongs to master:', serviceBelongsToMaster)
+    
+    if (!serviceBelongsToMaster) {
+      throw new Error('Услуга не найдена у выбранного мастера')
+    }
+    
     const payload = {
       master_id: selectedMaster.value.id,
       time_slot_id: selectedSlot.value.id,
@@ -449,32 +623,166 @@ const submitBooking = async () => {
         // имя/email/телефон возьмем из профиля пользователя на бэкенде
       }
     }
+    
+    console.log('Submitting payload:', payload)
     await api.createBooking(payload, authStore.token)
     alert('Запись создана!')
+    
+    // Обновляем список записей после создания новой записи
+    await loadCurrentBookings()
+    
     currentStep.value = 1
     selectedServiceType.value = null
     selectedMaster.value = null
     selectedService.value = null
     selectedSlot.value = null
+    selectedMasterForBooking.value = null
   } catch (e) {
+    console.error('Booking error:', e)
     alert('Не удалось создать запись: ' + e.message)
   }
 }
 
-const bookService = (master) => {}
-const cancelBooking = (bookingId) => {}
-const deleteBooking = (bookingId) => {}
-const clearHistory = () => {}
+const selectMasterForBooking = (master) => {
+  console.log('selectMasterForBooking called with:', master)
+  console.log('Master services:', master.services)
+  selectedMasterForBooking.value = master
+}
+
+const cancelMasterSelection = () => {
+  selectedMasterForBooking.value = null
+}
+
+const goBackToMasters = () => {
+  // Возвращаемся к выбору мастера
+  currentStep.value = 1
+  selectedServiceType.value = null
+  selectedMaster.value = null
+  selectedMasterServices.value = []
+  selectedService.value = null
+  selectedSlot.value = null
+  selectedMasterForBooking.value = null
+}
+
+const selectServiceAndGoToTime = (master, service) => {
+  console.log('selectServiceAndGoToTime called with:', { master, service })
+  
+  // Выбираем мастера и услугу, сразу переходим к выбору времени
+  selectedServiceType.value = null
+  
+  // Устанавливаем только выбранного мастера с его услугами
+  selectedMaster.value = { 
+    id: master.id, 
+    user: master, 
+    services: master.services 
+  }
+  
+  // Устанавливаем только услуги выбранного мастера
+  selectedMasterServices.value = master.services
+  
+  selectedService.value = service
+  selectedSlot.value = null
+  selectedMasterForBooking.value = null // Скрываем услуги в карточке
+  
+  console.log('Selected master services:', selectedMasterServices.value)
+  console.log('Selected service:', selectedService.value)
+  
+  // Устанавливаем дату для календаря (сегодня или ближайший рабочий день)
+  const today = new Date()
+  selectedCalendarDate.value = {
+    date: today,
+    key: today.toISOString().split('T')[0],
+    isCurrentMonth: true,
+    isToday: true,
+    isPast: false
+  }
+  
+  console.log('Set selectedCalendarDate:', selectedCalendarDate.value)
+  
+  currentStep.value = 4 // Переходим сразу к выбору времени
+  
+  // Скрываем секцию "Мои мастера" после выбора услуги
+  console.log('Hiding My Masters section, currentStep:', currentStep.value)
+}
+
+
+const deleteBooking = async (bookingId) => {
+  try {
+    if (!confirm('Вы уверены, что хотите удалить эту запись из истории?')) return
+    
+    const res = await fetch(`http://localhost:3000/api/v1/bookings/${bookingId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${authStore.token}` }
+    })
+    
+    if (!res.ok) throw new Error('Failed to delete booking')
+    
+    alert('Запись удалена из истории')
+    await loadCurrentBookings() // Перезагружаем записи
+  } catch (e) {
+    console.error('Failed to delete booking:', e)
+    alert('Не удалось удалить запись: ' + e.message)
+  }
+}
+
+const clearHistory = async () => {
+  try {
+    if (!confirm('Вы уверены, что хотите очистить всю историю записей?')) return
+    
+    // Удаляем все записи из истории
+    const deletePromises = bookingHistory.value.map(booking => 
+      fetch(`http://localhost:3000/api/v1/bookings/${booking.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${authStore.token}` }
+      })
+    )
+    
+    await Promise.all(deletePromises)
+    
+    alert('История очищена')
+    await loadCurrentBookings() // Перезагружаем записи
+  } catch (e) {
+    console.error('Failed to clear history:', e)
+    alert('Не удалось очистить историю: ' + e.message)
+  }
+}
 
 const handleScrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
+    // Добавляем отступ сверху, чтобы заголовок был виден
+    const headerHeight = 80 // Высота хедера
+    const offset = 20 // Дополнительный отступ
+    const elementPosition = element.offsetTop - headerHeight - offset
+    
+    window.scrollTo({
+      top: elementPosition,
+      behavior: 'smooth'
+    })
   }
 }
 
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('ru-RU')
 const formatTime = (dateString) => new Date(dateString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+const formatBookingDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ru-RU', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  })
+}
+
+const formatBookingTime = (timeString) => {
+  if (!timeString) return ''
+  // Extract time from ISO string or time format
+  const time = timeString.includes('T') 
+    ? timeString.split('T')[1].substring(0, 5)
+    : timeString.substring(0, 5)
+  return time
+}
 
 const getStatusClass = (status) => {
   const classes = {

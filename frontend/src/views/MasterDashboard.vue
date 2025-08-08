@@ -1503,7 +1503,7 @@ const getStatusClass = (status) => {
 const getStatusText = (status) => {
   const texts = {
     'pending': 'Ожидает подтверждения',
-    'confirmed': 'Подтверждено',
+    'confirmed': 'Подтверждено ✅',
     'cancelled': 'Отменено'
   }
   return texts[status] || status

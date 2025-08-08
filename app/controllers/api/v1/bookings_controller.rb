@@ -8,10 +8,10 @@ class Api::V1::BookingsController < ApplicationController
       # Для мастеров: отдаем записи + ближайшие слоты как справку (UI сам может игнорировать)
       @bookings = current_user.bookings.includes(:service).order(start_time: :desc)
     else
-      # Для клиентов показываем записи где они клиенты
+      # Для клиентов показываем записи где они клиенты, сортируем по дате создания (новые сверху)
       @bookings = Booking.includes(:service, :user)
                         .where(client_email: current_user.email)
-                        .order(start_time: :desc)
+                        .order(created_at: :desc)
     end
     
     render json: @bookings
