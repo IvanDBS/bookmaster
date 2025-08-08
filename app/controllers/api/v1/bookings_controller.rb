@@ -1,7 +1,7 @@
 class Api::V1::BookingsController < ApplicationController
-  before_action :set_booking, only: [:show, :update_status]
+  before_action :set_booking, only: [:show, :update_status, :destroy]
   before_action :authenticate_user!
-  before_action :ensure_booking_owner!, only: [:show, :update_status]
+  before_action :ensure_booking_owner!, only: [:show, :update_status, :destroy]
 
   def index
     if current_user.master?
@@ -117,8 +117,9 @@ class Api::V1::BookingsController < ApplicationController
     if @booking.update(status: new_status)
       # Освобождаем слот при отмене
       if new_status == 'cancelled'
-        TimeSlot.where(booking_id: @booking.id).update_all(booking_id: nil, is_available: true)
-        @booking.user.ensure_slots_for_date(@booking.start_time.to_date)
+        # Находим все слоты связанные с этой записью и освобождаем их
+        TimeSlot.where(booking_id: @booking.id).update_all(booking_id: nil, is_available: true, updated_at: Time.current)
+        # Запускаем синхронизацию для обновления данных
         @booking.user.reconcile_bookings_with_slots_for_date(@booking.start_time.to_date)
       else
         # На подтверждение/завершение — убедиться, что слоты помечены занятыми
@@ -128,6 +129,32 @@ class Api::V1::BookingsController < ApplicationController
       render json: @booking
     else
       render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    unless @booking
+      return render json: { error: 'Запись не найдена' }, status: :not_found
+    end
+    
+    # Сохраняем ссылки до удаления
+    user = @booking.user
+    date = @booking.start_time.to_date
+    
+    begin
+      if @booking.destroy
+        # Освобождаем слоты связанные с этой записью
+        TimeSlot.where(booking_id: @booking.id).update_all(booking_id: nil, is_available: true, updated_at: Time.current)
+        # Запускаем синхронизацию для обновления данных
+        user.reconcile_bookings_with_slots_for_date(date)
+        render json: { message: 'Запись успешно удалена' }
+      else
+        render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
+      end
+    rescue => e
+      Rails.logger.error "Error destroying booking #{@booking.id}: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render json: { error: "Ошибка при удалении записи: #{e.message}" }, status: :internal_server_error
     end
   end
 

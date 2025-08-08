@@ -44,7 +44,7 @@
         <div class="flex justify-between items-start mb-2">
           <div class="flex-1">
             <h6 class="font-semibold text-gray-900 text-sm">
-              {{ slot.start_time }} - {{ slot.end_time }}
+              {{ formatSlotTime(slot.start_time) }} - {{ formatSlotTime(slot.end_time) }}
             </h6>
             <p class="text-xs text-gray-600">
               {{ getSlotTypeText(slot.slot_type) }}
@@ -177,5 +177,13 @@ const getStatusText = (status) => {
 
 const isBreak = (slot) => {
   return slot.slot_type === 'blocked' || slot.slot_type === 'lunch'
+}
+
+const formatSlotTime = (timeString) => {
+  // Слоты от API уже приходят как HH:MM, не используем ISO/UTC
+  if (typeof timeString === 'string') {
+    return timeString.substring(0, 5)
+  }
+  return timeString
 }
 </script> 

@@ -77,13 +77,22 @@ class User < ApplicationRecord
       )
     end
 
-    # Выходные дни
-    [0, 6].each do |day|
-      working_schedules.create!(
-        day_of_week: day,
-        is_working: false
-      )
-    end
+    # Понедельник (0) тоже рабочий день
+    working_schedules.create!(
+      day_of_week: 0,
+      start_time: '09:00',
+      end_time: '18:00',
+      lunch_start: '13:00',
+      lunch_end: '14:00',
+      is_working: true,
+      slot_duration_minutes: 60
+    )
+
+    # Выходные дни - только воскресенье (6)
+    working_schedules.create!(
+      day_of_week: 6,
+      is_working: false
+    )
   end
 
   def ensure_slots_for_date(date)
@@ -168,34 +177,42 @@ class User < ApplicationRecord
   def reconcile_bookings_with_slots_for_date(date)
     return unless master?
 
-    day_bookings = bookings.where(start_time: date.all_day)
-    Rails.logger.info "User##{id}: Reconciling #{day_bookings.count} bookings with time slots for #{date}"
+    # Сначала освобождаем все слоты на эту дату
+    time_slots.for_date(date).update_all(booking_id: nil, is_available: true, updated_at: Time.current)
+    Rails.logger.info "User##{id}: Freed all slots for #{date}"
 
-    day_bookings.find_each do |booking|
+    # Берем только активные записи (не отмененные и не удаленные)
+    active_bookings = bookings.where(start_time: date.all_day)
+                              .where.not(status: 'cancelled')
+                              .where.not(status: 'deleted')
+    Rails.logger.info "User##{id}: Reconciling #{active_bookings.count} active bookings with time slots for #{date}"
+
+    active_bookings.find_each do |booking|
       # Берем локальное время брони в зоне приложения,
       # чтобы корректно сопоставить с полем time в слоте
       local_start = booking.start_time.in_time_zone(Time.zone)
 
-      # Находим слот по часу и минуте начала
+      # Находим слот по часу и минуте начала используя Ruby фильтрацию
       slot = time_slots.for_date(date)
                        .where(slot_type: 'work')
-                       .where('EXTRACT(HOUR FROM start_time) = ? AND EXTRACT(MINUTE FROM start_time) = ?', local_start.hour, local_start.min)
-                       .first
-      if slot && slot.booking_id != booking.id
+                       .find { |s| s.start_time.hour == local_start.hour && s.start_time.min == local_start.min }
+      
+      if slot
         slot.update_columns(booking_id: booking.id, is_available: false, updated_at: Time.current)
-        Rails.logger.info "User##{id}: Linked slot #{slot.id} to booking #{booking.id}"
+        Rails.logger.info "User##{id}: Linked slot #{slot.id} (#{slot.start_time.strftime('%H:%M')}) to booking #{booking.id} (#{booking.status})"
+      else
+        Rails.logger.warn "User##{id}: No slot found for booking #{booking.id} at #{local_start.strftime('%H:%M')}"
       end
 
       # Если бронь длиннее одного слота, пытаемся связать последующие слоты
       if slot && booking.service&.duration.to_i > slot.duration_minutes
         required_slots = (booking.service.duration.to_f / slot.duration_minutes).ceil
         (1...required_slots).each do |i|
-          next_start = Time.zone.parse("2000-01-01 #{slot.start_time.strftime('%H:%M')}") + (i * slot.duration)
+          next_start = Time.zone.parse("2000-01-01 #{slot.start_time.strftime('%H:%M')}") + (i * slot.duration_minutes).minutes
           follow_slot = time_slots.for_date(date)
                                    .where(slot_type: 'work')
-                                   .where('EXTRACT(HOUR FROM start_time) = ? AND EXTRACT(MINUTE FROM start_time) = ?', next_start.hour, next_start.min)
-                                   .first
-          if follow_slot && follow_slot.booking_id != booking.id
+                                   .find { |s| s.start_time.hour == next_start.hour && s.start_time.min == next_start.min }
+          if follow_slot
             follow_slot.update_columns(booking_id: booking.id, is_available: false, updated_at: Time.current)
             Rails.logger.info "User##{id}: Linked follow-up slot #{follow_slot.id} to booking #{booking.id}"
           end

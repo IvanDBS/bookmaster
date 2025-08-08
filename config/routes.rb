@@ -24,7 +24,7 @@ Rails.application.routes.draw do
       end
       
       # Bookings routes
-      resources :bookings, only: [:index, :show, :create] do
+      resources :bookings, only: [:index, :show, :create, :destroy] do
         member do
           patch :update_status
         end

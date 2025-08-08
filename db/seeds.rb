@@ -215,7 +215,7 @@ puts "Generating time slots for masters..."
 # Generate time slots for the next 14 days for all masters
 masters = User.where(role: 'master')
 (0..13).each do |day_offset|
-  date = day_offset.days.from_now.to_date
+  date = Date.current + day_offset.days
   masters.each do |master|
     master.ensure_slots_for_date(date)
   end
@@ -225,52 +225,57 @@ puts "Generated time slots for #{masters.count} masters for 14 days"
 puts "Creating bookings aligned to slots..."
 
 if User.exists?(role: 'master') && User.exists?(role: 'client')
-  masters = User.where(role: 'master')
+  masters = User.where(role: 'master').to_a
   clients = User.where(role: 'client').to_a
 
   # Фиксированные времена для записей
-  booking_times = ['09:00', '10:00', '11:00']
+  booking_times = ['09:00', '11:00'] # Убираем 10:00 чтобы избежать дубликатов
 
   (1..14).each do |day_offset|
-    date = day_offset.days.from_now.to_date
-    masters.each do |master|
-      # Генерируем/гарантируем слоты только для рабочих дней
+    date = Date.current + day_offset.days
+    
+    # Создаем только 2 записи в день (по одной на каждое время)
+    booking_times.each_with_index do |time_str, index|
+      # Выбираем случайного мастера для этой записи
+      master = masters.sample
+      
+      # Генерируем/гарантируем слоты для мастера
       master.ensure_slots_for_date(date)
       
-      booking_times.each_with_index do |time_str, index|
-        # Находим слот для этого времени
-        slot = master.time_slots.for_date(date)
-                           .work_slots
-                           .available
-                           .where('EXTRACT(HOUR FROM start_time) = ? AND EXTRACT(MINUTE FROM start_time) = ?', 
-                                  time_str.split(':')[0].to_i, time_str.split(':')[1].to_i)
-                           .first
-        
-        next unless slot # Пропускаем если слот не найден
-        
-        service = master.services.sample
-        client = clients.sample
-
-        start_dt = Time.zone.parse("#{slot.date} #{time_str}")
-        end_dt = start_dt + service.duration.minutes
-
-        booking = Booking.create!(
-          user: master,
-          service: service,
-          start_time: start_dt,
-          end_time: end_dt,
-          client_name: client.full_name,
-          client_email: client.email,
-          client_phone: client.phone,
-          status: ['pending', 'confirmed'].sample
-        )
-
-        # Правильно связываем слот с записью
-        slot.update!(booking_id: booking.id, is_available: false)
-        puts "Created booking #{index + 1}/3: #{client.full_name} -> #{master.full_name} (#{service.name}) on #{start_dt.strftime('%d.%m.%Y %H:%M')}"
-      end
+      # Находим слот для этого времени используя Ruby фильтрацию
+      hour, minute = time_str.split(':').map(&:to_i)
+      slot = master.time_slots.for_date(date)
+                         .work_slots
+                         .available
+                         .find { |s| s.start_time.hour == hour && s.start_time.min == minute }
       
-      # Запускаем синхронизацию для правильной связи
+      next unless slot # Пропускаем если слот не найден
+      
+      service = master.services.sample
+      client = clients.sample
+
+      # Создаем время записи точно по слоту
+      start_dt = Time.zone.parse("#{date} #{time_str}")
+      end_dt = start_dt + service.duration.minutes
+
+      booking = Booking.create!(
+        user: master,
+        service: service,
+        start_time: start_dt,
+        end_time: end_dt,
+        client_name: client.full_name,
+        client_email: client.email,
+        client_phone: client.phone,
+        status: 'pending'  # Все записи создаются в статусе pending
+      )
+
+      # Правильно связываем слот с записью
+      slot.update!(booking_id: booking.id, is_available: false)
+      puts "Created booking #{index + 1}/2: #{client.full_name} -> #{master.full_name} (#{service.name}) on #{start_dt.strftime('%d.%m.%Y %H:%M')} in slot #{slot.id}"
+    end
+    
+    # Запускаем синхронизацию для всех мастеров
+    masters.each do |master|
       master.reconcile_bookings_with_slots_for_date(date)
     end
   end

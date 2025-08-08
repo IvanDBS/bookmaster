@@ -30,8 +30,8 @@ class Api::V1::TimeSlotsController < Api::V1::BaseController
         computed_available = slot.is_available && overlapping_booking.nil?
         {
           id: slot.id,
-          start_time: slot.start_time,
-          end_time: slot.end_time,
+          start_time: slot.start_time.strftime('%H:%M'),
+          end_time: slot.end_time.strftime('%H:%M'),
           duration_minutes: slot.duration_minutes,
           is_available: computed_available,
           slot_type: slot.slot_type,

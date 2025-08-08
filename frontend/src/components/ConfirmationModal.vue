@@ -71,9 +71,9 @@
                   class="px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
                   :class="{
                     'bg-green-600 hover:bg-green-700 focus:ring-green-500': type === 'confirm',
-                    'bg-red-600 hover:bg-red-700 focus:ring-red-500': type === 'cancel'
+                    'bg-red-600 hover:bg-red-700 focus:ring-red-500': type === 'cancel' || type === 'delete'
                   }">
-            {{ type === 'confirm' ? 'Подтвердить' : 'Отменить' }}
+            {{ type === 'confirm' ? 'Подтвердить' : type === 'cancel' ? 'Отменить' : 'Удалить' }}
           </button>
         </div>
       </div>
@@ -91,8 +91,8 @@ const props = defineProps({
   },
   type: {
     type: String,
-    default: 'confirm', // 'confirm' or 'cancel'
-    validator: (value) => ['confirm', 'cancel'].includes(value)
+    default: 'confirm', // 'confirm' or 'cancel' or 'delete'
+    validator: (value) => ['confirm', 'cancel', 'delete'].includes(value)
   },
   booking: {
     type: Object,
@@ -103,10 +103,12 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'confirm'])
 
-const title = props.type === 'confirm' ? 'Подтверждение записи' : 'Отмена записи'
-const message = props.type === 'confirm' 
-  ? 'Вы уверены, что хотите подтвердить эту запись?' 
-  : 'Вы уверены, что хотите отменить эту запись? Это действие нельзя отменить.'
+const title = props.type === 'confirm' ? 'Подтверждение записи' : 
+              props.type === 'cancel' ? 'Отмена записи' : 'Удаление записи'
+
+const message = props.type === 'confirm' ? 'Вы уверены, что хотите подтвердить эту запись?' :
+               props.type === 'cancel' ? 'Вы уверены, что хотите отменить эту запись?' :
+               'Вы уверены, что хотите удалить эту запись?'
 
 const closeModal = () => {
   emit('close')

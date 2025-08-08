@@ -34,7 +34,10 @@ export function useCalendar() {
   const isDayWorking = computed(() => {
     if (!selectedDate.value) return false
     
-    const dateString = selectedDate.value.toISOString().split('T')[0]
+    // Исправляем проблему с датами - используем локальное время
+    const dateString = selectedDate.value.getFullYear() + '-' + 
+                      String(selectedDate.value.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(selectedDate.value.getDate()).padStart(2, '0')
     const exception = workingDayExceptions.value.find(ex => ex.date === dateString)
     
     if (exception) {
@@ -62,7 +65,9 @@ export function useCalendar() {
       const date = new Date(startDate)
       date.setDate(startDate.getDate() + i)
       
-      const dateString = date.toISOString().split('T')[0]
+      // Исправляем проблему с датами - используем локальное время
+      // Локальный ключ даты (без ISO и UTC) — исправляет смещения 12→11 числа
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
       const daySlots = slotsCache.value.get(dateString) || []
       
       // Анализируем слоты для определения статуса дня
@@ -198,7 +203,10 @@ export function useCalendar() {
         return []
       }
 
-      const dateString = date.toISOString().split('T')[0]
+      // Исправляем проблему с датами - используем локальное время вместо UTC
+      const dateString = date.getFullYear() + '-' + 
+                        String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(date.getDate()).padStart(2, '0')
       
       if (slotsCache.value.has(dateString)) {
         console.log(`Cache HIT for ${dateString}. Slots:`, slotsCache.value.get(dateString).length)
@@ -281,7 +289,10 @@ export function useCalendar() {
   // Инвалидация кэша слотов для конкретной даты
   const invalidateCacheForDate = (date) => {
     if (!date) return
-    const key = date.toISOString().split('T')[0]
+    // Исправляем проблему с датами - используем локальное время
+    const key = date.getFullYear() + '-' + 
+                String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(date.getDate()).padStart(2, '0')
     slotsCache.value.delete(key)
   }
 
@@ -318,7 +329,10 @@ export function useCalendar() {
         return
       }
 
-      const dateString = selectedDate.value.toISOString().split('T')[0]
+      // Исправляем проблему с датами - используем локальное время
+      const dateString = selectedDate.value.getFullYear() + '-' + 
+                        String(selectedDate.value.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(selectedDate.value.getDate()).padStart(2, '0')
       console.log('Toggling day status for:', dateString)
       
       const updatedException = await api.toggleWorkingDay(dateString, authStore.token)

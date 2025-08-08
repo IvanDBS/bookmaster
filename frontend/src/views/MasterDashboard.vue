@@ -282,6 +282,12 @@
                         ✕
                       </button>
                     </div>
+                    <!-- Кнопка удаления для confirmed -->
+                    <div v-else-if="slot.booking && slot.booking.status === 'confirmed'" class="flex space-x-1">
+                      <button @click="showDeleteModal(slot.booking)" class="text-red-600 hover:text-red-700 text-xs font-medium" title="Удалить запись">
+                        🗑
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div v-if="slot.booking" class="mt-2 p-2 bg-blue-50 rounded">
@@ -299,8 +305,8 @@
             </div>
           </div>
 
-          <!-- Selected Date Bookings -->
-          <div v-if="selectedDateBookings.length > 0" class="mt-6">
+          <!-- Selected Date Bookings - СКРЫТО, записи показываются только в слотах -->
+          <!-- <div v-if="selectedDateBookings.length > 0" class="mt-6">
             <h5 class="font-semibold text-gray-900 mb-3">
               Записи на {{ formatSelectedDate() }}
             </h5>
@@ -335,12 +341,17 @@
                         ✕
                       </button>
                     </div>
+                    <div v-else-if="booking.status === 'confirmed'" class="flex space-x-1 mt-1">
+                      <button @click="showDeleteModal(booking)" class="text-red-600 hover:text-red-700 text-xs font-medium" title="Удалить запись">
+                        🗑
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div v-else-if="selectedDate && selectedDateSlots.length === 0" class="mt-6 text-center py-4">
+          </div> -->
+          <div v-if="selectedDate && selectedDateSlots.length === 0" class="mt-6 text-center py-4">
             <p class="text-gray-500">На выбранную дату слотов нет</p>
           </div>
         </div>
@@ -605,22 +616,22 @@ const sortedSelectedDateBookings = computed(() => {
   })
 })
 
-// Computed для определения статуса выбранного дня
+// Computed для определения статуса выбранного дня (локальная дата, без ISO/UTC)
 const isDayWorking = computed(() => {
   if (!selectedDate.value) return false
-  
-  const dateString = selectedDate.value.toISOString().split('T')[0]
+
+  const dateString = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
   const exception = workingDayExceptions.value.find(ex => ex.date === dateString)
-  
+
   if (exception) {
     // Исключение имеет приоритет
-    return exception.is_working
+    return !!exception.is_working
   }
-  
+
   // Используем расписание
   const dayOfWeek = selectedDate.value.getDay()
   const schedule = workingSchedules.value.find(s => s.day_of_week === dayOfWeek)
-  return schedule ? schedule.is_working : false
+  return !!(schedule && schedule.is_working)
 })
 
 
@@ -650,14 +661,15 @@ const calendarDates = computed(() => {
   const startDate = new Date(firstDay)
   startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1))
   
-  const dates = []
-  const today = new Date()
+    const dates = []
+    const today = new Date()
   
   for (let i = 0; i < 42; i++) {
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
     
-    const dateString = date.toISOString().split('T')[0]
+    // ВАЖНО: используем локальную дату как ключ, чтобы не было смещения дня при TZ
+    const dateString = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
     const daySlots = slotsCache.value.get(dateString) || []
     
     // Анализируем слоты для определения статуса дня
@@ -767,14 +779,15 @@ const nextMonthDates = computed(() => {
   const startDate = new Date(firstDay)
   startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1))
   
-  const dates = []
-  const today = new Date()
+    const dates = []
+    const today = new Date()
   
   for (let i = 0; i < 42; i++) {
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
     
-    const dateString = date.toISOString().split('T')[0]
+    // ВАЖНО: используем локальную дату как ключ, чтобы не было смещения дня при TZ
+    const dateString = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
     const daySlots = slotsCache.value.get(dateString) || []
     
     // Анализируем слоты для определения статуса дня
@@ -1012,12 +1025,25 @@ const toggleDayStatus = async () => {
       return
     }
 
-    const dateString = selectedDate.value.toISOString().split('T')[0]
+    const dateString = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
     console.log('Toggling day status for:', dateString)
     
+    // Оптимистичное обновление — мгновенная анимация переключателя
+    const currentIsWorking = isDayWorking.value
+    const idx = workingDayExceptions.value.findIndex(ex => ex.date === dateString)
+    const prevException = idx !== -1 ? { ...workingDayExceptions.value[idx] } : null
+    const optimistic = { id: prevException?.id, date: dateString, is_working: !currentIsWorking, reason: prevException?.reason || null }
+    if (idx !== -1) {
+      workingDayExceptions.value[idx] = optimistic
+    } else {
+      workingDayExceptions.value.push(optimistic)
+    }
+    slotsCache.value.delete(dateString)
+    
+    // Серверный вызов
     const updatedException = await api.toggleWorkingDay(dateString, authStore.token)
     
-    // Обновляем локальные данные
+    // Приводим локальное состояние к серверному
     const existingIndex = workingDayExceptions.value.findIndex(ex => ex.date === dateString)
     if (existingIndex !== -1) {
       workingDayExceptions.value[existingIndex] = updatedException
@@ -1025,13 +1051,18 @@ const toggleDayStatus = async () => {
       workingDayExceptions.value.push(updatedException)
     }
     
-    // Очищаем кэш слотов для этой даты и перезагружаем
-    const dateKey = dateString
-    slotsCache.value.delete(dateKey)
     await loadSlotsForSelectedDate(selectedDate.value)
-    
     console.log('Day status toggled successfully:', updatedException)
   } catch (error) {
+    // Откат, если сервер вернул ошибку
+    try {
+      if (selectedDate.value) {
+        const dateString = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
+        const idx = workingDayExceptions.value.findIndex(ex => ex.date === dateString)
+        if (idx !== -1) workingDayExceptions.value.splice(idx, 1)
+        await loadSlotsForSelectedDate(selectedDate.value)
+      }
+    } catch (_) {}
     console.error('Error toggling day status:', error)
     alert('Ошибка при изменении статуса дня: ' + error.message)
   }
@@ -1044,7 +1075,7 @@ const loadSlotsForDate = async (date) => {
       return []
     }
 
-    const dateString = date.toISOString().split('T')[0]
+    const dateString = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
     
     // Проверяем кэш
     if (slotsCache.value.has(dateString)) {
@@ -1107,8 +1138,9 @@ const loadSlotsForVisibleDates = async () => {
     }
     
     // Убираем дубликаты
-    const uniqueDates = Array.from(new Set(dates.map(d => d.toISOString().split('T')[0])))
-                             .map(dateStr => new Date(dateStr))
+    const uniqueDates = Array.from(new Set(
+      dates.map(d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)
+    )).map(dateStr => new Date(dateStr))
     
     // Загружаем слоты для всех дат параллельно
     await Promise.all(uniqueDates.map(date => loadSlotsForDate(date)))
@@ -1248,6 +1280,12 @@ const showCancelModal = (booking) => {
   showConfirmationModal.value = true
 }
 
+const showDeleteModal = (booking) => {
+  selectedBooking.value = booking
+  modalType.value = 'delete'
+  showConfirmationModal.value = true
+}
+
 const closeConfirmationModal = () => {
   showConfirmationModal.value = false
   selectedBooking.value = null
@@ -1259,7 +1297,49 @@ const handleModalConfirm = async (bookingId) => {
       throw new Error('Не авторизован')
     }
 
-    const status = modalType.value === 'confirm' ? 'confirmed' : 'cancelled'
+    let status
+    if (modalType.value === 'confirm') {
+      status = 'confirmed'
+    } else if (modalType.value === 'cancel') {
+      status = 'cancelled'
+    } else if (modalType.value === 'delete') {
+      // Для удаления используем DELETE запрос
+      const response = await fetch(`http://localhost:3000/api/v1/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authStore.token}`,
+        },
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete booking')
+      }
+      
+      // Обновляем записи
+      await loadBookings()
+      
+      // Принудительно очищаем кеш для всех дат
+      if (selectedDate.value) {
+      // Очищаем кеш для выбранной даты (локальный ключ)
+      const dateKey = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
+        slotsCache.value.delete(dateKey)
+        
+        // Перезагружаем данные
+        await loadSlotsForSelectedDate(selectedDate.value)
+        await loadBookingsForDate(selectedDate.value)
+      }
+      
+      // Обновляем календарь
+      await loadSlotsForVisibleDates()
+      
+      closeConfirmationModal()
+      return
+    } else {
+      status = 'cancelled'
+    }
+
     const response = await fetch(`http://localhost:3000/api/v1/bookings/${bookingId}/update_status`, {
       method: 'PATCH',
       headers: {
@@ -1280,7 +1360,7 @@ const handleModalConfirm = async (bookingId) => {
     // Принудительно очищаем кеш для всех дат
     if (selectedDate.value) {
       // Очищаем кеш для выбранной даты
-      const dateKey = selectedDate.value.toISOString().split('T')[0]
+      const dateKey = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
       slotsCache.value.delete(dateKey)
       
       // Перезагружаем данные
@@ -1294,7 +1374,7 @@ const handleModalConfirm = async (bookingId) => {
     closeConfirmationModal()
   } catch (error) {
     console.error(`Error ${modalType.value}ing booking:`, error)
-    alert(`Ошибка при ${modalType.value === 'confirm' ? 'подтверждении' : 'отмене'} записи: ` + error.message)
+    alert(`Ошибка при ${modalType.value === 'confirm' ? 'подтверждении' : modalType.value === 'cancel' ? 'отмене' : 'удалении'} записи: ` + error.message)
   }
 }
 
@@ -1524,6 +1604,22 @@ const getSlotStatusText = (slot) => {
 const isBreak = (slot) => slot.slot_type === 'blocked' || slot.slot_type === 'lunch'
 
 const onToggleSlotBreak = async (slot, isBreakNext) => {
+  // Оптимистичное обновление для мгновенной реакции UI
+  const dateKey = selectedDate.value
+    ? `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
+    : null
+
+  const prevSlots = [...selectedDateSlots.value]
+  const nextSlots = selectedDateSlots.value.map(s => {
+    if (s.id !== slot.id) return s
+    if (isBreakNext) {
+      return { ...s, slot_type: 'blocked', is_available: false }
+    }
+    return { ...s, slot_type: 'work', is_available: true }
+  })
+  selectedDateSlots.value = nextSlots
+  if (dateKey) slotsCache.value.set(dateKey, nextSlots)
+
   try {
     if (!authStore.token) throw new Error('Не авторизован')
     const response = await fetch(`http://localhost:3000/api/v1/time_slots/${slot.id}`, {
@@ -1539,11 +1635,13 @@ const onToggleSlotBreak = async (slot, isBreakNext) => {
       throw new Error(json.error || 'Не удалось обновить слот')
     }
     if (selectedDate.value) {
-      const dateKey = selectedDate.value.toISOString().split('T')[0]
       slotsCache.value.delete(dateKey)
       await loadSlotsForSelectedDate(selectedDate.value)
     }
   } catch (e) {
+    // Откат при ошибке
+    selectedDateSlots.value = prevSlots
+    if (dateKey) slotsCache.value.set(dateKey, prevSlots)
     console.error('Failed to toggle break for slot', slot.id, e)
     alert('Не удалось изменить статус слота: ' + e.message)
   }
