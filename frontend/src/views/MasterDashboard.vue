@@ -63,9 +63,9 @@
                      @click="selectDate(date)"
                      class="relative"
                      :class="[
-                       'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border',
+                       'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2',
                        date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
-                       date.isSelected ? 'bg-blue-500 text-white border-blue-600 shadow-lg' : '',
+                       date.isSelected ? 'border-blue-500 bg-white text-gray-900 shadow-md' : 'border-transparent',
                        date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
                        date.isPast ? 'text-gray-400 cursor-not-allowed' : '',
                        !date.isSelected && !date.isToday && getDateBgClass(date),
@@ -115,9 +115,9 @@
                      @click="selectDate(date)"
                      class="relative"
                      :class="[
-                       'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border',
+                       'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2',
                        date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
-                       date.isSelected ? 'bg-blue-500 text-white border-blue-600 shadow-lg' : '',
+                       date.isSelected ? 'border-blue-500 bg-white text-gray-900 shadow-md' : 'border-transparent',
                        date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
                        date.isPast ? 'text-gray-400 cursor-not-allowed' : '',
                        !date.isSelected && !date.isToday && getDateBgClass(date),
@@ -305,18 +305,25 @@
             </div>
             
             <!-- Кнопка добавления нового слота -->
-            <div v-if="selectedDateSlots.length > 0" class="mt-4 flex justify-center">
+            <div v-if="selectedDateSlots.length > 0" class="mt-6 flex justify-center">
               <button 
                 @click="addNewSlot"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm flex items-center space-x-2"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                :class="[
+                  isAddingSlot 
+                    ? 'bg-gray-400 text-white focus:ring-gray-500' 
+                    : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white focus:ring-blue-500'
+                ]"
                 :disabled="isAddingSlot"
               >
-                <svg v-if="isAddingSlot" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg v-if="isAddingSlot" class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span v-else>➕</span>
-                <span>{{ isAddingSlot ? 'Добавляем...' : 'ДОБАВИТЬ ОКОШКО' }}</span>
+                <svg v-else class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span>{{ isAddingSlot ? 'Добавляем...' : 'Добавить окно' }}</span>
               </button>
             </div>
           </div>
