@@ -65,7 +65,7 @@
                      :class="[
                        'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2',
                        date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
-                       date.isSelected ? 'border-blue-500 bg-white text-gray-900 shadow-md' : 'border-transparent',
+                       date.isSelected ? 'border-blue-500 bg-transparent text-gray-900 shadow-md' : 'border-transparent',
                        date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
                        date.isPast ? 'text-gray-400 cursor-not-allowed' : '',
                        !date.isSelected && !date.isToday && getDateBgClass(date),
@@ -117,7 +117,7 @@
                      :class="[
                        'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2',
                        date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
-                       date.isSelected ? 'border-blue-500 bg-white text-gray-900 shadow-md' : 'border-transparent',
+                       date.isSelected ? 'border-blue-500 bg-transparent text-gray-900 shadow-md' : 'border-transparent',
                        date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
                        date.isPast ? 'text-gray-400 cursor-not-allowed' : '',
                        !date.isSelected && !date.isToday && getDateBgClass(date),
