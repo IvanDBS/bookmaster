@@ -72,9 +72,15 @@ export function useCalendar() {
       
       // Анализируем слоты для определения статуса дня
       const workSlots = daySlots.filter(slot => slot.slot_type === 'work')
+      const blockedSlots = daySlots.filter(slot => slot.slot_type === 'blocked')
       const availableSlots = workSlots.filter(slot => slot.is_available && !slot.booked)
       const bookedSlots = workSlots.filter(slot => slot.booked)
       const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
+      
+      // Общее количество слотов, которые могут быть забронированы (рабочие + заблокированные)
+      const totalBookableSlots = workSlots.length + blockedSlots.length
+      // Количество доступных слотов (только рабочие, которые доступны и не забронированы)
+      const totalAvailableSlots = availableSlots.length
       
       // Определяем статус дня
       const dayOfWeek = date.getDay()
@@ -87,30 +93,15 @@ export function useCalendar() {
       const isDayWorkingFinal = exception ? exception.is_working : (scheduleForDay?.is_working || false)
 
       if (isDayWorkingFinal) {
-        if (workSlots.length === 0) {
+        if (totalAvailableSlots === 0) {
+          loadLevel = 'full'
+          dayStatus = 'busy'
+        } else if (totalAvailableSlots < totalBookableSlots) {
+          loadLevel = 'moderate'
+          dayStatus = 'partial'
+        } else {
           loadLevel = 'free'
           dayStatus = 'available'
-        } else {
-          const totalSlots = workSlots.length
-          const occupiedSlots = bookedSlots.length
-          const occupancyRate = totalSlots > 0 ? occupiedSlots / totalSlots : 0
-
-          if (occupancyRate === 0) {
-            loadLevel = 'free'
-            dayStatus = 'available'
-          } else if (occupancyRate < 0.3) {
-            loadLevel = 'light'
-            dayStatus = 'available'
-          } else if (occupancyRate < 0.7) {
-            loadLevel = 'moderate'
-            dayStatus = 'partial'
-          } else if (occupancyRate < 1) {
-            loadLevel = 'busy'
-            dayStatus = 'partial'
-          } else {
-            loadLevel = 'full'
-            dayStatus = 'busy'
-          }
         }
       } else {
         loadLevel = 'non_working'
@@ -126,8 +117,8 @@ export function useCalendar() {
         isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString(),
         isPast: date < today,
         hasPendingBookings: pendingSlots.length > 0,
-        totalSlots: workSlots.length,
-        availableSlots: availableSlots.length,
+        totalSlots: totalBookableSlots,
+        availableSlots: totalAvailableSlots,
         bookedSlots: bookedSlots.length,
         pendingSlots: pendingSlots.length,
         loadLevel: loadLevel,
@@ -360,52 +351,61 @@ export function useCalendar() {
     if (date.isPast) return 'bg-gray-50 border-gray-200'
     
     if (date.loadLevel === 'non_working') {
-      return 'bg-gray-100 border-gray-300 cursor-not-allowed'
+      return 'bg-gray-100 border-gray-300 cursor-not-allowed' // Серый - выходной
     }
     
-    if (date.loadLevel === 'free') {
-      return 'bg-green-50 border-green-200 hover:bg-green-100'
+    // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
+    if (date.totalSlots > 0 && date.availableSlots === 0) {
+      return 'bg-red-100 border-red-300' // Красный - нет свободных слотов (приоритет над оранжевым)
     }
     
-    if (date.totalSlots === 0) {
-      return 'bg-red-50 border-red-200 hover:bg-red-100'
+    // Если есть записи (bookedSlots > 0)
+    if (date.bookedSlots > 0) {
+      return 'bg-orange-100 border-orange-300' // Оранжевый - есть записи
     }
-
-    return 'bg-green-50 border-green-200 hover:bg-green-100'
+    
+    // Если есть свободные слоты (рабочий день с доступными слотами)
+    return 'bg-green-50 border-green-300' // Зеленый - рабочий день со свободными слотами
   }
 
   const getDateBorderClass = (date) => {
     if (date.isPast) return 'border-gray-200'
     
     if (date.loadLevel === 'non_working') {
-      return 'border-gray-300'
+      return 'border-gray-300' // Серый - выходной
     }
     
-    if (date.loadLevel === 'free') {
-      return 'border-green-200'
+    // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
+    if (date.totalSlots > 0 && date.availableSlots === 0) {
+      return 'border-red-300' // Красный - нет свободных слотов (приоритет над оранжевым)
     }
     
-    if (date.totalSlots === 0) {
-      return 'border-red-200'
+    // Если есть записи (bookedSlots > 0)
+    if (date.bookedSlots > 0) {
+      return 'border-orange-300' // Оранжевый - есть записи
     }
-
-    return 'border-green-200'
+    
+    // Если есть свободные слоты (рабочий день с доступными слотами)
+    return 'border-green-300' // Зеленый - рабочий день со свободными слотами
   }
 
   const getBookingDotClass = (date) => {
     if (date.loadLevel === 'non_working') {
-      return 'bg-gray-400'
+      return 'bg-gray-400' // Серые точки для выходного
     }
     
-    if (date.loadLevel === 'free') {
-      return 'bg-green-400'
+    // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
+    if (date.totalSlots > 0 && date.availableSlots === 0) {
+      return 'bg-red-400' // Красные точки для дня без свободных слотов (приоритет над оранжевым)
     }
     
-    if (date.totalSlots === 0) {
-      return 'bg-red-400'
+    // Если есть записи (bookedSlots > 0)
+    if (date.bookedSlots > 0) {
+      return 'bg-orange-400' // Оранжевые точки для дней с записями
     }
-
-    return 'bg-green-400'
+    
+    // Если есть свободные слоты (рабочий день с доступными слотами)
+    return 'bg-green-400' // Зеленые точки для свободных рабочих дней
   }
 
   const formatSelectedDate = () => {

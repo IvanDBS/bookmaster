@@ -65,19 +65,19 @@
                      :class="[
                        'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2',
                        date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
-                       date.isSelected ? 'border-blue-500 bg-transparent text-gray-900 shadow-md' : 'border-transparent',
+                       date.isSelected ? 'border-blue-500 text-gray-900 shadow-md' : 'border-transparent',
                        date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
                        date.isPast ? 'text-gray-400 cursor-not-allowed' : '',
-                       !date.isSelected && !date.isToday && getDateBgClass(date),
-                       !date.isSelected && !date.isToday && getDateBorderClass(date)
+                       getDateBgClass(date),
+                       getDateBorderClass(date)
                      ]">
                   <span class="text-xs font-medium">{{ date.day }}</span>
                   <!-- Индикатор нерабочего дня (приоритет выше загруженности) -->
-                  <div v-if="date.loadLevel === 'non_working' && !date.isSelected" class="mt-0.5">
+                  <!-- <div v-if="date.loadLevel === 'non_working'" class="mt-0.5">
                     <span class="text-xs text-gray-400">⚫</span>
-                  </div>
+                  </div> -->
                   <!-- Индикатор загруженности на основе слотов -->
-                  <div v-else-if="date.totalSlots > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
+                  <!-- <div v-else-if="date.totalSlots > 0" class="flex items-center space-x-0.5 mt-0.5">
                     <div v-for="n in Math.min(date.bookedSlots, 4)" :key="n" 
                          :class="[
                            'w-1 h-1 rounded-full',
@@ -85,7 +85,7 @@
                          ]">
                     </div>
                     <span v-if="date.bookedSlots > 4" class="text-xs font-bold">+</span>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
@@ -117,19 +117,19 @@
                      :class="[
                        'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2',
                        date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
-                       date.isSelected ? 'border-blue-500 bg-transparent text-gray-900 shadow-md' : 'border-transparent',
+                       date.isSelected ? 'border-blue-500 text-gray-900 shadow-md' : 'border-transparent',
                        date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
                        date.isPast ? 'text-gray-400 cursor-not-allowed' : '',
-                       !date.isSelected && !date.isToday && getDateBgClass(date),
-                       !date.isSelected && !date.isToday && getDateBorderClass(date)
+                       getDateBgClass(date),
+                       getDateBorderClass(date)
                      ]">
                   <span class="text-xs font-medium">{{ date.day }}</span>
                   <!-- Индикатор нерабочего дня (приоритет выше загруженности) -->
-                  <div v-if="date.loadLevel === 'non_working' && !date.isSelected" class="mt-0.5">
+                  <!-- <div v-if="date.loadLevel === 'non_working'" class="mt-0.5">
                     <span class="text-xs text-gray-400">⚫</span>
-                  </div>
+                  </div> -->
                   <!-- Индикатор загруженности на основе слотов -->
-                  <div v-else-if="date.totalSlots > 0 && !date.isSelected" class="flex items-center space-x-0.5 mt-0.5">
+                  <!-- <div v-else-if="date.totalSlots > 0" class="flex items-center space-x-0.5 mt-0.5">
                     <div v-for="n in Math.min(date.bookedSlots, 4)" :key="n" 
                          :class="[
                            'w-1 h-1 rounded-full',
@@ -137,7 +137,7 @@
                          ]">
                     </div>
                     <span v-if="date.bookedSlots > 4" class="text-xs font-bold">+</span>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
@@ -146,54 +146,22 @@
           <!-- Calendar Legend -->
           <div class="mt-6 bg-gray-50 rounded-lg p-4">
             <h5 class="font-semibold text-gray-900 mb-3">Обозначения загруженности</h5>
-            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
               <div class="flex items-center space-x-2">
-                <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded flex items-center justify-center">
-                  <span class="text-xs text-gray-400">⚫</span>
-                </div>
+                <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
                 <span class="text-gray-700">Выходной</span>
               </div>
               <div class="flex items-center space-x-2">
-                <div class="w-4 h-4 bg-green-50 border border-green-200 rounded flex items-center justify-center">
-                  <div class="w-1 h-1 bg-gray-400 rounded-full opacity-0"></div>
-                </div>
-                <span class="text-gray-700">Свободен</span>
+                <div class="w-4 h-4 bg-green-50 border border-green-300 rounded"></div>
+                <span class="text-gray-700">Записей нет</span>
               </div>
               <div class="flex items-center space-x-2">
-                <div class="w-4 h-4 bg-lime-50 border border-lime-200 rounded flex items-center justify-center">
-                  <div class="w-1 h-1 bg-lime-400 rounded-full"></div>
-                </div>
-                <span class="text-gray-700">1 слот</span>
+                <div class="w-4 h-4 bg-orange-100 border border-orange-300 rounded"></div>
+                <span class="text-gray-700">Есть записи</span>
               </div>
               <div class="flex items-center space-x-2">
-                <div class="w-4 h-4 bg-yellow-50 border border-yellow-200 rounded flex items-center justify-center">
-                  <div class="flex space-x-0.5">
-                    <div class="w-1 h-1 bg-yellow-400 rounded-full"></div>
-                    <div class="w-1 h-1 bg-yellow-400 rounded-full"></div>
-                  </div>
-                </div>
-                <span class="text-gray-700">2-3 слота</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <div class="w-4 h-4 bg-orange-50 border border-orange-200 rounded flex items-center justify-center">
-                  <div class="flex space-x-0.5">
-                    <div class="w-1 h-1 bg-orange-400 rounded-full"></div>
-                    <div class="w-1 h-1 bg-orange-400 rounded-full"></div>
-                    <div class="w-1 h-1 bg-orange-400 rounded-full"></div>
-                  </div>
-                </div>
-                <span class="text-gray-700">4-5 слотов</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <div class="w-4 h-4 bg-red-50 border border-red-200 rounded flex items-center justify-center">
-                  <div class="flex space-x-0.5">
-                    <div class="w-1 h-1 bg-red-400 rounded-full"></div>
-                    <div class="w-1 h-1 bg-red-400 rounded-full"></div>
-                    <div class="w-1 h-1 bg-red-400 rounded-full"></div>
-                    <div class="w-1 h-1 bg-red-400 rounded-full"></div>
-                  </div>
-                </div>
-                <span class="text-gray-700">6+ слотов</span>
+                <div class="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
+                <span class="text-gray-700">Нет свободных мест</span>
               </div>
             </div>
           </div>
@@ -698,9 +666,15 @@ const calendarDates = computed(() => {
     
     // Анализируем слоты для определения статуса дня
     const workSlots = daySlots.filter(slot => slot.slot_type === 'work')
+    const blockedSlots = daySlots.filter(slot => slot.slot_type === 'blocked')
     const availableSlots = workSlots.filter(slot => slot.is_available && !slot.booked)
     const bookedSlots = workSlots.filter(slot => slot.booked)
     const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
+    
+    // Общее количество слотов, которые могут быть забронированы (рабочие + заблокированные)
+    const totalBookableSlots = workSlots.length + blockedSlots.length
+    // Количество доступных слотов (только рабочие, которые доступны и не забронированы)
+    const totalAvailableSlots = availableSlots.length
     
     // Определяем статус дня на основе расписания, исключений и слотов (CURRENT MONTH)
     const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, etc.
@@ -748,6 +722,34 @@ const calendarDates = computed(() => {
       dayStatus = 'non_working';
     }
     
+    // Отладка для 20 августа
+    if (dateString === '2025-08-20') {
+      console.log(`Debug August 20th:`, {
+        daySlots: daySlots.length,
+        workSlots: workSlots.length,
+        blockedSlots: blockedSlots.length,
+        availableSlots: availableSlots.length,
+        bookedSlots: bookedSlots.length,
+        totalSlots: workSlots.length + blockedSlots.length,
+        availableSlots: totalAvailableSlots,
+        loadLevel,
+        dayStatus,
+        allSlots: daySlots.map(s => ({
+          id: s.id,
+          start_time: s.start_time,
+          slot_type: s.slot_type,
+          is_available: s.is_available,
+          booked: s.booked,
+          booking: s.booking
+        })),
+        bookedSlotsDetails: bookedSlots.map(s => ({
+          id: s.id,
+          start_time: s.start_time,
+          booking: s.booking
+        }))
+      })
+    }
+    
     // Отладка для вторника
     if (date.getDay() === 2) {
       console.log(`Debug Tuesday ${dateString}:`, {
@@ -782,8 +784,8 @@ const calendarDates = computed(() => {
       isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString(),
       isPast: date < today,
       hasPendingBookings: pendingSlots.length > 0,
-      totalSlots: workSlots.length,
-      availableSlots: availableSlots.length,
+      totalSlots: workSlots.length + blockedSlots.length,
+      availableSlots: totalAvailableSlots,
       bookedSlots: bookedSlots.length,
       pendingSlots: pendingSlots.length,
       loadLevel: loadLevel,
@@ -816,9 +818,15 @@ const nextMonthDates = computed(() => {
     
     // Анализируем слоты для определения статуса дня
     const workSlots = daySlots.filter(slot => slot.slot_type === 'work')
+    const blockedSlots = daySlots.filter(slot => slot.slot_type === 'blocked')
     const availableSlots = workSlots.filter(slot => slot.is_available && !slot.booked)
     const bookedSlots = workSlots.filter(slot => slot.booked)
     const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
+    
+    // Общее количество слотов, которые могут быть забронированы (рабочие + заблокированные)
+    const totalBookableSlots = workSlots.length + blockedSlots.length
+    // Количество доступных слотов (только рабочие, которые доступны и не забронированы)
+    const totalAvailableSlots = availableSlots.length
     
     // Определяем статус дня на основе расписания, исключений и слотов (NEXT MONTH)
     const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, etc.
@@ -900,8 +908,8 @@ const nextMonthDates = computed(() => {
       isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString(),
       isPast: date < today,
       hasPendingBookings: pendingSlots.length > 0,
-      totalSlots: workSlots.length,
-      availableSlots: availableSlots.length,
+      totalSlots: workSlots.length + blockedSlots.length,
+      availableSlots: totalAvailableSlots,
       bookedSlots: bookedSlots.length,
       pendingSlots: pendingSlots.length,
       loadLevel: loadLevel,
@@ -1177,12 +1185,21 @@ const loadSlotsForVisibleDates = async () => {
 
 // Добавляем функцию для принудительного обновления календаря
 const refreshCalendar = async () => {
-  console.log('Refreshing calendar...')
+  console.log('Forcing calendar refresh...')
+  
+  // Очищаем весь кэш слотов
   slotsCache.value.clear()
-  await loadWorkingSchedules() // Перезагружаем расписание
-  await loadWorkingDayExceptions() // Перезагружаем исключения
+  
+  // Перезагружаем слоты для видимых дат
   await loadSlotsForVisibleDates()
-  console.log('Calendar refreshed')
+  
+  // Если есть выбранная дата, перезагружаем её данные
+  if (selectedDate.value) {
+    await loadSlotsForSelectedDate(selectedDate.value)
+    await loadBookingsForDate(selectedDate.value)
+  }
+  
+  console.log('Calendar refresh completed')
 }
 
 const editService = (service) => {
@@ -1344,19 +1361,8 @@ const handleModalConfirm = async (bookingId) => {
       // Обновляем записи
       await loadBookings()
       
-      // Принудительно очищаем кеш для всех дат
-      if (selectedDate.value) {
-      // Очищаем кеш для выбранной даты (локальный ключ)
-      const dateKey = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
-        slotsCache.value.delete(dateKey)
-        
-        // Перезагружаем данные
-        await loadSlotsForSelectedDate(selectedDate.value)
-        await loadBookingsForDate(selectedDate.value)
-      }
-      
-      // Обновляем календарь
-      await loadSlotsForVisibleDates()
+      // Принудительно обновляем весь календарь
+      await refreshCalendar()
       
       closeConfirmationModal()
       return
@@ -1525,62 +1531,61 @@ const getDateBgClass = (date) => {
   if (date.isPast) return 'bg-gray-50 border-gray-200'
   
   if (date.loadLevel === 'non_working') {
-    return 'bg-gray-100 border-gray-300 cursor-not-allowed' // Выходной
+    return 'bg-gray-100 border-gray-300 cursor-not-allowed' // Серый - выходной
   }
   
-  // Если день помечен как свободный в loadLevel, то зеленый
-  if (date.loadLevel === 'free') {
-    return 'bg-green-50 border-green-200 hover:bg-green-100' // Зеленый для свободного рабочего дня
+  // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
+  if (date.totalSlots > 0 && date.availableSlots === 0) {
+    return 'bg-red-100 border-red-300' // Красный - нет свободных слотов (приоритет над оранжевым)
   }
   
-  // Если слотов нет совсем (для рабочего дня) и это не free loadLevel
-  if (date.totalSlots === 0) {
-    return 'bg-red-50 border-red-200 hover:bg-red-100' // Красный (нет слотов)
+  // Если есть записи (bookedSlots > 0)
+  if (date.bookedSlots > 0) {
+    return 'bg-orange-100 border-orange-300' // Оранжевый - есть записи
   }
-
-  // Если есть слоты (даже 1+), то зеленый
-  return 'bg-green-50 border-green-200 hover:bg-green-100' // Зеленый (есть записи или свободно)
+  
+  // Если есть свободные слоты (рабочий день с доступными слотами)
+  return 'bg-green-50 border-green-300' // Зеленый - рабочий день со свободными слотами
 }
 
 const getDateBorderClass = (date) => {
   if (date.isPast) return 'border-gray-200'
   
   if (date.loadLevel === 'non_working') {
-    return 'border-gray-300' // Выходной
+    return 'border-gray-300' // Серый - выходной
   }
   
-  // Если день помечен как свободный в loadLevel, то зеленый
-  if (date.loadLevel === 'free') {
-    return 'border-green-200' // Зеленый для свободного рабочего дня
+  // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
+  if (date.totalSlots > 0 && date.availableSlots === 0) {
+    return 'border-red-300' // Красный - нет свободных слотов (приоритет над оранжевым)
   }
   
-  // Если слотов нет совсем (для рабочего дня) и это не free loadLevel
-  if (date.totalSlots === 0) {
-    return 'border-red-200' // Красный (нет слотов)
+  // Если есть записи (bookedSlots > 0)
+  if (date.bookedSlots > 0) {
+    return 'border-orange-300' // Оранжевый - есть записи
   }
-
-  // Если есть слоты (даже 1+), то зеленый
-  return 'border-green-200' // Зеленый (есть записи или свободно)
+  
+  // Если есть свободные слоты (рабочий день с доступными слотами)
+  return 'border-green-300' // Зеленый - рабочий день со свободными слотами
 }
 
 const getBookingDotClass = (date) => {
   if (date.loadLevel === 'non_working') {
-    return 'bg-gray-400' // Черная точка для выходного
+    return 'bg-gray-400' // Серые точки для выходного
   }
   
-  // Если день помечен как свободный в loadLevel, то зеленый
-  if (date.loadLevel === 'free') {
-    return 'bg-green-400' // Зеленая точка для свободного рабочего дня
+  // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
+  if (date.totalSlots > 0 && date.availableSlots === 0) {
+    return 'bg-red-400' // Красные точки для дня без свободных слотов (приоритет над оранжевым)
   }
   
-  // Если слотов нет совсем (для рабочего дня) и это не free loadLevel
-  if (date.totalSlots === 0) {
-    return 'bg-red-400' // Красная точка для дня без слотов
+  // Если есть записи (bookedSlots > 0)
+  if (date.bookedSlots > 0) {
+    return 'bg-orange-400' // Оранжевые точки для дней с записями
   }
-
-  // Если есть записи (даже 1 слот) или день свободен (есть слоты, но нет записей)
-  // Всегда зеленая точка для рабочих дней с хоть какими-то слотами
-  return 'bg-green-400'
+  
+  // Если есть свободные слоты (рабочий день с доступными слотами)
+  return 'bg-green-400' // Зеленые точки для свободных рабочих дней
 }
 
 // Slot helper functions
