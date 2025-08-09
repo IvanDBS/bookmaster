@@ -31,7 +31,7 @@
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
                 </svg>
               </div>
-              <span class="text-gray-600 font-medium">+7 999 123-45-67</span>
+              <span class="text-gray-600 font-medium">+373 699 9 999</span>
             </div>
             <button @click="handleLogin" class="btn-outline">
               Войти
@@ -172,7 +172,7 @@
                       <div class="text-sm text-gray-500">За этот месяц</div>
                     </div>
                   </div>
-                  <div class="text-purple-600 font-bold">₽45,200</div>
+                  <div class="text-purple-600 font-bold">45,200 MDL</div>
                 </div>
               </div>
             </div>
@@ -439,7 +439,7 @@ const handleCreateAccount = () => {
 }
 
 const handleContactUs = () => {
-  alert('Свяжитесь с нами: +7 999 123-45-67')
+  alert('Свяжитесь с нами: +373 699 9 999')
 }
 </script>
 

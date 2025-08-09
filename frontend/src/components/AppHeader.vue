@@ -3,20 +3,29 @@
     <div class="max-w-7xl mx-auto px-6">
       <div class="flex justify-between items-center h-20">
         <!-- Logo (match HomeView) -->
-        <div class="flex items-center space-x-3">
+        <button @click="goToHome" class="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200">
           <div class="flex space-x-1">
             <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
             <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
             <div class="w-3 h-3 bg-red-500 rounded-full"></div>
           </div>
           <h1 class="text-2xl font-bold text-gray-900">BookMaster</h1>
-        </div>
+        </button>
 
         <!-- Navigation -->
         <nav v-if="showNavigation" class="hidden md:flex items-center space-x-8">
-          <button @click="scrollToSection('masters')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Мои мастера</button>
-          <button @click="scrollToSection('bookings')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Мои записи</button>
-          <button @click="scrollToSection('search')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Все услуги</button>
+          <!-- Меню для клиентов -->
+          <template v-if="userType === 'client'">
+            <button @click="scrollToSection('masters')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Мои мастера</button>
+            <button @click="scrollToSection('bookings')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Мои записи</button>
+            <button @click="scrollToSection('search')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Все услуги</button>
+          </template>
+          <!-- Меню для мастеров -->
+          <template v-else-if="userType === 'master'">
+            <button @click="scrollToSection('services')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Мои услуги</button>
+            <button @click="scrollToSection('bookings')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Мои записи</button>
+            <button @click="scrollToSection('calendar')" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Календарь записей</button>
+          </template>
         </nav>
 
         <!-- Actions -->
@@ -57,9 +66,18 @@
       <!-- Mobile Navigation Menu -->
       <div v-if="showNavigation && isMobileMenuOpen" class="md:hidden border-t border-gray-100 py-4">
         <nav class="flex flex-col space-y-4">
-          <button @click="scrollToSection('masters')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Мои мастера</button>
-          <button @click="scrollToSection('bookings')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Мои записи</button>
-          <button @click="scrollToSection('search')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Все услуги</button>
+          <!-- Меню для клиентов -->
+          <template v-if="userType === 'client'">
+            <button @click="scrollToSection('masters')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Мои мастера</button>
+            <button @click="scrollToSection('bookings')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Мои записи</button>
+            <button @click="scrollToSection('search')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Все услуги</button>
+          </template>
+          <!-- Меню для мастеров -->
+          <template v-else-if="userType === 'master'">
+            <button @click="scrollToSection('services')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Мои услуги</button>
+            <button @click="scrollToSection('bookings')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Мои записи</button>
+            <button @click="scrollToSection('calendar')" class="text-left text-gray-600 hover:text-gray-900 font-medium transition-colors py-2">Календарь записей</button>
+          </template>
         </nav>
       </div>
     </div>
@@ -67,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
 
@@ -75,6 +93,10 @@ const props = defineProps({
   showNavigation: {
     type: Boolean,
     default: false
+  },
+  userType: {
+    type: String,
+    default: 'client'
   },
   pendingBookingsCount: {
     type: Number,
@@ -87,7 +109,7 @@ const emit = defineEmits(['scroll-to-section', 'notification-click'])
 const authStore = useAuthStore()
 const router = useRouter()
 
-const user = authStore.user
+const user = computed(() => authStore.user)
 const isMobileMenuOpen = ref(false)
 
 const handleLogout = async () => {
@@ -106,5 +128,24 @@ const handleNotificationClick = () => {
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+const goToHome = () => {
+  console.log('goToHome clicked!')
+  console.log('Current user:', user.value)
+  console.log('User role:', user.value?.role)
+  console.log('Current route:', router.currentRoute.value.path)
+  
+  // Переходим на главную страницу в зависимости от роли пользователя
+  if (user.value?.role === 'master') {
+    console.log('Redirecting to master dashboard')
+    router.push('/master/dashboard')
+  } else if (user.value?.role === 'client') {
+    console.log('Redirecting to client dashboard')
+    router.push('/client/dashboard')
+  } else {
+    console.log('Redirecting to home')
+    router.push('/')
+  }
 }
 </script> 

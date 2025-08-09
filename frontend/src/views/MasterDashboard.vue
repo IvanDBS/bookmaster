@@ -13,31 +13,26 @@
     />
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 py-8 mt-20">
+    <div class="max-w-7xl mx-auto px-6 py-6 mt-20">
       <!-- Welcome Section -->
-      <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">
-          Добро пожаловать, {{ user?.first_name }}!
-        </h2>
-        <p class="text-gray-600">Управляйте своими услугами и записями</p>
-      </div>
+      <WelcomeSection :user="user" />
 
       <!-- Calendar Section -->
-      <div id="calendar" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-        <div class="px-6 py-4 border-b border-gray-200">
+      <div id="calendar" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 mt-8">
+        <div class="px-6 py-3 border-b border-gray-200">
           <div class="flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-900">Календарь записей</h3>
+            <h3 class="text-xl font-semibold text-gray-900">Календарь записей</h3>
             <button 
               @click="goToScheduleSettings"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-lg transition-colors text-sm"
             >
-              ⚙️ Настройки расписания
+              ⚙️ Настройки
             </button>
           </div>
         </div>
-        <div class="p-6">
+        <div class="p-4">
           <!-- Two Months Calendar -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Current Month -->
             <div>
               <div class="flex items-center justify-between mb-4">
@@ -167,32 +162,38 @@
           </div>
 
           <!-- Selected Date Slots -->
-          <div v-if="selectedDate" class="mt-6">
-            <div class="flex items-center justify-between mb-3">
-              <h5 class="font-semibold text-gray-900">
-                Временные слоты на {{ formatSelectedDate() }}
-              </h5>
+          <div v-if="selectedDate" class="mt-8">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-2">
+                <div class="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
+                <div>
+                  <h5 class="text-lg font-semibold text-gray-900">
+                    Временные слоты на {{ formatSelectedDate() }}
+                  </h5>
+                  <p class="text-xs text-gray-600 mt-0.5">Управление расписанием</p>
+                </div>
+              </div>
               
               <!-- Toggle Switch для управления статусом дня -->
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-3 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
                 <span class="text-sm text-gray-700">Рабочий день</span>
                 <button
                   @click="toggleDayStatus"
                   :class="[
-                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                    'relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-blue-500',
                     isDayWorking
                       ? 'bg-blue-600'
-                      : 'bg-gray-200'
+                      : 'bg-gray-300 hover:bg-gray-400'
                   ]"
                   role="switch"
                   :aria-checked="isDayWorking"
                 >
                   <span
                     :class="[
-                      'inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out',
+                      'inline-block h-3 w-3 transform rounded-full bg-white transition-all duration-200',
                       isDayWorking
-                        ? 'translate-x-6'
-                        : 'translate-x-1'
+                        ? 'translate-x-4'
+                        : 'translate-x-0.5'
                     ]"
                   />
                 </button>
@@ -200,87 +201,95 @@
             </div>
             
             <!-- Slots Grid (only show if there are slots) -->
-            <div v-if="selectedDateSlots.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <div v-for="slot in selectedDateSlots" :key="slot.id" 
-                   class="bg-gray-50 rounded-lg p-3 border-l-4"
-                   :class="{
-                     'border-green-500': slot.is_available && !slot.booked,
-                     'border-blue-500': slot.booked,
-                     'border-gray-400': slot.slot_type === 'lunch',
-                     'border-red-400': slot.slot_type === 'blocked'
-                   }">
-                <div class="flex justify-between items-start mb-2">
-                  <div class="flex-1">
-                    <h6 class="font-semibold text-gray-900 text-sm">
-                      {{ slot.start_time }} - {{ slot.end_time }}
-                    </h6>
-                    <p class="text-xs text-gray-600">
-                      {{ getSlotTypeText(slot.slot_type) }}
-                    </p>
-                  </div>
-                  <div class="flex items-center space-x-2 ml-2">
-                    <!-- Переключатель перерыва для свободных слотов -->
-                    <button
-                      v-if="!slot.booked"
-                      @click="onToggleSlotBreak(slot, !isBreak(slot))"
-                      :class="[
-                        'relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                        isBreak(slot) ? 'bg-red-500' : 'bg-gray-200'
-                      ]"
-                      :title="isBreak(slot) ? 'Сделать свободным' : 'Отметить как перерыв'"
-                    >
-                      <span
-                        :class="[
-                          'inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 ease-in-out',
-                          isBreak(slot) ? 'translate-x-5' : 'translate-x-1'
-                        ]"
-                      />
-                    </button>
-
-                    <span :class="getSlotStatusClass(slot)" class="px-2 py-1 rounded-full text-xs font-semibold">
-                      {{ getSlotStatusText(slot) }}
-                    </span>
-
-                    <!-- Кнопки принять/отменить для pending -->
-                    <div v-if="slot.booking && slot.booking.status === 'pending'" class="flex space-x-1">
-                      <button @click="showConfirmModal(slot.booking)" class="text-green-600 hover:text-green-700 text-xs font-medium" title="Принять">
-                        ✓
-                      </button>
-                      <button @click="showCancelModal(slot.booking)" class="text-red-600 hover:text-red-700 text-xs font-medium" title="Отменить">
-                        ✕
-                      </button>
-                    </div>
-                    <!-- Кнопка удаления для confirmed -->
-                    <div v-else-if="slot.booking && slot.booking.status === 'confirmed'" class="flex space-x-1">
-                      <button @click="showDeleteModal(slot.booking)" class="text-red-600 hover:text-red-700 text-xs font-medium" title="Удалить запись">
-                        🗑
-                      </button>
-                    </div>
-                  </div>
+            <div v-if="selectedDateSlots.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+              <div 
+                v-for="slot in selectedDateSlots" 
+                :key="slot.id"
+                class="bg-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
+                :class="{
+                  'border-green-200 bg-green-50/30': slot.is_available && !slot.booked,
+                  'border-blue-200 bg-blue-50/30': slot.booked,
+                  'border-gray-200 bg-gray-50/30': slot.slot_type === 'lunch',
+                  'border-red-200 bg-red-50/30': slot.slot_type === 'blocked'
+                }">
+                <!-- Время и статус в одной строке -->
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-semibold text-gray-900">{{ slot.start_time }}-{{ slot.end_time }}</span>
+                  <span :class="getSlotStatusClass(slot)" class="px-2 py-1 rounded-full text-xs font-semibold">
+                    {{ getSlotStatusText(slot) }}
+                  </span>
                 </div>
-                <div v-if="slot.booking" class="mt-2 p-2 bg-blue-50 rounded">
-                  <p class="text-xs text-gray-700">
-                    <strong>Клиент:</strong> {{ slot.booking.client_name }}
-                  </p>
-                  <p class="text-xs text-gray-700">
-                    <strong>Услуга:</strong> {{ slot.booking.service_name }}
-                  </p>
-                  <p class="text-xs text-gray-700">
-                    <strong>Статус:</strong> {{ getStatusText(slot.booking.status) }}
-                  </p>
+                
+                <!-- Тип слота (только для свободных слотов) -->
+                <p v-if="!slot.booked" class="text-xs text-gray-600 mb-2">{{ getSlotTypeText(slot.slot_type) }}</p>
+                
+                <!-- Переключатель перерыва для свободных слотов -->
+                <div v-if="!slot.booked" class="flex justify-between items-center mb-2">
+                  <button
+                    @click="onToggleSlotBreak(slot, !isBreak(slot))"
+                    :class="[
+                      'relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-blue-500',
+                      isBreak(slot) ? 'bg-red-500' : 'bg-gray-200 hover:bg-gray-300'
+                    ]"
+                    :title="isBreak(slot) ? 'Сделать свободным' : 'Отметить как перерыв'"
+                  >
+                    <span
+                      :class="[
+                        'inline-block h-3 w-3 transform rounded-full bg-white transition-all duration-200',
+                        isBreak(slot) ? 'translate-x-4' : 'translate-x-0.5'
+                      ]"
+                    />
+                  </button>
+                </div>
+                
+                <!-- Информация о записи (компактно) -->
+                <div v-if="slot.booking" class="space-y-2 text-xs">
+                  <!-- Клиент -->
+                  <div class="text-gray-700 font-medium">{{ slot.booking.client_name }}</div>
+                  
+                  <!-- Услуга -->
+                  <div class="text-gray-600">{{ slot.booking.service_name }}</div>
+                  
+                  <!-- Цена -->
+                  <div class="text-gray-600 text-xs">
+                                            {{ getSlotPrice(slot.booking) }} MDL
+                  </div>
+                  
+                  <!-- Статус записи и кнопка отмены в одной строке -->
+                  <div v-if="slot.booking.status === 'confirmed'" class="flex justify-between items-center text-xs mb-2">
+                    <span class="text-gray-500 flex items-center">
+                      <svg class="w-3 h-3 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                      </svg>
+                      {{ getStatusText(slot.booking.status) }}
+                    </span>
+                    <button @click="showDeleteModal(slot.booking)" class="text-red-600 hover:text-red-700" title="Отменить запись">
+                      Отменить
+                    </button>
+                  </div>
+                  
+                  <!-- Кнопки действий для pending -->
+                  <div v-if="slot.booking.status === 'pending'" class="flex justify-between items-center text-xs">
+                    <button @click="showConfirmModal(slot.booking)" class="text-green-600 hover:text-green-700 font-medium" title="Подтвердить">
+                      Подтвердить
+                    </button>
+                    <button @click="showCancelModal(slot.booking)" class="text-red-600 hover:text-red-700 font-medium" title="Отменить">
+                      Отменить
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
             
             <!-- Кнопка добавления нового слота -->
-            <div v-if="selectedDateSlots.length > 0" class="mt-6 flex justify-center">
+            <div v-if="selectedDateSlots.length > 0" class="mt-4 flex justify-center">
               <button 
                 @click="addNewSlot"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
                 :class="[
                   isAddingSlot 
-                    ? 'bg-gray-400 text-white focus:ring-gray-500' 
-                    : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white focus:ring-blue-500'
+                    ? 'bg-gray-400 text-white' 
+                    : 'bg-blue-600 text-white'
                 ]"
                 :disabled="isAddingSlot"
               >
@@ -291,7 +300,7 @@
                 <svg v-else class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-                <span>{{ isAddingSlot ? 'Добавляем...' : 'Добавить окно' }}</span>
+                <span>{{ isAddingSlot ? 'Добавляем...' : 'Добавить слот' }}</span>
               </button>
             </div>
           </div>
@@ -323,7 +332,7 @@
                     {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
                   </div>
                   <div class="text-right">
-                    <p class="text-sm font-semibold text-gray-900">₽{{ booking.service?.price }}</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ booking.service?.price }} MDL</p>
                     <div v-if="booking.status === 'pending'" class="flex space-x-1 mt-1">
                       <button @click="showConfirmModal(booking)" class="text-green-600 hover:text-green-700 text-xs font-medium">
                         ✓
@@ -342,65 +351,84 @@
               </div>
             </div>
           </div> -->
-          <div v-if="selectedDate && selectedDateSlots.length === 0" class="mt-6 text-center py-4">
-            <p class="text-gray-500">На выбранную дату слотов нет</p>
+          <div v-if="selectedDate && selectedDateSlots.length === 0" class="mt-6 text-center py-8">
+            <div class="max-w-md mx-auto">
+              <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h3 class="text-base font-semibold text-gray-900 mb-2">Слотов пока нет</h3>
+              <p class="text-sm text-gray-600 mb-4">На выбранную дату временные слоты не созданы. Создайте первый слот, чтобы начать принимать записи.</p>
+              <button 
+                @click="addNewSlot"
+                class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors duration-200 shadow-sm"
+              >
+                <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Создать слот
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Recent Bookings Section -->
-      <div id="bookings" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-        <div class="px-6 py-4 border-b border-gray-200">
+      <div id="bookings" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 mt-8">
+        <div class="px-6 py-3 border-b border-gray-200">
           <div class="flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-900">Последние записи</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Мои записи</h3>
             <!-- Кнопки сортировки -->
-            <div class="flex space-x-2">
+            <div class="flex space-x-1">
               <button @click="setBookingFilter('all')" 
                       :class="bookingFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
-                      class="px-3 py-1 text-sm font-medium rounded hover:bg-gray-200 transition-colors">
+                      class="px-2 py-1 text-xs font-medium rounded hover:bg-gray-200 transition-colors">
                 Все
               </button>
               <button @click="setBookingFilter('pending')" 
                       :class="bookingFilter === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700'"
-                      class="px-3 py-1 text-sm font-medium rounded hover:bg-gray-200 transition-colors">
-                Ожидает подтверждения
+                      class="px-2 py-1 text-xs font-medium rounded hover:bg-gray-200 transition-colors">
+                Ожидает
               </button>
               <button @click="setBookingFilter('confirmed')" 
                       :class="bookingFilter === 'confirmed' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700'"
-                      class="px-3 py-1 text-sm font-medium rounded hover:bg-gray-200 transition-colors">
+                      class="px-2 py-1 text-xs font-medium rounded hover:bg-gray-200 transition-colors">
                 Подтверждено
               </button>
               <button @click="setBookingFilter('cancelled')" 
                       :class="bookingFilter === 'cancelled' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700'"
-                      class="px-3 py-1 text-sm font-medium rounded hover:bg-gray-200 transition-colors">
+                      class="px-2 py-1 text-xs font-medium rounded hover:bg-gray-200 transition-colors">
                 Отменено
               </button>
             </div>
           </div>
         </div>
-        <div class="p-6">
-          <div v-if="filteredBookings.length === 0" class="text-center py-8">
+        <div class="p-4">
+          <div v-if="filteredBookings.length === 0" class="text-center py-6">
             <p class="text-gray-500">У вас пока нет записей</p>
           </div>
-          <div v-else class="space-y-4">
+          <div v-else class="space-y-2">
             <div v-for="booking in filteredBookings" :key="booking.id" 
-                 class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                 class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <div>
-                <p class="font-medium text-gray-900">{{ booking.service?.name }}</p>
-                <p class="text-sm text-gray-600">{{ booking.client_name }}</p>
-                <p class="text-sm text-gray-600">{{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}</p>
+                <p class="font-medium text-gray-900 text-sm">{{ booking.service?.name }}</p>
+                <p class="text-xs text-gray-600">{{ booking.client_name }}</p>
+                <p class="text-xs text-gray-600">{{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}</p>
               </div>
               <div class="text-right">
                 <span :class="getStatusClass(booking.status)" class="px-2 py-1 rounded-full text-xs font-semibold">
                   {{ getStatusText(booking.status) }}
                 </span>
-                <p class="text-sm font-semibold text-gray-900 mt-1">₽{{ booking.service?.price }}</p>
-                <div v-if="booking.status === 'pending'" class="flex space-x-2 mt-2">
+                <p class="text-sm font-semibold text-gray-900 mt-1">
+                  {{ booking?.service?.price ? Math.round(booking.service.price) : 0 }} MDL
+                </p>
+                <div v-if="booking.status === 'pending'" class="flex space-x-1 mt-2">
                   <button @click="showConfirmModal(booking)" class="text-green-600 hover:text-green-700 text-xs font-medium">
-                    Подтвердить
+                    ✓
                   </button>
                   <button @click="showCancelModal(booking)" class="text-red-600 hover:text-red-700 text-xs font-medium">
-                    Отменить
+                    ✕
                   </button>
                 </div>
               </div>
@@ -410,88 +438,12 @@
       </div>
 
       <!-- Services Management -->
-      <div id="services" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <div class="flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-900">Мои услуги</h3>
-            <button @click="showModal = true" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
-              Добавить услугу
-            </button>
-          </div>
-        </div>
-        <div class="p-6">
-          <div v-if="services.length === 0" class="text-center py-8">
-            <p class="text-gray-500">У вас пока нет услуг</p>
-          </div>
-          <div v-else class="space-y-4">
-            <div v-for="service in services" :key="service.id" class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-              <div>
-                <h4 class="font-semibold text-gray-900">{{ service.name }}</h4>
-                <p class="text-sm text-gray-600">{{ service.description }}</p>
-                <p class="text-sm text-gray-600">{{ service.duration }} мин</p>
-              </div>
-              <div class="text-right">
-                <p class="text-lg font-semibold text-gray-900">₽{{ service.price }}</p>
-                <div class="flex space-x-2 mt-2">
-                  <button @click="editService(service)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                    Редактировать
-                  </button>
-                  <button @click="deleteService(service.id)" class="text-red-600 hover:text-red-700 text-sm font-medium">
-                    Удалить
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="mt-6">
+        <ServicesList />
       </div>
     </div>
 
-    <!-- Add Service Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ editingServiceId ? 'Редактировать услугу' : 'Добавить услугу' }}</h3>
-        <form @submit.prevent="addService">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Тип услуги</label>
-              <select v-model="newService.service_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500">
-                <option value="">Выберите тип услуги</option>
-                <option v-for="serviceType in availableServiceTypes" :key="serviceType" :value="serviceType">
-                  {{ serviceType.charAt(0).toUpperCase() + serviceType.slice(1) }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Название</label>
-              <input v-model="newService.name" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Описание</label>
-              <textarea v-model="newService.description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500"></textarea>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Цена (₽)</label>
-                <input v-model="newService.price" type="number" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Длительность (мин)</label>
-                <input v-model="newService.duration" type="number" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500" />
-              </div>
-            </div>
-          </div>
-          <div class="flex space-x-4 mt-6">
-            <button type="submit" class="flex-1 bg-lime-500 hover:bg-lime-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
-              {{ editingServiceId ? 'Обновить' : 'Добавить' }}
-            </button>
-            <button type="button" @click="closeModal" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold px-4 py-2 rounded-lg transition-colors">
-              Отмена
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white mt-16">
@@ -552,6 +504,8 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
 import ConfirmationModal from '../components/ConfirmationModal.vue'
+import WelcomeSection from '../components/master/Dashboard/WelcomeSection.vue'
+import ServicesList from '../components/master/Services/ServicesList.vue'
 import api from '../services/api'
 
 const authStore = useAuthStore()
@@ -559,19 +513,8 @@ const router = useRouter()
 
 // Reactive data
 const user = ref(null)
-const services = ref([])
 const recentBookings = ref([])
-const showModal = ref(false)
-const editingServiceId = ref(null)
 const bookingFilter = ref('all')
-const newService = ref({
-  name: '',
-  description: '',
-  price: '',
-  duration: '',
-  service_type: ''
-})
-const availableServiceTypes = ref([])
 
 // Calendar data
 const currentDate = ref(new Date())
@@ -722,58 +665,7 @@ const calendarDates = computed(() => {
       dayStatus = 'non_working';
     }
     
-    // Отладка для 20 августа
-    if (dateString === '2025-08-20') {
-      console.log(`Debug August 20th:`, {
-        daySlots: daySlots.length,
-        workSlots: workSlots.length,
-        blockedSlots: blockedSlots.length,
-        availableSlots: availableSlots.length,
-        bookedSlots: bookedSlots.length,
-        totalSlots: workSlots.length + blockedSlots.length,
-        availableSlots: totalAvailableSlots,
-        loadLevel,
-        dayStatus,
-        allSlots: daySlots.map(s => ({
-          id: s.id,
-          start_time: s.start_time,
-          slot_type: s.slot_type,
-          is_available: s.is_available,
-          booked: s.booked,
-          booking: s.booking
-        })),
-        bookedSlotsDetails: bookedSlots.map(s => ({
-          id: s.id,
-          start_time: s.start_time,
-          booking: s.booking
-        }))
-      })
-    }
-    
-    // Отладка для вторника
-    if (date.getDay() === 2) {
-      console.log(`Debug Tuesday ${dateString}:`, {
-        daySlots: daySlots.length,
-        workSlots: workSlots.length,
-        loadLevel,
-        scheduleForDay: scheduleForDay?.is_working,
-        allSlots: daySlots
-      })
-    }
-    
-    // Отладка для субботы (день недели 6)
-    if (date.getDay() === 6) {
-      console.log(`Debug Saturday ${dateString}:`, {
-        daySlots: daySlots.length,
-        workSlots: workSlots.length,
-        loadLevel,
-        dayStatus,
-        scheduleForDay: scheduleForDay?.is_working,
-        totalSlots: workSlots.length,
-        isCurrentMonth: date.getMonth() === month,
-        isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString()
-      })
-    }
+
     
     dates.push({
       key: date.toISOString(),
@@ -874,30 +766,7 @@ const nextMonthDates = computed(() => {
       dayStatus = 'non_working';
     }
     
-    // Отладка для вторника в следующем месяце
-    if (date.getDay() === 2) {
-      console.log(`Debug Next Month Tuesday ${dateString}:`, {
-        daySlots: daySlots.length,
-        workSlots: workSlots.length,
-        loadLevel,
-        scheduleForDay: scheduleForDay?.is_working,
-        allSlots: daySlots
-      })
-    }
-    
-    // Отладка для субботы в следующем месяце (день недели 6)
-    if (date.getDay() === 6) {
-      console.log(`Debug Next Month Saturday ${dateString}:`, {
-        daySlots: daySlots.length,
-        workSlots: workSlots.length,
-        loadLevel,
-        dayStatus,
-        scheduleForDay: scheduleForDay?.is_working,
-        totalSlots: workSlots.length,
-        isCurrentMonth: date.getMonth() === month - 1,
-        isSelected: selectedDate.value && date.toDateString() === selectedDate.value.toDateString()
-      })
-    }
+
     
     dates.push({
       key: date.toISOString(),
@@ -922,11 +791,13 @@ const nextMonthDates = computed(() => {
 })
 
 onMounted(async () => {
-  console.log('MasterDashboard mounted')
+  // Загружаем информацию о текущем пользователе
+  if (authStore.token && !authStore.user) {
+    await authStore.getCurrentUser()
+  }
+  
   await loadWorkingSchedules()
   await loadWorkingDayExceptions()
-  await loadServices()
-  await loadServiceTypes()
   await loadBookings()
   await loadSlotsForVisibleDates()
   
@@ -934,12 +805,11 @@ onMounted(async () => {
   const fromSettings = sessionStorage.getItem('fromScheduleSettings')
   const clearCache = sessionStorage.getItem('clearSlotsCache')
   
-  if (fromSettings === 'true' || clearCache === 'true') {
-    console.log('Returning from schedule settings or cache clear requested, refreshing calendar...')
-    await refreshCalendar()
-    sessionStorage.removeItem('fromScheduleSettings')
-    sessionStorage.removeItem('clearSlotsCache')
-  }
+      if (fromSettings === 'true' || clearCache === 'true') {
+      await refreshCalendar()
+      sessionStorage.removeItem('fromScheduleSettings')
+      sessionStorage.removeItem('clearSlotsCache')
+    }
 })
 
 
@@ -950,35 +820,11 @@ onActivated(() => {
   loadSlotsForVisibleDates()
 })
 
-const loadServices = async () => {
-  try {
-    // Загружаем услуги напрямую из API
-    const response = await fetch('http://localhost:3000/api/v1/services')
-    if (!response.ok) {
-      throw new Error('Failed to fetch services')
-    }
-    const servicesData = await response.json()
-    services.value = servicesData
-  } catch (error) {
-    console.error('Error loading services:', error)
-    services.value = []
-  }
-}
 
-const loadServiceTypes = async () => {
-  try {
-    const serviceTypesData = await api.getServiceTypes()
-    availableServiceTypes.value = serviceTypesData.service_types || []
-  } catch (error) {
-    console.error('Error loading service types:', error)
-    availableServiceTypes.value = ['маникюр', 'педикюр', 'массаж'] // fallback to default types
-  }
-}
 
 const loadBookings = async () => {
   try {
     if (!authStore.token) {
-      console.warn('No auth token available')
       recentBookings.value = []
       return
     }
@@ -1005,7 +851,6 @@ const loadBookings = async () => {
 const loadWorkingSchedules = async () => {
   try {
     if (!authStore.token) {
-      console.warn('No auth token available')
       workingSchedules.value = []
       return
     }
@@ -1023,8 +868,7 @@ const loadWorkingSchedules = async () => {
     const schedulesData = await response.json()
     workingSchedules.value = schedulesData
     
-    // Отладочная информация
-    console.log('Loaded working schedules:', workingSchedules.value)
+
   } catch (error) {
     console.error('Error loading working schedules:', error)
     workingSchedules.value = []
@@ -1035,7 +879,6 @@ const loadWorkingSchedules = async () => {
 const loadWorkingDayExceptions = async () => {
   try {
     if (!authStore.token) {
-      console.warn('No auth token available')
       workingDayExceptions.value = []
       return
     }
@@ -1043,7 +886,7 @@ const loadWorkingDayExceptions = async () => {
     const exceptionsData = await api.getWorkingDayExceptions(authStore.token)
     workingDayExceptions.value = exceptionsData
     
-    console.log('Loaded working day exceptions:', workingDayExceptions.value.length)
+
   } catch (error) {
     console.error('Error loading working day exceptions:', error)
     workingDayExceptions.value = []
@@ -1053,12 +896,11 @@ const loadWorkingDayExceptions = async () => {
 const toggleDayStatus = async () => {
   try {
     if (!selectedDate.value || !authStore.token) {
-      console.warn('No selected date or auth token')
       return
     }
 
     const dateString = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth()+1).padStart(2,'0')}-${String(selectedDate.value.getDate()).padStart(2,'0')}`
-    console.log('Toggling day status for:', dateString)
+
     
     // Оптимистичное обновление — мгновенная анимация переключателя
     const currentIsWorking = isDayWorking.value
@@ -1084,7 +926,7 @@ const toggleDayStatus = async () => {
     }
     
     await loadSlotsForSelectedDate(selectedDate.value)
-    console.log('Day status toggled successfully:', updatedException)
+    
   } catch (error) {
     // Откат, если сервер вернул ошибку
     try {
@@ -1111,11 +953,11 @@ const loadSlotsForDate = async (date) => {
     
     // Проверяем кэш
     if (slotsCache.value.has(dateString)) {
-      console.log(`Cache HIT for ${dateString}. Slots:`, slotsCache.value.get(dateString).length);
+
       return slotsCache.value.get(dateString)
     }
 
-    console.log('Loading slots for date:', dateString)
+
 
     const response = await fetch(`http://localhost:3000/api/v1/time_slots?date=${dateString}`, {
       headers: {
@@ -1129,7 +971,12 @@ const loadSlotsForDate = async (date) => {
     }
     
     const slotsData = await response.json()
-    console.log('Received slots for', dateString, ':', slotsData.slots.length, 'Slots data:', slotsData.slots);
+
+    
+    // Убеждаемся, что у нас есть полные данные о записях для корректного отображения в модальном окне
+    if (recentBookings.value.length === 0) {
+      await loadBookings()
+    }
     
     // Сохраняем в кэш
     slotsCache.value.set(dateString, slotsData.slots)
@@ -1177,7 +1024,7 @@ const loadSlotsForVisibleDates = async () => {
     // Загружаем слоты для всех дат параллельно
     await Promise.all(uniqueDates.map(date => loadSlotsForDate(date)))
     
-    console.log('Loaded slots for dates:', uniqueDates.length)
+
   } catch (error) {
     console.error('Error loading slots for visible dates:', error)
   }
@@ -1185,7 +1032,7 @@ const loadSlotsForVisibleDates = async () => {
 
 // Добавляем функцию для принудительного обновления календаря
 const refreshCalendar = async () => {
-  console.log('Forcing calendar refresh...')
+  
   
   // Очищаем весь кэш слотов
   slotsCache.value.clear()
@@ -1199,105 +1046,14 @@ const refreshCalendar = async () => {
     await loadBookingsForDate(selectedDate.value)
   }
   
-  console.log('Calendar refresh completed')
-}
-
-const editService = (service) => {
-  // Заполняем форму данными для редактирования
-  newService.value = {
-    name: service.name,
-    description: service.description,
-    price: service.price.toString(),
-    duration: service.duration.toString(),
-    service_type: service.service_type || ''
-  }
-  showModal.value = true
   
-  // Сохраняем ID услуги для обновления
-  editingServiceId.value = service.id
 }
 
-const addService = async () => {
-  try {
-    if (!authStore.token) {
-      throw new Error('Не авторизован')
-    }
 
-    const serviceData = {
-      name: newService.value.name,
-      description: newService.value.description,
-      price: parseInt(newService.value.price),
-      duration: parseInt(newService.value.duration),
-      service_type: newService.value.service_type
-    }
-    
-    let url = 'http://localhost:3000/api/v1/services'
-    let method = 'POST'
-    
-    // Если редактируем существующую услугу
-    if (editingServiceId.value) {
-      url = `http://localhost:3000/api/v1/services/${editingServiceId.value}`
-      method = 'PUT'
-    }
-    
-    // Добавляем услугу через API с авторизацией
-    const response = await fetch(url, {
-      method: method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authStore.token}`,
-      },
-      body: JSON.stringify({ service: serviceData }),
-    })
-    
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.errors ? errorData.errors.join(', ') : errorData.error || 'Failed to create service')
-    }
-    
-    // Обновляем список услуг
-    await loadServices()
-    
-    // Показываем сообщение (сохраняем состояние до очистки)
-    const wasEditing = editingServiceId.value
-    alert(wasEditing ? 'Услуга успешно обновлена!' : 'Услуга успешно добавлена!')
-    
-    // Закрываем модал и очищаем форму
-    closeModal()
-  } catch (error) {
-    console.error('Error adding service:', error)
-    alert('Ошибка при добавлении услуги: ' + error.message)
-  }
-}
 
-const deleteService = async (serviceId) => {
-  if (confirm('Вы уверены, что хотите удалить эту услугу?')) {
-    try {
-      if (!authStore.token) {
-        throw new Error('Не авторизован')
-      }
 
-      const response = await fetch(`http://localhost:3000/api/v1/services/${serviceId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authStore.token}`,
-        },
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete service')
-      }
-      
-      await loadServices()
-      alert('Услуга успешно удалена!')
-    } catch (error) {
-      console.error('Error deleting service:', error)
-      alert('Ошибка при удалении услуги: ' + error.message)
-    }
-  }
-}
+
+
 
 const formatSelectedDate = () => {
   if (!selectedDate.value) return ''
@@ -1310,19 +1066,43 @@ const formatSelectedDate = () => {
 
 // Booking management functions
 const showConfirmModal = (booking) => {
-  selectedBooking.value = booking
+  // Ищем полную версию записи в recentBookings для получения цены
+  let fullBooking = booking
+  const fullVersion = recentBookings.value.find(b => b.id === booking.id)
+  
+  if (fullVersion && fullVersion.service && fullVersion.service.price) {
+    fullBooking = fullVersion
+  }
+  
+  selectedBooking.value = fullBooking
   modalType.value = 'confirm'
   showConfirmationModal.value = true
 }
 
 const showCancelModal = (booking) => {
-  selectedBooking.value = booking
+  // Ищем полную версию записи в recentBookings для получения цены
+  let fullBooking = booking
+  const fullVersion = recentBookings.value.find(b => b.id === booking.id)
+  
+  if (fullVersion && fullVersion.service && fullVersion.service.price) {
+    fullBooking = fullVersion
+  }
+  
+  selectedBooking.value = fullBooking
   modalType.value = 'cancel'
   showConfirmationModal.value = true
 }
 
 const showDeleteModal = (booking) => {
-  selectedBooking.value = booking
+  // Ищем полную версию записи в recentBookings для получения цены
+  let fullBooking = booking
+  const fullVersion = recentBookings.value.find(b => b.id === booking.id)
+  
+  if (fullVersion && fullVersion.service && fullVersion.service.price) {
+    fullBooking = fullVersion
+  }
+  
+  selectedBooking.value = fullBooking
   modalType.value = 'delete'
   showConfirmationModal.value = true
 }
@@ -1361,10 +1141,14 @@ const handleModalConfirm = async (bookingId) => {
       // Обновляем записи
       await loadBookings()
       
-      // Принудительно обновляем весь календарь
-      await refreshCalendar()
-      
+      // Закрываем модальное окно СРАЗУ
       closeConfirmationModal()
+      
+      // Обновляем календарь в фоне (не ждем)
+      refreshCalendar().catch(error => {
+        console.error('Error refreshing calendar:', error)
+      })
+      
       return
     } else {
       status = 'cancelled'
@@ -1410,12 +1194,6 @@ const handleModalConfirm = async (bookingId) => {
 
 
 
-const closeModal = () => {
-  showModal.value = false
-  newService.value = { name: '', description: '', price: '', duration: '', service_type: '' }
-  editingServiceId.value = null
-}
-
 // Calendar functions
 const previousMonth = () => {
   currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
@@ -1428,8 +1206,13 @@ const nextMonth = () => {
 }
 
 const selectDate = async (date) => {
-  console.log(`Selecting date: ${date.date.toDateString()}`)
+  
   selectedDate.value = date.date
+  
+  // Сначала загружаем все записи, чтобы убедиться, что у нас есть полная информация об услугах
+  await loadBookings()
+  
+  // Затем загружаем слоты и записи для выбранной даты
   await loadSlotsForSelectedDate(date.date)
   
   // Принудительное обновление для корректного отображения индикаторов
@@ -1452,6 +1235,11 @@ const loadSlotsForSelectedDate = async (date) => {
 
 const loadBookingsForDate = async (date) => {
   try {
+    // Убеждаемся, что у нас есть записи с полной информацией об услугах
+    if (recentBookings.value.length === 0) {
+      await loadBookings()
+    }
+    
     // Используем уже загруженные записи из recentBookings
     const startOfDay = new Date(date)
     startOfDay.setHours(0, 0, 0, 0)
@@ -1503,7 +1291,7 @@ const getStatusClass = (status) => {
 const getStatusText = (status) => {
   const texts = {
     'pending': 'Ожидает подтверждения',
-    'confirmed': 'Подтверждено ✅',
+    'confirmed': 'Подтверждено',
     'cancelled': 'Отменено'
   }
   return texts[status] || status
@@ -1512,7 +1300,14 @@ const getStatusText = (status) => {
 const handleScrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId);
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth' });
+    // Добавляем отступ сверху для лучшего отображения заголовка
+    const offset = 100; // Отступ в пикселях
+    const elementPosition = element.offsetTop - offset;
+    
+    window.scrollTo({
+      top: elementPosition,
+      behavior: 'smooth'
+    });
   }
 };
 
@@ -1706,7 +1501,7 @@ const addNewSlot = async () => {
     slotsCache.value.delete(dateString)
     await loadSlotsForSelectedDate(selectedDate.value)
     
-    console.log('New slot added successfully:', json)
+    
   } catch (error) {
     console.error('Error adding new slot:', error)
     alert('Ошибка при добавлении нового слота: ' + error.message)
@@ -1720,5 +1515,27 @@ const goToScheduleSettings = () => {
   router.push('/master/schedule')
 }
 
+// Helper function to get slot price
+const getSlotPrice = (booking) => {
+  // Сначала проверяем прямую цену в записи
+  if (booking.price) {
+    return Math.round(booking.price)
+  }
+  
+  // Если нет прямой цены, ищем полную версию записи в recentBookings
+  if (!booking.service || !booking.service.price) {
+    const fullVersion = recentBookings.value.find(b => b.id === booking.id)
+    if (fullVersion && fullVersion.service && fullVersion.service.price) {
+      return Math.round(fullVersion.service.price)
+    }
+  }
+  
+  // Если есть цена в услуге
+  if (booking.service && booking.service.price) {
+    return Math.round(booking.service.price)
+  }
+  
+  return 0
+}
 
 </script> 

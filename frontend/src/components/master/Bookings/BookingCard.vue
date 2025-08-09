@@ -9,7 +9,9 @@
       <span :class="getStatusClass(booking.status)" class="px-2 py-1 rounded-full text-xs font-semibold">
         {{ getStatusText(booking.status) }}
       </span>
-      <p class="text-sm font-semibold text-gray-900 mt-1">₽{{ booking.service?.price }}</p>
+      <p class="text-sm font-semibold text-gray-900 mt-1">
+        {{ booking?.service?.price ? Math.round(booking.service.price) : 0 }} MDL
+      </p>
       <div v-if="booking.status === 'pending'" class="flex space-x-2 mt-2">
         <button @click="$emit('show-confirm-modal', booking)" class="text-green-600 hover:text-green-700 text-xs font-medium">
           Подтвердить

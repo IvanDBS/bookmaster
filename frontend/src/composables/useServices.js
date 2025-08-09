@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 
@@ -18,15 +18,33 @@ export function useServices() {
   })
   const availableServiceTypes = ref([])
 
+  // Инициализация при монтировании компонента
+  onMounted(async () => {
+    console.log('useServices mounted, auth token:', authStore.token)
+    console.log('Current user:', authStore.user)
+    await loadServices()
+    await loadServiceTypes()
+  })
+
   // API functions
   const loadServices = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/v1/services')
+      if (!authStore.token) {
+        console.log('No auth token, skipping services load')
+        return
+      }
+      
+      const response = await fetch('http://localhost:3000/api/v1/services', {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+        },
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch services')
       }
       const servicesData = await response.json()
       services.value = servicesData
+      console.log('Loaded services:', servicesData)
     } catch (error) {
       console.error('Error loading services:', error)
       services.value = []

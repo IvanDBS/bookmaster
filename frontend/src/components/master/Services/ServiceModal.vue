@@ -23,7 +23,7 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Цена (₽)</label>
+                                  <label class="block text-sm font-medium text-gray-700 mb-2">Цена (MDL)</label>
               <input v-model="newService.price" type="number" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-lime-500 focus:border-lime-500" />
             </div>
             <div>

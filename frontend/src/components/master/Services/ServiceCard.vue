@@ -6,7 +6,7 @@
       <p class="text-sm text-gray-600">{{ service.duration }} мин</p>
     </div>
     <div class="text-right">
-      <p class="text-lg font-semibold text-gray-900">₽{{ service.price }}</p>
+                      <p class="text-lg font-semibold text-gray-900">{{ service.price }} MDL</p>
       <div class="flex space-x-2 mt-2">
         <button @click="$emit('edit-service', service)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
           Редактировать

@@ -48,7 +48,7 @@
                       <div class="text-sm text-gray-500">{{ service.duration }} мин</div>
                     </div>
                     <div class="text-right">
-                      <div class="font-bold text-lime-600 text-lg">₽{{ service.price }}</div>
+                      <div class="font-bold text-lime-600 text-lg">{{ service.price }} MDL</div>
                     </div>
                   </div>
                 </button>
@@ -58,23 +58,26 @@
             
             <!-- Показываем всех мастеров если никто не выбран -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div v-for="master in myMasters" :key="master.id" class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 p-6">
-                <div class="flex items-center space-x-4 mb-4">
-                  <div class="w-14 h-14 bg-gradient-to-br from-lime-400 to-lime-600 rounded-full flex items-center justify-center shadow-md">
-                    <span class="text-white font-bold text-lg">{{ master.first_name[0] }}{{ master.last_name[0] }}</span>
+              <div v-for="master in myMasters" :key="master.id" 
+                   class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 p-6">
+                
+                <!-- Аватар в сдержанном стиле -->
+                <div class="flex items-center space-x-4 mb-5">
+                  <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center border border-gray-200 group-hover:border-gray-300 transition-colors duration-300">
+                    <span class="text-gray-600 font-semibold text-lg">{{ master.first_name[0] }}{{ master.last_name[0] }}</span>
                   </div>
-                  <div>
-                    <h4 class="font-bold text-gray-900 text-lg">{{ master.first_name }} {{ master.last_name }}</h4>
-                    <p class="text-sm text-gray-500">{{ master.services?.length || 0 }} услуг</p>
+                  
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900 text-lg mb-1">
+                      {{ master.first_name }} {{ master.last_name }}
+                    </h4>
+                    <p class="text-gray-500 text-sm">Мастер</p>
                   </div>
                 </div>
-                <div class="space-y-2 mb-4">
-                  <div v-for="service in master.services?.slice(0, 2)" :key="service.id" class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
-                    <span class="text-gray-700 font-medium">{{ service.name }}</span>
-                    <span class="font-bold text-lime-600">₽{{ service.price }}</span>
-                  </div>
-                </div>
-                <button @click="selectMasterForBooking(master)" class="w-full bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 text-sm shadow-md hover:shadow-lg transform hover:scale-105">
+                
+                <!-- Кнопка в элегантном зеленом стиле -->
+                <button @click="selectMasterForBooking(master)" 
+                        class="w-full bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 font-medium px-4 py-3 rounded-lg transition-all duration-300 text-sm border-2 border-green-200 hover:border-green-300 hover:shadow-sm">
                   Записаться
                 </button>
               </div>
@@ -160,7 +163,7 @@
                     <div class="text-sm text-gray-500">{{ master.services.length }} услуг</div>
                   </div>
                   <div class="text-right">
-                    <div class="text-sm font-bold text-lime-600">от ₽{{ minPrice(master.services) }}</div>
+                    <div class="text-sm font-bold text-lime-600">от {{ minPrice(master.services) }} MDL</div>
                   </div>
                 </div>
               </button>
@@ -185,7 +188,7 @@
                       :class="['rounded-xl border-2 p-5 text-left transition-all duration-300 transform hover:scale-105', selectedService?.id===srv.id? 'border-lime-500 bg-gradient-to-br from-lime-50 to-lime-100 shadow-lg' : 'border-gray-200 hover:border-lime-300 hover:shadow-md']">
                 <div class="font-bold text-gray-900 text-lg">{{ srv.name }}</div>
                 <div class="text-sm text-gray-500">{{ srv.duration }} мин</div>
-                <div class="mt-2 font-bold text-lime-600 text-lg">₽{{ srv.price }}</div>
+                <div class="mt-2 font-bold text-lime-600 text-lg">{{ srv.price }} MDL</div>
               </button>
             </div>
             <div class="flex justify-between">
@@ -224,7 +227,7 @@
             <h4 class="text-sm font-semibold text-gray-900">Подтверждение</h4>
             <div class="rounded-xl border border-gray-200 p-4">
               <div class="text-sm text-gray-700">Услуга</div>
-              <div class="font-semibold text-gray-900">{{ selectedService.name }} — ₽{{ selectedService.price }} ({{ selectedService.duration }} мин)</div>
+                              <div class="font-semibold text-gray-900">{{ selectedService.name }} — {{ selectedService.price }} MDL ({{ selectedService.duration }} мин)</div>
               <div class="mt-2 text-sm text-gray-700">Мастер</div>
               <div class="font-semibold text-gray-900">{{ selectedMaster.user.first_name }} {{ selectedMaster.user.last_name }}</div>
               <div class="mt-2 text-sm text-gray-700">Время</div>
@@ -252,7 +255,7 @@
               <div class="flex-1">
                 <div>
                   <h4 class="font-bold text-gray-900 text-lg">{{ booking.service?.name }}</h4>
-                  <p class="text-sm text-gray-600">{{ booking.master?.first_name }} {{ booking.master?.last_name }}</p>
+                  <p class="text-sm text-gray-600">{{ booking.user?.first_name }} {{ booking.user?.last_name }}</p>
                   <p class="text-sm text-gray-600">{{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}</p>
                 </div>
               </div>
@@ -260,7 +263,7 @@
                 <span :class="getStatusClass(booking.status)" class="px-4 py-2 rounded-full text-xs font-bold shadow-sm">
                   {{ getStatusText(booking.status) }}
                 </span>
-                <p class="text-lg font-bold text-gray-900 mt-2">₽{{ booking.service?.price }}</p>
+                <p class="text-lg font-bold text-gray-900 mt-2">{{ booking.service?.price }} MDL</p>
               </div>
             </div>
           </div>
@@ -286,11 +289,11 @@
               <div class="flex-1">
                 <div class="flex items-center space-x-4">
                   <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span class="text-gray-600 font-semibold text-sm">{{ booking.master?.first_name[0] }}{{ booking.master?.last_name[0] }}</span>
+                    <span class="text-gray-600 font-semibold text-sm">{{ booking.user?.first_name[0] }}{{ booking.user?.last_name[0] }}</span>
                   </div>
                   <div>
                     <h4 class="font-semibold text-gray-900">{{ booking.service?.name }}</h4>
-                    <p class="text-sm text-gray-600">{{ booking.master?.first_name }} {{ booking.master?.last_name }}</p>
+                    <p class="text-sm text-gray-600">{{ booking.user?.first_name }} {{ booking.user?.last_name }}</p>
                     <p class="text-sm text-gray-600">{{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}</p>
                   </div>
                 </div>
@@ -299,7 +302,7 @@
                 <span :class="getStatusClass(booking.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
                   {{ getStatusText(booking.status) }}
                 </span>
-                <p class="text-sm font-semibold text-gray-900 mt-1">₽{{ booking.service?.price }}</p>
+                <p class="text-sm font-semibold text-gray-900 mt-1">{{ booking.service?.price }} MDL</p>
                 <button @click="deleteBooking(booking.id)" class="mt-2 text-red-600 hover:text-red-700 text-sm font-medium">
                   Удалить
                 </button>
@@ -358,9 +361,9 @@
           <div>
             <h4 class="text-lg font-semibold mb-4">Контакты</h4>
             <ul class="space-y-2">
-              <li class="text-gray-400">+7 999 123-45-67</li>
+              <li class="text-gray-400">+373 699 9 999</li>
               <li class="text-gray-400">support@bookmaster.ru</li>
-              <li class="text-gray-400">Москва, Россия</li>
+              <li class="text-gray-400">Chisinau, MD</li>
             </ul>
           </div>
         </div>

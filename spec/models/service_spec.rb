@@ -31,7 +31,7 @@ RSpec.describe Service, type: :model do
     let(:service) { create(:service, user: master, price: 1500, duration: 60) }
 
     it 'returns formatted price' do
-      expect(service.formatted_price).to eq('₽1500')
+      expect(service.formatted_price).to eq('1500 MDL')
     end
 
     it 'returns formatted duration' do

@@ -82,7 +82,7 @@
                 {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
               </div>
               <div class="text-right">
-                <p class="text-sm font-semibold text-gray-900">₽{{ booking.service?.price }}</p>
+                <p class="text-sm font-semibold text-gray-900">{{ booking.service?.price }} MDL</p>
                 <div v-if="booking.status === 'pending'" class="flex space-x-1 mt-1">
                   <button @click="showConfirmModal(booking)" class="text-green-600 hover:text-green-700 text-xs font-medium">
                     ✓

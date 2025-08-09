@@ -55,7 +55,9 @@
                 <p class="text-sm text-gray-600">{{ formatTime(booking?.start_time) }} - {{ formatTime(booking?.end_time) }}</p>
               </div>
               <div class="text-right">
-                <p class="text-lg font-bold text-gray-900">₽{{ booking?.service?.price }}</p>
+                <p class="text-lg font-bold text-gray-900">
+                  {{ getBookingPrice(booking) }} MDL
+                </p>
               </div>
             </div>
           </div>
@@ -125,5 +127,19 @@ const formatTime = (timeString) => {
     hour: '2-digit', 
     minute: '2-digit' 
   })
+}
+
+const getBookingPrice = (booking) => {
+  // Сначала проверяем прямую цену в записи
+  if (booking?.price) {
+    return Math.round(booking.price)
+  }
+  
+  // Если есть цена в услуге
+  if (booking?.service?.price) {
+    return Math.round(booking.service.price)
+  }
+  
+  return 0
 }
 </script> 

@@ -24,7 +24,7 @@ class Service < ApplicationRecord
 
   # Instance methods
   def formatted_price
-    "₽#{price.to_i}"
+    "#{price.to_i} MDL"
   end
 
   def formatted_duration
