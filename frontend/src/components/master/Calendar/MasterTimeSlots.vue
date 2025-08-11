@@ -116,7 +116,7 @@
             </span>
             <button
               @click="props.showDeleteModal(slot.booking)"
-              class="text-red-600 hover:text-red-700"
+              class="text-red-600 hover:text-red-700 font-light"
               title="Отменить запись"
             >
               Отменить
@@ -130,14 +130,14 @@
           >
             <button
               @click="props.showConfirmModal(slot.booking)"
-              class="text-green-600 hover:text-green-700 font-medium"
+              class="text-green-600 hover:text-green-700 font-light"
               title="Подтвердить"
             >
               Подтвердить
             </button>
             <button
               @click="props.showCancelModal(slot.booking)"
-              class="text-red-600 hover:text-red-700 font-medium"
+              class="text-red-600 hover:text-red-700 font-light"
               title="Отменить"
             >
               Отменить

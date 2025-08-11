@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import api from '../services/api'
 
 export function useBookings() {
   const authStore = useAuthStore()
@@ -14,10 +15,16 @@ export function useBookings() {
   // Computed properties
   const filteredBookings = computed(() => {
     const safe = Array.isArray(recentBookings.value) ? recentBookings.value.filter(Boolean) : []
-    if (bookingFilter.value === 'all') {
-      return safe
-    }
-    return safe.filter((booking) => booking && booking.status === bookingFilter.value)
+    const filtered = bookingFilter.value === 'all'
+      ? safe
+      : safe.filter((booking) => booking && booking.status === bookingFilter.value)
+
+    // Sort by creation time (newest first). Fallback to start_time if created_at is missing.
+    return [...filtered].sort((a, b) => {
+      const timeA = new Date(a?.created_at || a?.start_time || 0).getTime()
+      const timeB = new Date(b?.created_at || b?.start_time || 0).getTime()
+      return timeB - timeA
+    })
   })
 
   const pendingBookingsCount = computed(() => {
@@ -44,17 +51,7 @@ export function useBookings() {
         return
       }
 
-      const response = await fetch('http://localhost:3000/api/v1/bookings', {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch bookings')
-      }
-
-      const bookingsData = await response.json()
+      const bookingsData = await api.getBookings(authStore.token)
       recentBookings.value = Array.isArray(bookingsData) ? bookingsData.filter(Boolean) : []
     } catch (error) {
       console.error('Error loading bookings:', error)
@@ -111,22 +108,7 @@ export function useBookings() {
       }
 
       const status = modalType.value === 'confirm' ? 'confirmed' : 'cancelled'
-      const response = await fetch(
-        `http://localhost:3000/api/v1/bookings/${bookingId}/update_status`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authStore.token}`,
-          },
-          body: JSON.stringify({ status }),
-        },
-      )
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `Failed to ${modalType.value} booking`)
-      }
+      await api.updateBookingStatus(bookingId, status, authStore.token)
 
       await loadBookings()
       closeConfirmationModal()

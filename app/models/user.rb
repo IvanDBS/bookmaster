@@ -173,8 +173,10 @@ class User < ApplicationRecord
   def reconcile_bookings_with_slots_for_date(date)
     return unless master?
 
-    # Сначала освобождаем все слоты на эту дату
-    time_slots.for_date(date).update_all(booking_id: nil, is_available: true, updated_at: Time.current)
+    # Сначала освобождаем все слоты на эту дату, кроме вручную заблокированных
+    time_slots.for_date(date)
+              .where.not(slot_type: 'blocked')
+              .update_all(booking_id: nil, is_available: true, updated_at: Time.current)
     Rails.logger.info "User##{id}: Freed all slots for #{date}"
 
     # Берем только активные записи (не отмененные и не удаленные)

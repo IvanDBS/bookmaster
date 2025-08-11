@@ -261,16 +261,10 @@ export function useMasterCalendar() {
         return
       }
 
-      const response = await fetch('http://localhost:3000/api/v1/working_schedules', {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
+      const response = await fetch(`${api.baseURL}/working_schedules`, {
+        headers: { Authorization: `Bearer ${authStore.token}` },
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch working schedules')
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch working schedules')
       const schedulesData = await response.json()
       workingSchedules.value = schedulesData
     } catch (error) {
@@ -360,17 +354,10 @@ export function useMasterCalendar() {
         return slotsCache.value.get(dateString)
       }
 
-      const response = await fetch(`http://localhost:3000/api/v1/time_slots?date=${dateString}`, {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
+      const response = await fetch(`${api.baseURL}/time_slots?date=${dateString}`, {
+        headers: { Authorization: `Bearer ${authStore.token}` },
       })
-
-      if (!response.ok) {
-        console.error('Failed to fetch slots for', dateString, 'Status:', response.status)
-        throw new Error('Failed to fetch time slots')
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch time slots')
       const slotsData = await response.json()
 
       // Сохраняем в кэш
@@ -500,18 +487,7 @@ export function useMasterCalendar() {
 
     try {
       if (!authStore.token) throw new Error('Не авторизован')
-      const response = await fetch(`http://localhost:3000/api/v1/time_slots/${slot.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authStore.token}`,
-        },
-        body: JSON.stringify({ is_break: isBreakNext }),
-      })
-      const json = await response.json()
-      if (!response.ok) {
-        throw new Error(json.error || 'Не удалось обновить слот')
-      }
+      const json = await api.updateTimeSlot(slot.id, { is_break: isBreakNext }, authStore.token)
       if (selectedDate.value) {
         slotsCache.value.delete(dateKey)
         await loadSlotsForSelectedDate(selectedDate.value)
@@ -536,20 +512,15 @@ export function useMasterCalendar() {
     try {
       const dateString = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.value.getDate()).padStart(2, '0')}`
 
-      const response = await fetch(`http://localhost:3000/api/v1/time_slots/add_slot`, {
+      await fetch(`${api.baseURL}/time_slots/add_slot`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authStore.token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authStore.token}` },
         body: JSON.stringify({ date: dateString }),
+      }).then(async (r) => {
+        const json = await r.json().catch(() => ({}))
+        if (!r.ok) throw new Error(json.error || 'Не удалось добавить новый слот')
+        return json
       })
-
-      const json = await response.json()
-
-      if (!response.ok) {
-        throw new Error(json.error || 'Не удалось добавить новый слот')
-      }
 
       // Очищаем кэш и перезагружаем слоты
       slotsCache.value.delete(dateString)

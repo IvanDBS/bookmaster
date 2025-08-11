@@ -59,7 +59,7 @@ class WorkingSchedule < ApplicationRecord
 
     slots = []
     current_time = start_time
-    slot_minutes = 60
+    slot_minutes = slot_duration_minutes || 60
 
     # Генерируем рабочие слоты
     while current_time < end_time
@@ -77,7 +77,7 @@ class WorkingSchedule < ApplicationRecord
         date: date,
         start_time: current_time,
         end_time: slot_end,
-        duration_minutes: 60,
+        duration_minutes: slot_minutes,
         is_available: true,
         slot_type: 'work'
       }
@@ -92,7 +92,7 @@ class WorkingSchedule < ApplicationRecord
         date: date,
         start_time: lunch_start,
         end_time: lunch_end,
-        duration_minutes: 60,
+        duration_minutes: time_diff_in_minutes(lunch_end, lunch_start),
         is_available: false,
         slot_type: 'lunch'
       }

@@ -213,7 +213,7 @@ const loadWorkingSchedules = async () => {
     }
 
     console.log('Loading working schedules...')
-    const response = await fetch('http://localhost:3000/api/v1/working_schedules', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/working_schedules`, {
       headers: {
         Authorization: `Bearer ${authStore.token}`,
       },
@@ -364,7 +364,7 @@ const saveSchedule = async () => {
       }
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/working_schedules/${schedule.id}`,
+        `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/working_schedules/${schedule.id}`,
         {
           method: 'PATCH',
           headers: {

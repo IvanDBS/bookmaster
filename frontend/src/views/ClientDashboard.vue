@@ -589,7 +589,7 @@ const loadServiceTypes = async () => {
 const loadMyMasters = async () => {
   try {
     // Получаем мастеров, к которым клиент записывался
-    const response = await fetch('http://localhost:3000/api/v1/bookings', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/bookings`, {
       headers: { Authorization: `Bearer ${authStore.token}` },
     })
 
@@ -615,7 +615,7 @@ const loadMyMasters = async () => {
         try {
           console.log(`Loading services for master ${master.first_name} (ID: ${master.id})`)
           const servicesResponse = await fetch(
-            `http://localhost:3000/api/v1/services?master_id=${master.id}`,
+            `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/services?master_id=${master.id}`,
             {
               headers: { Authorization: `Bearer ${authStore.token}` },
             },
@@ -656,7 +656,7 @@ const loadCurrentBookings = async () => {
       return
     }
     console.log('Loading current bookings...')
-    const res = await fetch('http://localhost:3000/api/v1/bookings', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/bookings`, {
       headers: { Authorization: `Bearer ${authStore.token}` },
     })
     if (!res.ok) throw new Error('Failed to load bookings')
@@ -875,7 +875,7 @@ const deleteBooking = async (bookingId) => {
   try {
     if (!confirm('Вы уверены, что хотите удалить эту запись из истории?')) return
 
-    const res = await fetch(`http://localhost:3000/api/v1/bookings/${bookingId}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/bookings/${bookingId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${authStore.token}` },
     })
@@ -896,7 +896,7 @@ const clearHistory = async () => {
 
     // Удаляем все записи из истории
     const deletePromises = bookingHistory.value.map((booking) =>
-      fetch(`http://localhost:3000/api/v1/bookings/${booking.id}`, {
+      fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/bookings/${booking.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${authStore.token}` },
       }),

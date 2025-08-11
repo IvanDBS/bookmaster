@@ -1,4 +1,4 @@
-class Api::V1::BookingsController < ApplicationController
+class Api::V1::BookingsController < Api::V1::BaseController
   before_action :set_booking, only: [:show, :update_status, :destroy]
   before_action :authenticate_user!
   before_action :ensure_booking_owner!, only: [:show, :update_status, :destroy]
@@ -48,7 +48,8 @@ class Api::V1::BookingsController < ApplicationController
 
     # Поддержка услуг длиннее одного слота: бронируем последовательность слотов
     # Принудительно используем 60 минутные цепочки
-    required_slots = (60.0 / slot.duration_minutes).ceil
+    # Кол-во слотов для услуги исходя из длительности услуги и длительности слота
+    required_slots = (service.duration.to_f / slot.duration_minutes).ceil
     slots_chain = [slot]
     if required_slots > 1
       (1...required_slots).each do |i|
@@ -78,6 +79,7 @@ class Api::V1::BookingsController < ApplicationController
           service: service,
           user: master,
           start_time: start_dt,
+          end_time: start_dt + service.duration.minutes,
           client_name: booking_params[:client_name].presence || current_user&.full_name || 'Клиент',
           client_email: booking_params[:client_email].presence || current_user&.email || 'client@example.com',
           client_phone: booking_params[:client_phone].presence || current_user&.phone

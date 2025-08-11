@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import api from '../services/api'
 
 export function useClientCalendar() {
   // Reactive data
@@ -122,16 +123,13 @@ export function useClientCalendar() {
     console.log(`Loading slots for date: ${dateString}, master: ${masterId.value}`)
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/v1/time_slots/public?master_id=${masterId.value}&date=${dateString}`,
-      )
-      if (response.ok) {
-        const data = await response.json()
-        slotsCache.value.set(dateString, data.slots || [])
-        console.log(`Loaded slots for ${dateString}:`, data.slots?.length || 0, 'slots')
-      } else {
-        console.error(`Failed to load slots for ${dateString}:`, response.status)
-      }
+      const url = new URL(`${api.baseURL}/time_slots/public`)
+      url.searchParams.set('master_id', masterId.value)
+      url.searchParams.set('date', dateString)
+      const response = await fetch(url.toString())
+      if (!response.ok) throw new Error('Failed to fetch public time slots')
+      const data = await response.json()
+      slotsCache.value.set(dateString, data.slots || [])
     } catch (error) {
       console.error('Error loading slots for date:', error)
       slotsCache.value.set(dateString, [])

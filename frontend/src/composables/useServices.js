@@ -34,15 +34,8 @@ export function useServices() {
         return
       }
 
-      const response = await fetch('http://localhost:3000/api/v1/services', {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
-      })
-      if (!response.ok) {
-        throw new Error('Failed to fetch services')
-      }
-      const servicesData = await response.json()
+      const servicesData = await api.getServices()
+      // Если мастер — API все равно отдаст только собственные (см. контроллер)
       services.value = servicesData
       console.log('Loaded services:', servicesData)
     } catch (error) {
@@ -75,32 +68,11 @@ export function useServices() {
         service_type: newService.value.service_type,
       }
 
-      let url = 'http://localhost:3000/api/v1/services'
-      let method = 'POST'
-
       if (editingServiceId.value) {
-        url = `http://localhost:3000/api/v1/services/${editingServiceId.value}`
-        method = 'PUT'
+        await api.updateService(editingServiceId.value, serviceData, authStore.token)
+      } else {
+        await api.createService(serviceData, authStore.token)
       }
-
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authStore.token}`,
-        },
-        body: JSON.stringify({ service: serviceData }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(
-          errorData.errors
-            ? errorData.errors.join(', ')
-            : errorData.error || 'Failed to create service',
-        )
-      }
-
       await loadServices()
 
       const wasEditing = editingServiceId.value
@@ -120,19 +92,7 @@ export function useServices() {
           throw new Error('Не авторизован')
         }
 
-        const response = await fetch(`http://localhost:3000/api/v1/services/${serviceId}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authStore.token}`,
-          },
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to delete service')
-        }
-
+        await api.deleteService(serviceId, authStore.token)
         await loadServices()
         alert('Услуга успешно удалена!')
       } catch (error) {

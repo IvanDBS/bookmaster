@@ -12,7 +12,7 @@
             <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
             <div class="w-3 h-3 bg-red-500 rounded-full"></div>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900">BookMaster</h1>
+          <h1 class="text-2xl font-bold text-gray-900 font-sans">BookMaster</h1>
         </button>
 
         <!-- Navigation -->

@@ -21,7 +21,7 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-6 py-6 mt-8">
       <!-- Welcome Section -->
-      <WelcomeSection :user="user" />
+      <WelcomeSection :user="user || {}" />
 
       <!-- Calendar Section -->
       <div id="calendar" class="mb-6 mt-8">

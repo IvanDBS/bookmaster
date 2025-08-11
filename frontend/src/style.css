@@ -13,6 +13,10 @@
   html {
     -webkit-font-smoothing: antialiased;
   }
+
+  body {
+    @apply font-sans;
+  }
 }
 
 /* Reusable minimal buttons (optional) */

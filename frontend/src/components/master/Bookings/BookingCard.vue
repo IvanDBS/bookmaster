@@ -20,13 +20,13 @@
       <div v-if="booking.status === 'pending'" class="flex space-x-2 mt-2">
         <button
           @click="$emit('show-confirm-modal', booking)"
-          class="text-green-600 hover:text-green-700 text-xs font-medium"
+          class="text-green-600 hover:text-green-700 text-xs font-light"
         >
           Подтвердить
         </button>
         <button
           @click="$emit('show-cancel-modal', booking)"
-          class="text-red-600 hover:text-red-700 text-xs font-medium"
+          class="text-red-600 hover:text-red-700 text-xs font-light"
         >
           Отменить
         </button>

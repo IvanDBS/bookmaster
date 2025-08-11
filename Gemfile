@@ -16,8 +16,7 @@ gem "rack-cors"
 gem "devise"
 gem "devise-jwt"
 
-# Authorization
-gem "pundit"
+# Authorization (removed). If needed later, re-add with policies
 
 # API serialization
 gem "active_model_serializers"

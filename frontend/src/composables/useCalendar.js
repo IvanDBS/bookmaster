@@ -156,10 +156,8 @@ export function useCalendar() {
         return
       }
 
-      const response = await fetch('http://localhost:3000/api/v1/working_schedules', {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
+      const response = await fetch(`${api.baseURL}/working_schedules`, {
+        headers: { Authorization: `Bearer ${authStore.token}` },
       })
 
       if (!response.ok) {
@@ -216,10 +214,8 @@ export function useCalendar() {
 
       console.log('Loading slots for date:', dateString)
 
-      const response = await fetch(`http://localhost:3000/api/v1/time_slots?date=${dateString}`, {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
+      const response = await fetch(`${api.baseURL}/time_slots?date=${dateString}`, {
+        headers: { Authorization: `Bearer ${authStore.token}` },
       })
 
       if (!response.ok) {

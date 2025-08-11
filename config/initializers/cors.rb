@@ -7,11 +7,15 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins "http://localhost:3000", "http://localhost:8080", "http://localhost:5173", "http://localhost:5174"
+    # Read allowed origins from ENV, fallback to local dev defaults
+    allowed_origins = ENV.fetch('CORS_ORIGINS', 'http://localhost:3000,http://localhost:8080,http://localhost:5173,http://localhost:5174')
+                        .split(',')
 
-    resource "*",
-      headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      credentials: true
+    origins(*allowed_origins)
+
+    resource '*',
+             headers: :any,
+             methods: %i[get post put patch delete options head],
+             credentials: true
   end
 end

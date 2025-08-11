@@ -1,8 +1,23 @@
-const API_BASE_URL = 'http://localhost:3000/api/v1'
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
+  ? `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1`
+  : 'http://localhost:3000/api/v1'
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL
+  }
+
+  // Helpers
+  buildUrl(path, params = null) {
+    const url = new URL(`${this.baseURL}${path}`)
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          url.searchParams.set(key, value)
+        }
+      })
+    }
+    return url.toString()
   }
 
   // Auth endpoints
@@ -47,8 +62,13 @@ class ApiService {
   }
 
   // Services endpoints
-  async getServices() {
-    const response = await fetch(`${this.baseURL}/services`)
+  async getServices(filters = null, token = null) {
+    const url = this.buildUrl('/services', filters)
+    const response = await fetch(url, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
     if (!response.ok) {
       throw new Error('Failed to fetch services')
     }
@@ -172,6 +192,17 @@ class ApiService {
     return await response.json()
   }
 
+  async deleteBooking(id, token) {
+    const response = await fetch(`${this.baseURL}/bookings/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) {
+      throw new Error('Failed to delete booking')
+    }
+    return await response.json().catch(() => ({}))
+  }
+
   // Public time slots for a master by date (client flow)
   async getPublicSlots(masterId, date) {
     const url = new URL(`${this.baseURL}/time_slots/public`)
@@ -182,6 +213,27 @@ class ApiService {
       throw new Error('Failed to fetch public time slots')
     }
     return await response.json()
+  }
+
+  // Master/private time slots
+  async getTimeSlots(date, token) {
+    const url = this.buildUrl('/time_slots', { date })
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) throw new Error('Failed to fetch time slots')
+    return await response.json()
+  }
+
+  async addTimeSlot(date, token) {
+    const response = await fetch(`${this.baseURL}/time_slots/add_slot`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ date }),
+    })
+    const json = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(json.error || 'Failed to add slot')
+    return json
   }
 
   async updateTimeSlot(id, { is_break }, token = null) {
@@ -307,6 +359,26 @@ class ApiService {
     if (!response.ok) {
       throw new Error('Failed to delete working day exception')
     }
+  }
+
+  // Working Schedules endpoints
+  async getWorkingSchedules(token) {
+    const response = await fetch(`${this.baseURL}/working_schedules`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) throw new Error('Failed to fetch working schedules')
+    return await response.json()
+  }
+
+  async updateWorkingSchedule(id, scheduleData, token) {
+    const response = await fetch(`${this.baseURL}/working_schedules/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ working_schedule: scheduleData }),
+    })
+    const json = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(json.errors ? json.errors.join(', ') : 'Failed to update schedule')
+    return json
   }
 }
 

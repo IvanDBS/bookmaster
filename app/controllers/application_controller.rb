@@ -1,10 +1,8 @@
 class ApplicationController < ActionController::API
-  include Pundit::Authorization
   
   before_action :configure_permitted_parameters, if: :devise_controller?
   
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
-  rescue_from Pundit::NotAuthorizedError, with: :forbidden
   rescue_from ActionController::ParameterMissing, with: :bad_request
   
   private

@@ -32,8 +32,12 @@ module Api
             computed_available = slot.is_available && overlapping_booking.nil?
             {
               id: slot.id,
+              # Времена в человекочитаемом формате
               start_time: slot.start_time.strftime('%H:%M'),
               end_time: slot.end_time.strftime('%H:%M'),
+              # Стандартизированные ISO-времена (совмещаем дату и время)
+              start_at: slot_start_dt,
+              end_at: slot_end_dt,
               duration_minutes: slot.duration_minutes,
               is_available: computed_available,
               slot_type: slot.slot_type,
@@ -62,10 +66,14 @@ module Api
         render json: {
           date: date,
           slots: slots.map do |slot|
+            slot_start_dt = Time.zone.parse("#{slot.date} #{slot.start_time.strftime('%H:%M')}")
+            slot_end_dt   = Time.zone.parse("#{slot.date} #{slot.end_time.strftime('%H:%M')}")
             {
               id: slot.id,
               start_time: slot.start_time,
               end_time: slot.end_time,
+              start_at: slot_start_dt,
+              end_at: slot_end_dt,
               duration_minutes: slot.duration_minutes,
               is_available: slot.is_available,
               slot_type: slot.slot_type,
@@ -78,11 +86,15 @@ module Api
       def show
         slot = current_user.time_slots.find(params[:id])
 
+        slot_start_dt = Time.zone.parse("#{slot.date} #{slot.start_time.strftime('%H:%M')}")
+        slot_end_dt   = Time.zone.parse("#{slot.date} #{slot.end_time.strftime('%H:%M')}")
         render json: {
           id: slot.id,
           date: slot.date,
           start_time: slot.start_time,
           end_time: slot.end_time,
+          start_at: slot_start_dt,
+          end_at: slot_end_dt,
           duration_minutes: slot.duration_minutes,
           is_available: slot.is_available,
           slot_type: slot.slot_type,
