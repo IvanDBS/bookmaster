@@ -423,12 +423,12 @@
                 <p class="text-sm font-semibold text-gray-900 mt-1">
                   {{ booking?.service?.price ? Math.round(booking.service.price) : 0 }} MDL
                 </p>
-                <div v-if="booking.status === 'pending'" class="flex space-x-1 mt-2">
-                  <button @click="showConfirmModal(booking)" class="text-green-600 hover:text-green-700 text-xs font-medium">
-                    ✓
+                <div v-if="booking.status === 'pending'" class="flex justify-between items-center text-xs mt-2">
+                  <button @click="showConfirmModal(booking)" class="text-green-600 hover:text-green-700 font-medium" title="Подтвердить">
+                    Подтвердить
                   </button>
-                  <button @click="showCancelModal(booking)" class="text-red-600 hover:text-red-700 text-xs font-medium">
-                    ✕
+                  <button @click="showCancelModal(booking)" class="text-red-600 hover:text-red-700 font-medium" title="Отменить">
+                    Отменить
                   </button>
                 </div>
               </div>
@@ -543,13 +543,7 @@ const pendingBookingsCount = computed(() => {
   return recentBookings.value.filter(booking => booking.status === 'pending').length
 })
 
-const sortedSelectedDateBookings = computed(() => {
-  return [...selectedDateBookings.value].sort((a, b) => {
-    const timeA = new Date(a.start_time).getTime()
-    const timeB = new Date(b.start_time).getTime()
-    return timeA - timeB
-  })
-})
+// Удалено: сортировка использовалась только в скрытом блоке
 
 // Computed для определения статуса выбранного дня (локальная дата, без ISO/UTC)
 const isDayWorking = computed(() => {
@@ -614,8 +608,6 @@ const calendarDates = computed(() => {
     const bookedSlots = workSlots.filter(slot => slot.booked)
     const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
     
-    // Общее количество слотов, которые могут быть забронированы (рабочие + заблокированные)
-    const totalBookableSlots = workSlots.length + blockedSlots.length
     // Количество доступных слотов (только рабочие, которые доступны и не забронированы)
     const totalAvailableSlots = availableSlots.length
     
@@ -715,8 +707,6 @@ const nextMonthDates = computed(() => {
     const bookedSlots = workSlots.filter(slot => slot.booked)
     const pendingSlots = workSlots.filter(slot => slot.booking && slot.booking.status === 'pending')
     
-    // Общее количество слотов, которые могут быть забронированы (рабочие + заблокированные)
-    const totalBookableSlots = workSlots.length + blockedSlots.length
     // Количество доступных слотов (только рабочие, которые доступны и не забронированы)
     const totalAvailableSlots = availableSlots.length
     
@@ -936,7 +926,9 @@ const toggleDayStatus = async () => {
         if (idx !== -1) workingDayExceptions.value.splice(idx, 1)
         await loadSlotsForSelectedDate(selectedDate.value)
       }
-    } catch (_) {}
+    } catch (rollbackError) {
+      console.warn('Rollback failed after toggleDayStatus error:', rollbackError)
+    }
     console.error('Error toggling day status:', error)
     alert('Ошибка при изменении статуса дня: ' + error.message)
   }
@@ -1364,24 +1356,7 @@ const getDateBorderClass = (date) => {
   return 'border-green-300' // Зеленый - рабочий день со свободными слотами
 }
 
-const getBookingDotClass = (date) => {
-  if (date.loadLevel === 'non_working') {
-    return 'bg-gray-400' // Серые точки для выходного
-  }
-  
-  // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
-  if (date.totalSlots > 0 && date.availableSlots === 0) {
-    return 'bg-red-400' // Красные точки для дня без свободных слотов (приоритет над оранжевым)
-  }
-  
-  // Если есть записи (bookedSlots > 0)
-  if (date.bookedSlots > 0) {
-    return 'bg-orange-400' // Оранжевые точки для дней с записями
-  }
-  
-  // Если есть свободные слоты (рабочий день с доступными слотами)
-  return 'bg-green-400' // Зеленые точки для свободных рабочих дней
-}
+// Удалено: getBookingDotClass использовался только в скрытых индикаторах
 
 // Slot helper functions
 const getSlotTypeText = (slotType) => {

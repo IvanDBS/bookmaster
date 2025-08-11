@@ -78,10 +78,14 @@ puts "Creating services for masters..."
 # Services for Anna (manicure specialist)
 anna = User.find_by(email: 'anna@example.com')
 if anna
+  # Реальные позиции из прайса мастера 1 (маникюр)
   services = [
-    { name: 'Классический маникюр', description: 'Базовый маникюр с покрытием гель-лаком', price: 1500, duration: 60, service_type: 'маникюр' },
-    { name: 'Дизайн-маникюр', description: 'Маникюр с художественным дизайном', price: 2500, duration: 60, service_type: 'маникюр' },
-    { name: 'SPA-маникюр', description: 'Маникюр с уходом за кожей рук', price: 2000, duration: 60, service_type: 'маникюр' }
+    { name: 'Manichiura igienica', description: 'Гигиенический маникюр', price: 50, duration: 60, service_type: 'маникюр' },
+    { name: 'Acoperire', description: 'Покрытие', price: 180, duration: 60, service_type: 'маникюр' },
+    { name: 'Corectie marimea 1-2', description: 'Коррекция длины 1–2', price: 200, duration: 60, service_type: 'маникюр' },
+    { name: 'Corectie marimea 3-4', description: 'Коррекция длины 3–4', price: 250, duration: 60, service_type: 'маникюр' },
+    { name: 'Alungire marimea 1-2', description: 'Наращивание длины 1–2', price: 250, duration: 60, service_type: 'маникюр' },
+    { name: 'Alungire marimea 3-4', description: 'Наращивание длины 3–4', price: 300, duration: 60, service_type: 'маникюр' }
   ]
   
   services.each do |service_data|
@@ -93,15 +97,32 @@ end
 # Services for Maria (pedicure specialist)
 maria = User.find_by(email: 'maria@example.com')
 if maria
+  # Реальные позиции из прайса мастера 2 (педикюр)
   services = [
-    { name: 'Классический педикюр', description: 'Базовый педикюр с покрытием', price: 2000, duration: 60, service_type: 'педикюр' },
-    { name: 'Аппаратный педикюр', description: 'Педикюр с использованием аппарата', price: 3000, duration: 60, service_type: 'педикюр' },
-    { name: 'SPA-педикюр', description: 'Педикюр с уходом за кожей ног', price: 3500, duration: 60, service_type: 'педикюр' }
+    { name: 'Pedichiură igienica', description: 'Гигиенический педикюр', price: 300, duration: 60, service_type: 'педикюр' },
+    { name: 'Pedichiură cu gel', description: 'Педикюр с гелевым покрытием', price: 450, duration: 60, service_type: 'педикюр' },
+    # Из первого прайса присутствует базовая услуга педикюра
+    { name: 'Pedichiura', description: 'Базовый педикюр', price: 200, duration: 60, service_type: 'педикюр' }
   ]
   
   services.each do |service_data|
     service = maria.services.create!(service_data)
     puts "Created service for Maria: #{service.name} (#{service.service_type})"
+  end
+end
+
+# Дополнительно: второй мастер маникюра (Ирина) с прайсом по размерам
+irina = User.find_by(email: 'irina@example.com')
+if irina
+  services = [
+    { name: 'Mărimea 1/2', description: 'Маникюр/наращивание длина 1/2', price: 350, duration: 60, service_type: 'маникюр' },
+    { name: 'Mărimea 3/4', description: 'Маникюр/наращивание длина 3/4', price: 400, duration: 60, service_type: 'маникюр' },
+    { name: 'Mărimea 5/6', description: 'Маникюр/наращивание длина 5/6', price: 450, duration: 60, service_type: 'маникюр' }
+  ]
+
+  services.each do |service_data|
+    service = irina.services.create!(service_data)
+    puts "Created service for Irina: #{service.name} (#{service.service_type})"
   end
 end
 
@@ -120,22 +141,7 @@ if elena
   end
 end
 
-# Update other masters to work with available service types
-# Irina - now provides manicure services
-irina = User.find_by(email: 'irina@example.com')
-if irina
-  services = [
-    { name: 'Французский маникюр', description: 'Элегантный французский маникюр', price: 1800, duration: 60, service_type: 'маникюр' },
-    { name: 'Гелевое наращивание', description: 'Наращивание ногтей гелем', price: 3000, duration: 60, service_type: 'маникюр' }
-  ]
-  
-  services.each do |service_data|
-    service = irina.services.create!(service_data)
-    puts "Created service for Irina: #{service.name} (#{service.service_type})"
-  end
-end
-
-# Svetlana - now provides massage services
+# Svetlana - massage services
 svetlana = User.find_by(email: 'svetlana@example.com')
 if svetlana
   services = [
@@ -228,13 +234,13 @@ if User.exists?(role: 'master') && User.exists?(role: 'client')
   masters = User.where(role: 'master').to_a
   clients = User.where(role: 'client').to_a
 
-  # Фиксированные времена для записей
-  booking_times = ['09:00', '11:00'] # Убираем 10:00 чтобы избежать дубликатов
+  # Фиксированные времена для записей (увеличиваем в 2 раза)
+  booking_times = ['09:00', '11:00', '14:00', '16:00']
 
   (1..14).each do |day_offset|
     date = Date.current + day_offset.days
     
-    # Создаем только 2 записи в день (по одной на каждое время)
+    # Создаем 4 записи в день (по одному бронированию на время)
     booking_times.each_with_index do |time_str, index|
       # Выбираем случайного мастера для этой записи
       master = masters.sample
@@ -258,6 +264,7 @@ if User.exists?(role: 'master') && User.exists?(role: 'client')
       start_dt = Time.zone.parse("#{date} #{time_str}")
       end_dt = start_dt + service.duration.minutes
 
+      status = %w[pending confirmed cancelled].sample
       booking = Booking.create!(
         user: master,
         service: service,
@@ -266,12 +273,12 @@ if User.exists?(role: 'master') && User.exists?(role: 'client')
         client_name: client.full_name,
         client_email: client.email,
         client_phone: client.phone,
-        status: 'pending'  # Все записи создаются в статусе pending
+        status: status
       )
 
       # Правильно связываем слот с записью
       slot.update!(booking_id: booking.id, is_available: false)
-      puts "Created booking #{index + 1}/2: #{client.full_name} -> #{master.full_name} (#{service.name}) on #{start_dt.strftime('%d.%m.%Y %H:%M')} in slot #{slot.id}"
+      puts "Created booking #{index + 1}/#{booking_times.size}: #{client.full_name} -> #{master.full_name} (#{service.name}, status: #{status}) on #{start_dt.strftime('%d.%m.%Y %H:%M')} in slot #{slot.id}"
     end
     
     # Запускаем синхронизацию для всех мастеров
