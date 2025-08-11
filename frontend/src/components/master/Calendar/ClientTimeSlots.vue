@@ -1,29 +1,31 @@
 <template>
   <div class="bg-white rounded-lg shadow-sm border border-gray-200">
     <div class="px-6 py-4 border-b border-gray-200">
-      <h3 class="text-lg font-semibold text-gray-900">Временные слоты на {{ formatSelectedDate }}</h3>
+      <h3 class="text-lg font-semibold text-gray-900">
+        Временные слоты на {{ formatSelectedDate }}
+      </h3>
     </div>
-    
+
     <div class="p-6">
       <div v-if="loading" class="flex justify-center py-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-500"></div>
       </div>
-      
+
       <div v-else-if="availableSlots.length === 0" class="text-center py-8">
         <p class="text-gray-500">На выбранную дату нет доступных слотов</p>
         <p class="text-xs text-gray-400 mt-2">Все слоты забронированы или заблокированы</p>
       </div>
-      
+
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <button 
-          v-for="slot in availableSlots" 
-          :key="slot.id" 
+        <button
+          v-for="slot in availableSlots"
+          :key="slot.id"
           @click="selectSlot(slot)"
           :class="[
             'rounded-lg p-4 text-left transition-all duration-200 border-2 hover:scale-105',
-            selectedSlot?.id === slot.id 
-              ? 'border-lime-500 bg-lime-50 shadow-lg scale-105' 
-              : 'border-gray-200 hover:border-lime-300 hover:shadow-md'
+            selectedSlot?.id === slot.id
+              ? 'border-lime-500 bg-lime-50 shadow-lg scale-105'
+              : 'border-gray-200 hover:border-lime-300 hover:shadow-md',
           ]"
         >
           <div class="flex justify-between items-center">
@@ -31,12 +33,12 @@
               <h6 class="font-semibold text-gray-900 text-sm">
                 {{ formatTime(slot.start_time) }} - {{ formatTime(slot.end_time) }}
               </h6>
-              <p class="text-xs text-gray-600 mt-1">
-                {{ slot.duration_minutes }} минут
-              </p>
+              <p class="text-xs text-gray-600 mt-1">{{ slot.duration_minutes }} минут</p>
             </div>
             <div class="flex items-center space-x-2">
-              <span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+              <span
+                class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800"
+              >
                 Свободно
               </span>
             </div>
@@ -53,12 +55,12 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
   selectedDate: {
     type: Object,
-    required: true
+    required: true,
   },
   masterId: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
 })
 
 const emit = defineEmits(['slot-selected'])
@@ -70,17 +72,17 @@ const selectedSlot = ref(null)
 const formatSelectedDate = computed(() => {
   if (!props.selectedDate) return ''
   const date = new Date(props.selectedDate.date)
-  return date.toLocaleDateString('ru-RU', { 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
   })
 })
 
 const formatTime = (timeString) => {
   if (!timeString) return ''
   // Extract time from ISO string or time format
-  const time = timeString.includes('T') 
+  const time = timeString.includes('T')
     ? timeString.split('T')[1].substring(0, 5)
     : timeString.substring(0, 5)
   return time
@@ -93,7 +95,7 @@ const selectSlot = (slot) => {
 
 const loadSlotsForDate = async () => {
   if (!props.selectedDate || !props.masterId) return
-  
+
   loading.value = true
   try {
     // Преобразуем дату в строку YYYY-MM-DD
@@ -105,30 +107,30 @@ const loadSlotsForDate = async () => {
     } else {
       dateString = props.selectedDate.date
     }
-    
+
     console.log('Selected date object:', props.selectedDate)
     console.log('Using date string:', dateString)
-    
+
     console.log(`Loading slots for date: ${dateString}, master: ${props.masterId}`)
-    
-    const response = await fetch(`http://localhost:3000/api/v1/time_slots/public?master_id=${props.masterId}&date=${dateString}`)
-    
+
+    const response = await fetch(
+      `http://localhost:3000/api/v1/time_slots/public?master_id=${props.masterId}&date=${dateString}`,
+    )
+
     if (response.ok) {
       const data = await response.json()
       console.log('API response:', data)
-      
+
       // Filter only available work slots (exclude blocked slots)
-      availableSlots.value = data.slots.filter(slot => 
-        slot.is_available && 
-        !slot.booked && 
-        slot.slot_type === 'work'
+      availableSlots.value = data.slots.filter(
+        (slot) => slot.is_available && !slot.booked && slot.slot_type === 'work',
       )
-      
+
       console.log('Total slots:', data.slots.length)
-      console.log('Work slots:', data.slots.filter(s => s.slot_type === 'work').length)
-      console.log('Blocked slots:', data.slots.filter(s => s.slot_type === 'blocked').length)
+      console.log('Work slots:', data.slots.filter((s) => s.slot_type === 'work').length)
+      console.log('Blocked slots:', data.slots.filter((s) => s.slot_type === 'blocked').length)
       console.log('Available work slots:', availableSlots.value.length)
-      
+
       console.log('Available slots:', availableSlots.value.length)
     }
   } catch (error) {
@@ -140,8 +142,12 @@ const loadSlotsForDate = async () => {
 }
 
 // Watch for date changes
-watch(() => props.selectedDate, () => {
-  selectedSlot.value = null
-  loadSlotsForDate()
-}, { immediate: true })
+watch(
+  () => props.selectedDate,
+  () => {
+    selectedSlot.value = null
+    loadSlotsForDate()
+  },
+  { immediate: true },
+)
 </script>

@@ -13,7 +13,7 @@ class WorkingSchedule < ApplicationRecord
   # Дни недели
   DAY_NAMES = {
     0 => 'Воскресенье',
-    1 => 'Понедельник', 
+    1 => 'Понедельник',
     2 => 'Вторник',
     3 => 'Среда',
     4 => 'Четверг',
@@ -30,13 +30,13 @@ class WorkingSchedule < ApplicationRecord
 
     total_minutes = time_diff_in_minutes(end_time, start_time)
     lunch_minutes = lunch_duration_minutes
-    
+
     [total_minutes - lunch_minutes, 0].max
   end
 
   def lunch_duration_minutes
     return 0 unless lunch_start && lunch_end
-    
+
     time_diff_in_minutes(lunch_end, lunch_start)
   end
 
@@ -53,28 +53,26 @@ class WorkingSchedule < ApplicationRecord
       return []
     end
     return [] unless date.wday == day_of_week
-    return [] unless slot_duration_minutes && slot_duration_minutes > 0
+    return [] unless slot_duration_minutes&.positive?
 
     Rails.logger.info "WorkingSchedule##{id}: Generating slots for date #{date} (day #{day_of_week}) with is_working=#{is_working}, start_time=#{start_time&.strftime('%H:%M')}, end_time=#{end_time&.strftime('%H:%M')}"
 
     slots = []
     current_time = start_time
     slot_minutes = 60
-    
+
     # Генерируем рабочие слоты
     while current_time < end_time
       slot_end = add_minutes_to_time(current_time, slot_minutes)
       break if slot_end > end_time
 
       # Проверяем, не попадает ли слот на обеденное время
-      if lunch_start && lunch_end
-        if overlaps_with_lunch?(current_time, slot_end)
-          current_time = add_minutes_to_time(current_time, slot_minutes)
-          next
-        end
+      if lunch_start && lunch_end && overlaps_with_lunch?(current_time, slot_end)
+        current_time = add_minutes_to_time(current_time, slot_minutes)
+        next
       end
 
-       slots << {
+      slots << {
         user: user,
         date: date,
         start_time: current_time,
@@ -115,9 +113,9 @@ class WorkingSchedule < ApplicationRecord
       return
     end
 
-    if end_time <= start_time
-      errors.add(:end_time, 'должно быть позже времени начала работы')
-    end
+    return unless end_time <= start_time
+
+    errors.add(:end_time, 'должно быть позже времени начала работы')
   end
 
   def lunch_within_working_hours
@@ -127,14 +125,14 @@ class WorkingSchedule < ApplicationRecord
       errors.add(:lunch_start, 'обед должен быть в рамках рабочего времени')
     end
 
-    if lunch_end <= lunch_start
-      errors.add(:lunch_end, 'должно быть позже времени начала обеда')
-    end
+    return unless lunch_end <= lunch_start
+
+    errors.add(:lunch_end, 'должно быть позже времени начала обеда')
   end
 
   def overlaps_with_lunch?(slot_start, slot_end)
     return false unless lunch_start && lunch_end
-    
+
     !(slot_end <= lunch_start || slot_start >= lunch_end)
   end
 
@@ -149,7 +147,7 @@ class WorkingSchedule < ApplicationRecord
     total_minutes = (time.hour * 60) + time.min + minutes
     hours = total_minutes / 60
     mins = total_minutes % 60
-    
+
     # Создаем новое время с правильными часами и минутами
     # Используем Time.zone.parse для корректной работы с часовыми поясами
     Time.zone.parse("2000-01-01 #{hours.to_s.rjust(2, '0')}:#{mins.to_s.rjust(2, '0')}:00")

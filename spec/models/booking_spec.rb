@@ -5,17 +5,17 @@ RSpec.describe Booking, type: :model do
   let(:service) { create(:service, user: master) }
 
   describe 'validations' do
-    it { should validate_presence_of(:start_time) }
-    it { should validate_presence_of(:end_time) }
-    it { should validate_presence_of(:status) }
-    it { should validate_presence_of(:client_name) }
-    it { should validate_presence_of(:client_email) }
-    it { should validate_inclusion_of(:status).in_array(%w[pending confirmed cancelled completed]) }
+    it { is_expected.to validate_presence_of(:start_time) }
+    it { is_expected.to validate_presence_of(:end_time) }
+    it { is_expected.to validate_presence_of(:status) }
+    it { is_expected.to validate_presence_of(:client_name) }
+    it { is_expected.to validate_presence_of(:client_email) }
+    it { is_expected.to validate_inclusion_of(:status).in_array(%w[pending confirmed cancelled completed]) }
   end
 
   describe 'associations' do
-    it { should belong_to(:user) }
-    it { should belong_to(:service) }
+    it { is_expected.to belong_to(:user) }
+    it { is_expected.to belong_to(:service) }
   end
 
   describe 'scopes' do
@@ -24,13 +24,13 @@ RSpec.describe Booking, type: :model do
     let!(:cancelled_booking) { create(:booking, status: 'cancelled') }
 
     it 'returns pending bookings' do
-      expect(Booking.pending).to include(pending_booking)
-      expect(Booking.pending).not_to include(confirmed_booking)
+      expect(described_class.pending).to include(pending_booking)
+      expect(described_class.pending).not_to include(confirmed_booking)
     end
 
     it 'returns confirmed bookings' do
-      expect(Booking.confirmed).to include(confirmed_booking)
-      expect(Booking.confirmed).not_to include(pending_booking)
+      expect(described_class.confirmed).to include(confirmed_booking)
+      expect(described_class.confirmed).not_to include(pending_booking)
     end
   end
 
@@ -67,7 +67,7 @@ RSpec.describe Booking, type: :model do
   end
 
   describe 'methods' do
-    let(:booking) { create(:booking, start_time: Time.current + 1.hour) }
+    let(:booking) { create(:booking, start_time: 1.hour.from_now) }
 
     it 'returns formatted start time' do
       expect(booking.formatted_start_time).to match(/\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/)

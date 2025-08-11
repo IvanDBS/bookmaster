@@ -46,4 +46,4 @@ FactoryBot.define do
       day_of_week { 6 }
     end
   end
-end 
+end

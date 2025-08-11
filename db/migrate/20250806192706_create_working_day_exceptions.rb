@@ -8,7 +8,7 @@ class CreateWorkingDayExceptions < ActiveRecord::Migration[7.1]
 
       t.timestamps
     end
-    
+
     add_index :working_day_exceptions, [:user_id, :date], unique: true
     add_index :working_day_exceptions, :date
   end

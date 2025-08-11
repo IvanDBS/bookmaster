@@ -13,57 +13,59 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: HomeView,
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { requiresGuest: true }
+      meta: { requiresGuest: true },
     },
     {
       path: '/register',
       name: 'register',
       component: RegisterView,
-      meta: { requiresGuest: true }
+      meta: { requiresGuest: true },
     },
     {
       path: '/client/dashboard',
       name: 'client-dashboard',
       component: ClientDashboard,
-      meta: { requiresAuth: true, role: 'client' }
+      meta: { requiresAuth: true, role: 'client' },
     },
     {
       path: '/master/dashboard',
       name: 'master-dashboard',
       component: MasterDashboard,
-      meta: { requiresAuth: true, role: 'master' }
+      meta: { requiresAuth: true, role: 'master' },
     },
     {
       path: '/master/schedule',
       name: 'schedule-settings',
       component: ScheduleSettings,
-      meta: { requiresAuth: true, role: 'master' }
-    }
-  ]
+      meta: { requiresAuth: true, role: 'master' },
+    },
+  ],
 })
 
 // Navigation Guards
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // Проверка для страниц, требующих аутентификации
   if (to.meta.requiresAuth) {
     // Если есть токен, но профиль еще не загружен — подтягиваем, чтобы не выкидывало после refresh
     if (authStore.token && !authStore.user) {
-      try { await authStore.getCurrentUser() } catch (_) {}
+      try {
+        await authStore.getCurrentUser()
+      } catch (_) {}
     }
 
     if (!authStore.isAuthenticated) {
       next('/login')
       return
     }
-    
+
     // Проверка роли пользователя
     if (to.meta.role && authStore.user?.role !== to.meta.role) {
       // Перенаправляем на правильный дашборд в зависимости от роли
@@ -77,7 +79,7 @@ router.beforeEach(async (to, from, next) => {
       return
     }
   }
-  
+
   // Проверка для страниц, доступных только неавторизованным пользователям
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
     // Перенаправляем на дашборд в зависимости от роли
@@ -90,7 +92,7 @@ router.beforeEach(async (to, from, next) => {
     }
     return
   }
-  
+
   next()
 })
 

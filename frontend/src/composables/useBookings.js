@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/auth'
 
 export function useBookings() {
   const authStore = useAuthStore()
-  
+
   // Reactive data
   const recentBookings = ref([])
   const bookingFilter = ref('all')
@@ -13,26 +13,27 @@ export function useBookings() {
 
   // Computed properties
   const filteredBookings = computed(() => {
+    const safe = Array.isArray(recentBookings.value) ? recentBookings.value.filter(Boolean) : []
     if (bookingFilter.value === 'all') {
-      return recentBookings.value
+      return safe
     }
-    return recentBookings.value.filter(booking => booking.status === bookingFilter.value)
+    return safe.filter((booking) => booking && booking.status === bookingFilter.value)
   })
 
   const pendingBookingsCount = computed(() => {
-    return recentBookings.value.filter(booking => booking.status === 'pending').length
+    return recentBookings.value.filter((booking) => booking.status === 'pending').length
   })
 
   const sortedSelectedDateBookings = computed(() => {
-  return [...selectedDateBookings.value].sort((a, b) => {
-    const timeA = new Date(a.start_time).getTime()
-    const timeB = new Date(b.start_time).getTime()
-    return timeA - timeB
+    return [...selectedDateBookings.value].sort((a, b) => {
+      const timeA = new Date(a.start_time).getTime()
+      const timeB = new Date(b.start_time).getTime()
+      return timeA - timeB
+    })
   })
-})
 
-// Добавляем selectedDateBookings в state
-const selectedDateBookings = ref([])
+  // Добавляем selectedDateBookings в state
+  const selectedDateBookings = ref([])
 
   // API functions
   const loadBookings = async () => {
@@ -45,16 +46,16 @@ const selectedDateBookings = ref([])
 
       const response = await fetch('http://localhost:3000/api/v1/bookings', {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          Authorization: `Bearer ${authStore.token}`,
         },
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch bookings')
       }
-      
+
       const bookingsData = await response.json()
-      recentBookings.value = bookingsData
+      recentBookings.value = Array.isArray(bookingsData) ? bookingsData.filter(Boolean) : []
     } catch (error) {
       console.error('Error loading bookings:', error)
       recentBookings.value = []
@@ -67,14 +68,16 @@ const selectedDateBookings = ref([])
       startOfDay.setHours(0, 0, 0, 0)
       const endOfDay = new Date(date)
       endOfDay.setHours(23, 59, 59, 999)
-      
-      selectedDateBookings.value = recentBookings.value.filter(booking => {
+
+      selectedDateBookings.value = recentBookings.value.filter((booking) => {
         const bookingDate = new Date(booking.start_time)
         return bookingDate >= startOfDay && bookingDate <= endOfDay
       })
-      
-      const hasPendingBookings = selectedDateBookings.value.some(booking => booking.status === 'pending')
-      
+
+      const hasPendingBookings = selectedDateBookings.value.some(
+        (booking) => booking.status === 'pending',
+      )
+
       return hasPendingBookings
     } catch (error) {
       console.error('Error loading bookings for date:', error)
@@ -108,25 +111,31 @@ const selectedDateBookings = ref([])
       }
 
       const status = modalType.value === 'confirm' ? 'confirmed' : 'cancelled'
-      const response = await fetch(`http://localhost:3000/api/v1/bookings/${bookingId}/update_status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authStore.token}`,
+      const response = await fetch(
+        `http://localhost:3000/api/v1/bookings/${bookingId}/update_status`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authStore.token}`,
+          },
+          body: JSON.stringify({ status }),
         },
-        body: JSON.stringify({ status }),
-      })
-      
+      )
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || `Failed to ${modalType.value} booking`)
       }
-      
+
       await loadBookings()
       closeConfirmationModal()
     } catch (error) {
       console.error(`Error ${modalType.value}ing booking:`, error)
-      alert(`Ошибка при ${modalType.value === 'confirm' ? 'подтверждении' : 'отмене'} записи: ` + error.message)
+      alert(
+        `Ошибка при ${modalType.value === 'confirm' ? 'подтверждении' : 'отмене'} записи: ` +
+          error.message,
+      )
     }
   }
 
@@ -146,18 +155,18 @@ const selectedDateBookings = ref([])
 
   const getStatusClass = (status) => {
     const classes = {
-      'pending': 'bg-yellow-100 text-yellow-800',
-      'confirmed': 'bg-green-100 text-green-800',
-      'cancelled': 'bg-red-100 text-red-800'
+      pending: 'bg-yellow-100 text-yellow-800',
+      confirmed: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800',
     }
     return classes[status] || 'bg-gray-100 text-gray-800'
   }
 
   const getStatusText = (status) => {
     const texts = {
-      'pending': 'Ожидает подтверждения',
-      'confirmed': 'Подтверждено',
-      'cancelled': 'Отменено'
+      pending: 'Ожидает подтверждения',
+      confirmed: 'Подтверждено',
+      cancelled: 'Отменено',
     }
     return texts[status] || status
   }
@@ -170,12 +179,12 @@ const selectedDateBookings = ref([])
     modalType,
     selectedBooking,
     selectedDateBookings,
-    
+
     // Computed
     filteredBookings,
     pendingBookingsCount,
     sortedSelectedDateBookings,
-    
+
     // Functions
     loadBookings,
     loadBookingsForDate,
@@ -187,6 +196,6 @@ const selectedDateBookings = ref([])
     formatDate,
     formatTime,
     getStatusClass,
-    getStatusText
+    getStatusText,
   }
-} 
+}

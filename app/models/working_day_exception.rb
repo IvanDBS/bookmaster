@@ -4,8 +4,8 @@ class WorkingDayException < ApplicationRecord
   validates :date, presence: true, uniqueness: { scope: :user_id }
   validates :is_working, inclusion: { in: [true, false] }
 
-  after_save :recreate_slots_for_date
   after_destroy :recreate_slots_for_date
+  after_save :recreate_slots_for_date
 
   private
 

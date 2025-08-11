@@ -4,16 +4,16 @@ RSpec.describe Service, type: :model do
   let(:master) { create(:user, role: 'master') }
 
   describe 'validations' do
-    it { should validate_presence_of(:name) }
-    it { should validate_presence_of(:price) }
-    it { should validate_presence_of(:duration) }
-    it { should validate_numericality_of(:price).is_greater_than(0) }
-    it { should validate_numericality_of(:duration).is_greater_than(0).only_integer }
+    it { is_expected.to validate_presence_of(:name) }
+    it { is_expected.to validate_presence_of(:price) }
+    it { is_expected.to validate_presence_of(:duration) }
+    it { is_expected.to validate_numericality_of(:price).is_greater_than(0) }
+    it { is_expected.to validate_numericality_of(:duration).is_greater_than(0).only_integer }
   end
 
   describe 'associations' do
-    it { should belong_to(:user) }
-    it { should have_many(:bookings).dependent(:destroy) }
+    it { is_expected.to belong_to(:user) }
+    it { is_expected.to have_many(:bookings).dependent(:destroy) }
   end
 
   describe 'scopes' do
@@ -22,8 +22,8 @@ RSpec.describe Service, type: :model do
     let!(:client_service) { create(:service, user: client) }
 
     it 'returns only active services from masters' do
-      expect(Service.active).to include(master_service)
-      expect(Service.active).not_to include(client_service)
+      expect(described_class.active).to include(master_service)
+      expect(described_class.active).not_to include(client_service)
     end
   end
 

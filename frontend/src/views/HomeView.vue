@@ -16,10 +16,18 @@
 
           <!-- Navigation -->
           <nav class="hidden md:flex items-center space-x-8">
-            <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Услуги</a>
-            <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Тарифы</a>
-            <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Помощь</a>
-            <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Отзывы</a>
+            <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >Услуги</a
+            >
+            <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >Тарифы</a
+            >
+            <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >Помощь</a
+            >
+            <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >Отзывы</a
+            >
           </nav>
 
           <!-- Actions -->
@@ -27,30 +35,32 @@
             <div class="hidden md:flex items-center space-x-4">
               <div class="w-5 h-5 text-gray-600">
                 <svg fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                  <path
+                    d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"
+                  />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                 </svg>
               </div>
               <span class="text-gray-600 font-medium">+373 699 9 999</span>
             </div>
-            <button @click="handleLogin" class="btn-outline">
-              Войти
-            </button>
-            <button @click="handleRegister" class="btn-primary px-6 py-2">
-              Регистрация
-            </button>
+            <button @click="handleLogin" class="btn-outline">Войти</button>
+            <button @click="handleRegister" class="btn-primary px-6 py-2">Регистрация</button>
           </div>
         </div>
       </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+    <section
+      class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden"
+    >
       <div class="absolute inset-0 bg-black opacity-20"></div>
       <div class="relative max-w-7xl mx-auto px-6 py-20">
         <div class="flex items-center justify-between">
           <div class="max-w-2xl">
-            <div class="inline-flex items-center px-4 py-2 rounded-full bg-lime-500 bg-opacity-20 text-lime-300 text-sm font-semibold mb-8">
+            <div
+              class="inline-flex items-center px-4 py-2 rounded-full bg-lime-500 bg-opacity-20 text-lime-300 text-sm font-semibold mb-8"
+            >
               <div class="w-2 h-2 bg-lime-400 rounded-full mr-2 animate-pulse"></div>
               Бесплатный сервис для мастеров и клиентов
             </div>
@@ -59,10 +69,13 @@
               <span class="block text-lime-400">стало проще</span>
             </h2>
             <p class="text-xl text-gray-300 mb-12 leading-relaxed">
-              Мастерам: полный контроль над расписанием и клиентской базой в одном месте.<br>
+              Мастерам: полный контроль над расписанием и клиентской базой в одном месте.<br />
               Клиентам: быстрая и удобная запись к любимому мастеру в любое время.
             </p>
-            <button @click="handleStartFree" class="btn-primary px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+            <button
+              @click="handleStartFree"
+              class="btn-primary px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
               Начать бесплатно
             </button>
           </div>
@@ -106,19 +119,15 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <!-- Left Column -->
           <div>
-            <h3 class="text-4xl font-bold text-gray-900 mb-6">
-              Сервис для управления записями
-            </h3>
-            <p class="text-xl text-gray-600 mb-8">
-              Построй эффективный бизнес с BookMaster!
-            </p>
+            <h3 class="text-4xl font-bold text-gray-900 mb-6">Сервис для управления записями</h3>
+            <p class="text-xl text-gray-600 mb-8">Построй эффективный бизнес с BookMaster!</p>
             <p class="text-lg text-gray-500 mb-8">
               Более 5 000 мастеров доверяют нам управление своими записями
             </p>
             <p class="text-gray-600 leading-relaxed">
-              С помощью нашего сервиса вы сможете легко управлять вашими услугами, 
-              автоматизировать бронирования, контролировать расписание и поддерживать 
-              связь с клиентами и сотрудниками.
+              С помощью нашего сервиса вы сможете легко управлять вашими услугами, автоматизировать
+              бронирования, контролировать расписание и поддерживать связь с клиентами и
+              сотрудниками.
             </p>
           </div>
 
@@ -133,12 +142,14 @@
                   <div class="w-3 h-3 bg-green-500 rounded-full"></div>
                 </div>
               </div>
-              
+
               <!-- Dashboard Mockup -->
               <div class="space-y-4">
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-lime-500 rounded-full flex items-center justify-center">
+                    <div
+                      class="w-10 h-10 bg-lime-500 rounded-full flex items-center justify-center"
+                    >
                       <UserCheck class="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -151,7 +162,9 @@
 
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                    <div
+                      class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"
+                    >
                       <Calendar class="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -164,7 +177,9 @@
 
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                    <div
+                      class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center"
+                    >
                       <Sparkles class="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -190,42 +205,66 @@
             Все необходимые инструменты для эффективной работы
           </p>
         </div>
-        
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 relative">
           <!-- Connecting line -->
-          <div class="hidden lg:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-0.5 bg-gradient-to-r from-lime-500 to-blue-500"></div>
-          
+          <div
+            class="hidden lg:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-0.5 bg-gradient-to-r from-lime-500 to-blue-500"
+          ></div>
+
           <!-- For Masters -->
-          <div class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-lime-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative">
-            <div class="absolute inset-0 bg-gradient-to-br from-lime-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+          <div
+            class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-lime-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-lime-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
+            ></div>
             <div class="relative">
               <h4 class="text-2xl font-bold text-gray-900 mb-8">Для мастеров</h4>
               <ul class="text-gray-600 space-y-6">
                 <li class="flex items-start group/item">
-                  <div class="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-lime-200 transition-colors">
-                    <UserCheck class="w-6 h-6 text-lime-600 group-hover/item:scale-110 transition-transform" />
+                  <div
+                    class="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-lime-200 transition-colors"
+                  >
+                    <UserCheck
+                      class="w-6 h-6 text-lime-600 group-hover/item:scale-110 transition-transform"
+                    />
                   </div>
                   <div class="flex-1">
                     <div class="font-semibold text-gray-900 mb-1">Учет клиентов и записей</div>
-                    <div class="text-sm text-gray-500">Ведите базу клиентов и историю записей в удобном интерфейсе</div>
+                    <div class="text-sm text-gray-500">
+                      Ведите базу клиентов и историю записей в удобном интерфейсе
+                    </div>
                   </div>
                 </li>
                 <li class="flex items-start group/item">
-                  <div class="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-lime-200 transition-colors">
-                    <Calendar class="w-6 h-6 text-lime-600 group-hover/item:scale-110 transition-transform" />
+                  <div
+                    class="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-lime-200 transition-colors"
+                  >
+                    <Calendar
+                      class="w-6 h-6 text-lime-600 group-hover/item:scale-110 transition-transform"
+                    />
                   </div>
                   <div class="flex-1">
                     <div class="font-semibold text-gray-900 mb-1">Управление расписанием</div>
-                    <div class="text-sm text-gray-500">Планируйте время и контролируйте загрузку в реальном времени</div>
+                    <div class="text-sm text-gray-500">
+                      Планируйте время и контролируйте загрузку в реальном времени
+                    </div>
                   </div>
                 </li>
                 <li class="flex items-start group/item">
-                  <div class="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-lime-200 transition-colors">
-                    <Sparkles class="w-6 h-6 text-lime-600 group-hover/item:scale-110 transition-transform" />
+                  <div
+                    class="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-lime-200 transition-colors"
+                  >
+                    <Sparkles
+                      class="w-6 h-6 text-lime-600 group-hover/item:scale-110 transition-transform"
+                    />
                   </div>
                   <div class="flex-1">
                     <div class="font-semibold text-gray-900 mb-1">Уведомления о записях</div>
-                    <div class="text-sm text-gray-500">Получайте мгновенные уведомления о новых записях</div>
+                    <div class="text-sm text-gray-500">
+                      Получайте мгновенные уведомления о новых записях
+                    </div>
                   </div>
                 </li>
               </ul>
@@ -233,36 +272,58 @@
           </div>
 
           <!-- For Clients -->
-          <div class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-blue-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative">
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+          <div
+            class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-blue-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
+            ></div>
             <div class="relative">
               <h4 class="text-2xl font-bold text-gray-900 mb-8">Для клиентов</h4>
               <ul class="text-gray-600 space-y-6">
                 <li class="flex items-start group/item">
-                  <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-blue-200 transition-colors">
-                    <Calendar class="w-6 h-6 text-blue-600 group-hover/item:scale-110 transition-transform" />
+                  <div
+                    class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-blue-200 transition-colors"
+                  >
+                    <Calendar
+                      class="w-6 h-6 text-blue-600 group-hover/item:scale-110 transition-transform"
+                    />
                   </div>
                   <div class="flex-1">
                     <div class="font-semibold text-gray-900 mb-1">Запись к мастеру</div>
-                    <div class="text-sm text-gray-500">Быстрая и удобная запись к любимому мастеру в любое время</div>
+                    <div class="text-sm text-gray-500">
+                      Быстрая и удобная запись к любимому мастеру в любое время
+                    </div>
                   </div>
                 </li>
                 <li class="flex items-start group/item">
-                  <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-blue-200 transition-colors">
-                    <Footprints class="w-6 h-6 text-blue-600 group-hover/item:scale-110 transition-transform" />
+                  <div
+                    class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-blue-200 transition-colors"
+                  >
+                    <Footprints
+                      class="w-6 h-6 text-blue-600 group-hover/item:scale-110 transition-transform"
+                    />
                   </div>
                   <div class="flex-1">
                     <div class="font-semibold text-gray-900 mb-1">История записей</div>
-                    <div class="text-sm text-gray-500">Просматривайте все свои записи и отслеживайте прогресс</div>
+                    <div class="text-sm text-gray-500">
+                      Просматривайте все свои записи и отслеживайте прогресс
+                    </div>
                   </div>
                 </li>
                 <li class="flex items-start group/item">
-                  <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-blue-200 transition-colors">
-                    <Heart class="w-6 h-6 text-blue-600 group-hover/item:scale-110 transition-transform" />
+                  <div
+                    class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover/item:bg-blue-200 transition-colors"
+                  >
+                    <Heart
+                      class="w-6 h-6 text-blue-600 group-hover/item:scale-110 transition-transform"
+                    />
                   </div>
                   <div class="flex-1">
                     <div class="font-semibold text-gray-900 mb-1">Напоминания</div>
-                    <div class="text-sm text-gray-500">Не пропустите важные записи благодаря умным напоминаниям</div>
+                    <div class="text-sm text-gray-500">
+                      Не пропустите важные записи благодаря умным напоминаниям
+                    </div>
                   </div>
                 </li>
               </ul>
@@ -279,17 +340,23 @@
           <h3 class="text-3xl font-bold text-gray-900 mb-4">Поддерживаемые услуги</h3>
           <p class="text-lg text-gray-600">Маникюр, педикюр, массаж и многое другое</p>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <!-- Service 1 -->
-          <div class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-pink-200 transition-all duration-300 hover:shadow-lg">
+          <div
+            class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-pink-200 transition-all duration-300 hover:shadow-lg"
+          >
             <div class="text-center">
-              <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+              >
                 <Sparkles class="w-8 h-8 text-white" />
               </div>
               <h4 class="text-xl font-bold text-gray-900 mb-3">Маникюр</h4>
               <p class="text-gray-600 mb-6">Профессиональный маникюр и уход за руками</p>
-              <div class="inline-flex items-center text-pink-600 font-semibold group-hover:text-pink-700 transition-colors">
+              <div
+                class="inline-flex items-center text-pink-600 font-semibold group-hover:text-pink-700 transition-colors"
+              >
                 <span>Подробнее</span>
                 <ArrowRight class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -297,14 +364,20 @@
           </div>
 
           <!-- Service 2 -->
-          <div class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-purple-200 transition-all duration-300 hover:shadow-lg">
+          <div
+            class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-purple-200 transition-all duration-300 hover:shadow-lg"
+          >
             <div class="text-center">
-              <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+              >
                 <Footprints class="w-8 h-8 text-white" />
               </div>
               <h4 class="text-xl font-bold text-gray-900 mb-3">Педикюр</h4>
               <p class="text-gray-600 mb-6">Уход за ногами и профессиональный педикюр</p>
-              <div class="inline-flex items-center text-purple-600 font-semibold group-hover:text-purple-700 transition-colors">
+              <div
+                class="inline-flex items-center text-purple-600 font-semibold group-hover:text-purple-700 transition-colors"
+              >
                 <span>Подробнее</span>
                 <ArrowRight class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -312,14 +385,20 @@
           </div>
 
           <!-- Service 3 -->
-          <div class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-orange-200 transition-all duration-300 hover:shadow-lg">
+          <div
+            class="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-orange-200 transition-all duration-300 hover:shadow-lg"
+          >
             <div class="text-center">
-              <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+              >
                 <Heart class="w-8 h-8 text-white" />
               </div>
               <h4 class="text-xl font-bold text-gray-900 mb-3">Массаж</h4>
               <p class="text-gray-600 mb-6">Расслабляющий и лечебный массаж</p>
-              <div class="inline-flex items-center text-orange-600 font-semibold group-hover:text-orange-700 transition-colors">
+              <div
+                class="inline-flex items-center text-orange-600 font-semibold group-hover:text-orange-700 transition-colors"
+              >
                 <span>Подробнее</span>
                 <ArrowRight class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -337,10 +416,16 @@
           Присоединяйтесь к тысячам мастеров и клиентов, которые уже используют BookMaster
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button @click="handleCreateAccount" class="btn-primary px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+          <button
+            @click="handleCreateAccount"
+            class="btn-primary px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+          >
             Создать аккаунт
           </button>
-          <button @click="handleContactUs" class="btn-outline text-white border-gray-600 hover:border-gray-500 px-8 py-4">
+          <button
+            @click="handleContactUs"
+            class="btn-outline text-white border-gray-600 hover:border-gray-500 px-8 py-4"
+          >
             Связаться с нами
           </button>
         </div>
@@ -352,16 +437,20 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-          <div class="flex items-center space-x-3 mb-6">
-            <div class="flex space-x-1">
-              <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-blue)"></div>
-              <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-yellow)"></div>
-              <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-red)"></div>
-            </div>
+            <div class="flex items-center space-x-3 mb-6">
+              <div class="flex space-x-1">
+                <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-blue)"></div>
+                <div
+                  class="w-3 h-3 rounded-full"
+                  style="background-color: var(--brand-yellow)"
+                ></div>
+                <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-red)"></div>
+              </div>
               <h4 class="text-lg font-bold">BookMaster</h4>
             </div>
             <p class="text-gray-400 leading-relaxed">
-              Удобное управление записями для мастеров и клиентов. Профессиональный инструмент для вашего бизнеса.
+              Удобное управление записями для мастеров и клиентов. Профессиональный инструмент для
+              вашего бизнеса.
             </p>
           </div>
           <div>
@@ -445,9 +534,9 @@ const handleContactUs = () => {
 
 <style scoped>
 .bg-grid-pattern {
-  background-image: 
-    linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
 }
-</style> 
+</style>

@@ -4,15 +4,15 @@ class Api::V1::BookingsController < ApplicationController
   before_action :ensure_booking_owner!, only: [:show, :update_status, :destroy]
 
   def index
-    if current_user.master?
+    @bookings = if current_user.master?
       # Для мастеров: отдаем записи + ближайшие слоты как справку (UI сам может игнорировать)
-      @bookings = current_user.bookings.includes(:service).order(start_time: :desc)
+      current_user.bookings.includes(:service).order(start_time: :desc)
     else
       # Для клиентов показываем записи где они клиенты, сортируем по дате создания (новые сверху)
-      @bookings = Booking.includes(:service, :user)
-                        .where(client_email: current_user.email)
-                        .order(created_at: :desc)
-    end
+      Booking.includes(:service, :user)
+             .where(client_email: current_user.email)
+             .order(created_at: :desc)
+                end
     
     render json: @bookings
   end
@@ -28,11 +28,18 @@ class Api::V1::BookingsController < ApplicationController
     return render json: { error: 'Мастер не найден' }, status: :not_found unless master
 
     service = master.services.find_by(id: booking_params[:service_id])
-    return render json: { error: 'Услуга не найдена у выбранного мастера' }, status: :unprocessable_entity unless service
+    unless service
+      return render json: { error: 'Услуга не найдена у выбранного мастера' }, 
+                    status: :unprocessable_entity
+    end
 
     slot = master.time_slots.find_by(id: params[:time_slot_id])
     return render json: { error: 'Слот не найден' }, status: :not_found unless slot
-    return render json: { error: 'Слот недоступен для бронирования' }, status: :unprocessable_entity unless slot.can_be_booked?
+
+    unless slot.can_be_booked?
+      return render json: { error: 'Слот недоступен для бронирования' }, 
+                    status: :unprocessable_entity
+    end
 
     # Дополнительно запрещаем создавать бронь на слоты с типом lunch/blocked
     if %w[lunch blocked].include?(slot.slot_type)
@@ -47,10 +54,12 @@ class Api::V1::BookingsController < ApplicationController
       (1...required_slots).each do |i|
         expected_start = Time.zone.parse("2000-01-01 #{slot.start_time.strftime('%H:%M')}") + (i * slot.duration)
         next_slot = master.time_slots.for_date(slot.date)
-                              .find_by(start_time: expected_start, slot_type: 'work')
+                          .find_by(start_time: expected_start, slot_type: 'work')
         unless next_slot&.can_be_booked? && next_slot.slot_type == 'work'
-          return render json: { error: 'Недостаточно последовательных свободных слотов для выбранной услуги' }, status: :unprocessable_entity
+          return render json: { error: 'Недостаточно последовательных свободных слотов для выбранной услуги' }, 
+                        status: :unprocessable_entity
         end
+
         slots_chain << next_slot
       end
     end
@@ -80,7 +89,7 @@ class Api::V1::BookingsController < ApplicationController
 
         slots_chain.each { |s| s.update!(booking: @booking, is_available: false) }
       end
-    rescue => e
+    rescue StandardError => e
       return render json: { error: e.message }, status: :unprocessable_entity
     end
 
@@ -118,14 +127,14 @@ class Api::V1::BookingsController < ApplicationController
       # Освобождаем слот при отмене
       if new_status == 'cancelled'
         # Находим все слоты связанные с этой записью и освобождаем их
-        TimeSlot.where(booking_id: @booking.id).update_all(booking_id: nil, is_available: true, updated_at: Time.current)
+        TimeSlot.where(booking_id: @booking.id).update_all(booking_id: nil, is_available: true, 
+                                                           updated_at: Time.current)
         # Запускаем синхронизацию для обновления данных
-        @booking.user.reconcile_bookings_with_slots_for_date(@booking.start_time.to_date)
       else
         # На подтверждение/завершение — убедиться, что слоты помечены занятыми
         # Запускаем полную синхронизацию для правильной связи
-        @booking.user.reconcile_bookings_with_slots_for_date(@booking.start_time.to_date)
       end
+      @booking.user.reconcile_bookings_with_slots_for_date(@booking.start_time.to_date)
       render json: @booking
     else
       render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
@@ -144,14 +153,15 @@ class Api::V1::BookingsController < ApplicationController
     begin
       if @booking.destroy
         # Освобождаем слоты связанные с этой записью
-        TimeSlot.where(booking_id: @booking.id).update_all(booking_id: nil, is_available: true, updated_at: Time.current)
+        TimeSlot.where(booking_id: @booking.id).update_all(booking_id: nil, is_available: true, 
+                                                           updated_at: Time.current)
         # Запускаем синхронизацию для обновления данных
         user.reconcile_bookings_with_slots_for_date(date)
         render json: { message: 'Запись успешно удалена' }
       else
         render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
       end
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error "Error destroying booking #{@booking.id}: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
       render json: { error: "Ошибка при удалении записи: #{e.message}" }, status: :internal_server_error

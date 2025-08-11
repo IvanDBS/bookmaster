@@ -1,5 +1,6 @@
 class ServiceSerializer < ActiveModel::Serializer
-  attributes :id, :name, :description, :price, :duration, :service_type, :formatted_price, :formatted_duration, :master_name
+  attributes :id, :name, :description, :price, :duration, :service_type, :formatted_price, :formatted_duration,
+             :master_name
 
   belongs_to :user, serializer: UserSerializer
 

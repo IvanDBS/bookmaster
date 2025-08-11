@@ -20,31 +20,31 @@ export function useClientCalendar() {
   const generateCalendarDates = (baseDate, isNextMonth = false) => {
     const year = baseDate.getFullYear()
     const month = baseDate.getMonth()
-    
+
     const firstDay = new Date(year, month, 1)
     const startDate = new Date(firstDay)
     startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1))
-    
+
     const dates = []
     const today = new Date()
-    
+
     for (let i = 0; i < 42; i++) {
       const date = new Date(startDate)
       date.setDate(startDate.getDate() + i)
-      
+
       const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
       const daySlots = slotsCache.value.get(dateString) || []
-      
+
       // Анализируем слоты для определения статуса дня
-      const workSlots = daySlots.filter(slot => slot.slot_type === 'work')
-      const blockedSlots = daySlots.filter(slot => slot.slot_type === 'blocked')
-      const availableSlots = workSlots.filter(slot => slot.is_available && !slot.booked)
-      const bookedSlots = workSlots.filter(slot => slot.booked)
-      
+      const workSlots = daySlots.filter((slot) => slot.slot_type === 'work')
+      const blockedSlots = daySlots.filter((slot) => slot.slot_type === 'blocked')
+      const availableSlots = workSlots.filter((slot) => slot.is_available && !slot.booked)
+      const bookedSlots = workSlots.filter((slot) => slot.booked)
+
       // Только рабочие слоты считаются доступными для бронирования
       const totalBookableSlots = workSlots.length
       const totalAvailableSlots = availableSlots.length
-      
+
       // Отладочная информация для 20 августа
       if (dateString === '2025-08-20') {
         console.log('Debug August 20th:', {
@@ -54,10 +54,10 @@ export function useClientCalendar() {
           availableSlots: availableSlots.length,
           bookedSlots: bookedSlots.length,
           totalBookableSlots,
-          totalAvailableSlots
+          totalAvailableSlots,
         })
       }
-      
+
       dates.push({
         date: date,
         day: date.getDate(),
@@ -69,10 +69,17 @@ export function useClientCalendar() {
         totalSlots: totalBookableSlots,
         availableSlots: totalAvailableSlots,
         bookedSlots: bookedSlots.length,
-        loadLevel: totalBookableSlots === 0 ? 'non_working' : (totalAvailableSlots === 0 ? 'full' : (totalAvailableSlots < totalBookableSlots ? 'moderate' : 'available'))
+        loadLevel:
+          totalBookableSlots === 0
+            ? 'non_working'
+            : totalAvailableSlots === 0
+              ? 'full'
+              : totalAvailableSlots < totalBookableSlots
+                ? 'moderate'
+                : 'available',
       })
     }
-    
+
     return dates
   }
 
@@ -82,12 +89,20 @@ export function useClientCalendar() {
 
   // Navigation functions
   const previousMonth = () => {
-    currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
+    currentDate.value = new Date(
+      currentDate.value.getFullYear(),
+      currentDate.value.getMonth() - 1,
+      1,
+    )
     loadSlotsForVisibleDates()
   }
 
   const nextMonth = () => {
-    currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
+    currentDate.value = new Date(
+      currentDate.value.getFullYear(),
+      currentDate.value.getMonth() + 1,
+      1,
+    )
     loadSlotsForVisibleDates()
   }
 
@@ -101,13 +116,15 @@ export function useClientCalendar() {
   // Loading functions
   const loadSlotsForDate = async (date) => {
     if (!masterId.value) return
-    
+
     const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-    
+
     console.log(`Loading slots for date: ${dateString}, master: ${masterId.value}`)
-    
+
     try {
-      const response = await fetch(`http://localhost:3000/api/v1/time_slots/public?master_id=${masterId.value}&date=${dateString}`)
+      const response = await fetch(
+        `http://localhost:3000/api/v1/time_slots/public?master_id=${masterId.value}&date=${dateString}`,
+      )
       if (response.ok) {
         const data = await response.json()
         slotsCache.value.set(dateString, data.slots || [])
@@ -123,12 +140,12 @@ export function useClientCalendar() {
 
   const loadSlotsForVisibleDates = async () => {
     if (!masterId.value) return
-    
+
     const year = currentDate.value.getFullYear()
     const month = currentDate.value.getMonth()
-    
+
     console.log(`Loading slots for master ${masterId.value} in ${year}-${month + 1}`)
-    
+
     // Load slots for all visible dates in the calendar
     for (let day = 1; day <= 31; day++) {
       const date = new Date(year, month, day)
@@ -136,7 +153,7 @@ export function useClientCalendar() {
         await loadSlotsForDate(date)
       }
     }
-    
+
     // Force calendar to update
     console.log('Calendar cache after loading:', slotsCache.value.size, 'dates')
   }
@@ -194,6 +211,6 @@ export function useClientCalendar() {
     setMasterId,
     getDateBgClass,
     getDateBorderClass,
-    loadSlotsForVisibleDates
+    loadSlotsForVisibleDates,
   }
 }

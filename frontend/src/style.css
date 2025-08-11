@@ -1,16 +1,18 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
 
 /* Design tokens: Moldova flag (pastel) + minimalistic base */
 @layer base {
   :root {
-    --brand-blue: #6ea8fe;   /* pastel blue */
+    --brand-blue: #6ea8fe; /* pastel blue */
     --brand-yellow: #ffe08a; /* pastel yellow */
-    --brand-red: #ff8fa3;    /* pastel red */
+    --brand-red: #ff8fa3; /* pastel red */
   }
 
-  html { -webkit-font-smoothing: antialiased; }
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
 /* Reusable minimal buttons (optional) */

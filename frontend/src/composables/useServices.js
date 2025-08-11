@@ -4,7 +4,7 @@ import api from '../services/api'
 
 export function useServices() {
   const authStore = useAuthStore()
-  
+
   // Reactive data
   const services = ref([])
   const showModal = ref(false)
@@ -14,7 +14,7 @@ export function useServices() {
     description: '',
     price: '',
     duration: '',
-    service_type: ''
+    service_type: '',
   })
   const availableServiceTypes = ref([])
 
@@ -33,10 +33,10 @@ export function useServices() {
         console.log('No auth token, skipping services load')
         return
       }
-      
+
       const response = await fetch('http://localhost:3000/api/v1/services', {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          Authorization: `Bearer ${authStore.token}`,
         },
       })
       if (!response.ok) {
@@ -72,36 +72,40 @@ export function useServices() {
         description: newService.value.description,
         price: parseInt(newService.value.price),
         duration: parseInt(newService.value.duration),
-        service_type: newService.value.service_type
+        service_type: newService.value.service_type,
       }
-      
+
       let url = 'http://localhost:3000/api/v1/services'
       let method = 'POST'
-      
+
       if (editingServiceId.value) {
         url = `http://localhost:3000/api/v1/services/${editingServiceId.value}`
         method = 'PUT'
       }
-      
+
       const response = await fetch(url, {
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authStore.token}`,
+          Authorization: `Bearer ${authStore.token}`,
         },
         body: JSON.stringify({ service: serviceData }),
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.errors ? errorData.errors.join(', ') : errorData.error || 'Failed to create service')
+        throw new Error(
+          errorData.errors
+            ? errorData.errors.join(', ')
+            : errorData.error || 'Failed to create service',
+        )
       }
-      
+
       await loadServices()
-      
+
       const wasEditing = editingServiceId.value
       alert(wasEditing ? 'Услуга успешно обновлена!' : 'Услуга успешно добавлена!')
-      
+
       closeModal()
     } catch (error) {
       console.error('Error adding service:', error)
@@ -120,15 +124,15 @@ export function useServices() {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authStore.token}`,
+            Authorization: `Bearer ${authStore.token}`,
           },
         })
-        
+
         if (!response.ok) {
           const errorData = await response.json()
           throw new Error(errorData.error || 'Failed to delete service')
         }
-        
+
         await loadServices()
         alert('Услуга успешно удалена!')
       } catch (error) {
@@ -145,7 +149,7 @@ export function useServices() {
       description: service.description,
       price: service.price.toString(),
       duration: service.duration.toString(),
-      service_type: service.service_type || ''
+      service_type: service.service_type || '',
     }
     showModal.value = true
     editingServiceId.value = service.id
@@ -164,13 +168,13 @@ export function useServices() {
     editingServiceId,
     newService,
     availableServiceTypes,
-    
+
     // Functions
     loadServices,
     loadServiceTypes,
     addService,
     deleteService,
     editService,
-    closeModal
+    closeModal,
   }
-} 
+}

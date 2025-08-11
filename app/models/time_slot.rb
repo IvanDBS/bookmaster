@@ -41,7 +41,7 @@ class TimeSlot < ApplicationRecord
 
   def end_time_after_start_time
     return unless start_time && end_time
-    
+
     errors.add(:end_time, 'должно быть позже времени начала') if end_time <= start_time
   end
 
@@ -49,18 +49,18 @@ class TimeSlot < ApplicationRecord
     return unless user && date && start_time && end_time
 
     overlapping_slots = TimeSlot.where(user: user, date: date)
-                               .where.not(id: id) # исключаем себя при обновлении
-                               .where(
-                                 '(start_time < ? AND end_time > ?) OR ' +
-                                 '(start_time < ? AND end_time > ?) OR ' +
-                                 '(start_time >= ? AND end_time <= ?)',
-                                 start_time, start_time,
-                                 end_time, end_time,
-                                 start_time, end_time
-                               )
+                                .where.not(id: id) # исключаем себя при обновлении
+                                .where(
+                                  '(start_time < ? AND end_time > ?) OR ' \
+                                  '(start_time < ? AND end_time > ?) OR ' \
+                                  '(start_time >= ? AND end_time <= ?)',
+                                  start_time, start_time,
+                                  end_time, end_time,
+                                  start_time, end_time
+                                )
 
-    if overlapping_slots.exists?
-      errors.add(:start_time, 'пересекается с существующим слотом')
-    end
+    return unless overlapping_slots.exists?
+
+    errors.add(:start_time, 'пересекается с существующим слотом')
   end
 end

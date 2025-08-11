@@ -14,14 +14,14 @@ class ApiService {
       },
       body: JSON.stringify({ user: { email, password } }),
     })
-    
+
     const data = await response.json()
-    
+
     if (!response.ok) {
       const errorMessage = data.error || 'Login failed'
       throw new Error(errorMessage)
     }
-    
+
     return data
   }
 
@@ -33,14 +33,16 @@ class ApiService {
       },
       body: JSON.stringify({ user: userData }),
     })
-    
+
     const data = await response.json()
-    
+
     if (!response.ok) {
-      const errorMessage = data.errors ? data.errors.join(', ') : data.error || 'Registration failed'
+      const errorMessage = data.errors
+        ? data.errors.join(', ')
+        : data.error || 'Registration failed'
       throw new Error(errorMessage)
     }
-    
+
     return data
   }
 
@@ -76,15 +78,15 @@ class ApiService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ service: serviceData }),
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to create service')
     }
-    
+
     return await response.json()
   }
 
@@ -93,15 +95,15 @@ class ApiService {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ service: serviceData }),
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to update service')
     }
-    
+
     return await response.json()
   }
 
@@ -109,10 +111,10 @@ class ApiService {
     const response = await fetch(`${this.baseURL}/services/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to delete service')
     }
@@ -122,14 +124,14 @@ class ApiService {
   async getBookings(token) {
     const response = await fetch(`${this.baseURL}/bookings`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch bookings')
     }
-    
+
     return await response.json()
   }
 
@@ -138,15 +140,17 @@ class ApiService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ master_id, time_slot_id, booking }),
     })
-    
+
     const text = await response.text()
     const json = text ? JSON.parse(text) : {}
     if (!response.ok) {
-      throw new Error(json.error || (json.errors && json.errors.join(', ')) || 'Failed to create booking')
+      throw new Error(
+        json.error || (json.errors && json.errors.join(', ')) || 'Failed to create booking',
+      )
     }
     return json
   }
@@ -156,15 +160,15 @@ class ApiService {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ status }),
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to update booking status')
     }
-    
+
     return await response.json()
   }
 
@@ -183,11 +187,11 @@ class ApiService {
   async updateTimeSlot(id, { is_break }, token = null) {
     const response = await fetch(`${this.baseURL}/time_slots/${id}`, {
       method: 'PATCH',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ is_break })
+      body: JSON.stringify({ is_break }),
     })
     const json = await response.json().catch(() => ({}))
     if (!response.ok) {
@@ -200,14 +204,14 @@ class ApiService {
     const response = await fetch(`${this.baseURL}/auth/logout`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to logout')
     }
-    
+
     return await response.json()
   }
 
@@ -215,14 +219,14 @@ class ApiService {
   async getCurrentUser(token) {
     const response = await fetch(`${this.baseURL}/auth/profile`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch current user')
     }
-    
+
     return await response.json()
   }
 
@@ -230,14 +234,14 @@ class ApiService {
   async getWorkingDayExceptions(token) {
     const response = await fetch(`${this.baseURL}/working_day_exceptions`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch working day exceptions')
     }
-    
+
     return await response.json()
   }
 
@@ -246,15 +250,15 @@ class ApiService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ date, reason }),
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to toggle working day')
     }
-    
+
     return await response.json()
   }
 
@@ -263,15 +267,15 @@ class ApiService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ working_day_exception: exceptionData }),
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to create working day exception')
     }
-    
+
     return await response.json()
   }
 
@@ -280,15 +284,15 @@ class ApiService {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ working_day_exception: exceptionData }),
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to update working day exception')
     }
-    
+
     return await response.json()
   }
 
@@ -296,14 +300,14 @@ class ApiService {
     const response = await fetch(`${this.baseURL}/working_day_exceptions/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to delete working day exception')
     }
   }
 }
 
-export default new ApiService() 
+export default new ApiService()

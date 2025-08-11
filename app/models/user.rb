@@ -43,7 +43,7 @@ class User < ApplicationRecord
   # Методы для работы со слотами (только для мастеров)
   def generate_slots_for_date(date)
     return [] unless master?
-    
+
     Rails.logger.info "User##{id}: Attempting to generate slots for date #{date} (wday: #{date.wday})"
     schedule = working_schedules.find_by(day_of_week: date.wday)
     if schedule
@@ -52,7 +52,7 @@ class User < ApplicationRecord
       Rails.logger.info "User##{id}: No schedule found for day #{date.wday}. Returning empty slots."
       return []
     end
-    
+
     schedule.generate_slots_for_date(date)
   end
 
@@ -97,7 +97,7 @@ class User < ApplicationRecord
 
   def ensure_slots_for_date(date)
     return unless master?
-    
+
     Rails.logger.info "User##{id}: ensure_slots_for_date called for date #{date} (wday: #{date.wday})"
 
     # Санитация: удаляем заведомо некорректные слоты на эту дату
@@ -105,7 +105,7 @@ class User < ApplicationRecord
 
     # Проверяем, есть ли исключение для этой даты
     exception = working_day_exceptions.find_by(date: date)
-    
+
     # Определяем, является ли этот день рабочим
     if exception
       # Исключение имеет приоритет над обычным расписанием
@@ -114,55 +114,51 @@ class User < ApplicationRecord
     else
       # Используем обычное расписание
       schedule = working_schedules.find_by(day_of_week: date.wday)
-      is_working_day = schedule && schedule.is_working
+      is_working_day = schedule&.is_working
       Rails.logger.info "User##{id}: Using schedule for #{date.wday} (is_working: #{is_working_day})"
     end
-    
+
     # Генерируем слоты только если это рабочий день (по расписанию или исключению)
     if is_working_day
       slot_data = generate_slots_for_date(date)
       Rails.logger.info "User##{id}: Generated #{slot_data.length} slots for date #{date}"
-      
+
       slot_data.each do |slot_attrs|
-        begin
-          # Ищем существующий слот по времени начала (точное совпадение часа и минуты)
-          existing = time_slots.for_date(date)
-                                 .where('EXTRACT(HOUR FROM start_time) = ? AND EXTRACT(MINUTE FROM start_time) = ?',
-                                        slot_attrs[:start_time].hour, slot_attrs[:start_time].min)
-                                 .first
+        # Ищем существующий слот по времени начала (точное совпадение часа и минуты)
+        existing = time_slots.for_date(date)
+                             .where('EXTRACT(HOUR FROM start_time) = ? AND EXTRACT(MINUTE FROM start_time) = ?',
+                                    slot_attrs[:start_time].hour, slot_attrs[:start_time].min)
+                             .first
 
-          if existing
-            # Не трогаем занятые и вручную заблокированные слоты
-            next if existing.booking_id.present? || existing.slot_type == 'blocked'
+        if existing
+          # Не трогаем занятые и вручную заблокированные слоты
+          next if existing.booking_id.present? || existing.slot_type == 'blocked'
 
-            # Если тип отличается (например, мастер вручную поменял тип), уважаем ручное изменение и не перезаписываем тип
-            attrs_to_update = {
-              end_time: slot_attrs[:end_time],
-              duration_minutes: slot_attrs[:duration_minutes]
-            }
-            if existing.slot_type == slot_attrs[:slot_type]
-              attrs_to_update[:is_available] = slot_attrs[:is_available]
-            end
+          # Если тип отличается (например, мастер вручную поменял тип), уважаем ручное изменение и не перезаписываем тип
+          attrs_to_update = {
+            end_time: slot_attrs[:end_time],
+            duration_minutes: slot_attrs[:duration_minutes]
+          }
+          attrs_to_update[:is_available] = slot_attrs[:is_available] if existing.slot_type == slot_attrs[:slot_type]
 
-            # Обновляем через валидации, чтобы не появлялись слоты с end_time < start_time
-            existing.update!(attrs_to_update)
-            Rails.logger.info "User##{id}: Updated existing slot #{existing.id} for #{date}"
-          else
-            # Создаем слот, если такого нет
-            time_slots.create!(
-              date: slot_attrs[:date],
-              start_time: slot_attrs[:start_time],
-              end_time: slot_attrs[:end_time],
-              duration_minutes: slot_attrs[:duration_minutes],
-              is_available: slot_attrs[:is_available],
-              slot_type: slot_attrs[:slot_type]
-            )
-            Rails.logger.info "User##{id}: Created slot: #{slot_attrs[:start_time]} - #{slot_attrs[:end_time]} (type: #{slot_attrs[:slot_type]}, available: #{slot_attrs[:is_available]})"
-          end
-        rescue => e
-          Rails.logger.error "User##{id}: Error ensuring slot for #{date}: #{e.message}"
-          Rails.logger.error e.backtrace.join("\n")
+          # Обновляем через валидации, чтобы не появлялись слоты с end_time < start_time
+          existing.update!(attrs_to_update)
+          Rails.logger.info "User##{id}: Updated existing slot #{existing.id} for #{date}"
+        else
+          # Создаем слот, если такого нет
+          time_slots.create!(
+            date: slot_attrs[:date],
+            start_time: slot_attrs[:start_time],
+            end_time: slot_attrs[:end_time],
+            duration_minutes: slot_attrs[:duration_minutes],
+            is_available: slot_attrs[:is_available],
+            slot_type: slot_attrs[:slot_type]
+          )
+          Rails.logger.info "User##{id}: Created slot: #{slot_attrs[:start_time]} - #{slot_attrs[:end_time]} (type: #{slot_attrs[:slot_type]}, available: #{slot_attrs[:is_available]})"
         end
+      rescue StandardError => e
+        Rails.logger.error "User##{id}: Error ensuring slot for #{date}: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
       end
 
       # ВАЖНО: после генерации слотов синхронизируем существующие брони с тайм-слотами,
@@ -196,7 +192,7 @@ class User < ApplicationRecord
       slot = time_slots.for_date(date)
                        .where(slot_type: 'work')
                        .find { |s| s.start_time.hour == local_start.hour && s.start_time.min == local_start.min }
-      
+
       if slot
         slot.update_columns(booking_id: booking.id, is_available: false, updated_at: Time.current)
         Rails.logger.info "User##{id}: Linked slot #{slot.id} (#{slot.start_time.strftime('%H:%M')}) to booking #{booking.id} (#{booking.status})"
@@ -210,8 +206,8 @@ class User < ApplicationRecord
         (1...required_slots).each do |i|
           next_start = Time.zone.parse("2000-01-01 #{slot.start_time.strftime('%H:%M')}") + (i * slot.duration_minutes).minutes
           follow_slot = time_slots.for_date(date)
-                                   .where(slot_type: 'work')
-                                   .find { |s| s.start_time.hour == next_start.hour && s.start_time.min == next_start.min }
+                                  .where(slot_type: 'work')
+                                  .find { |s| s.start_time.hour == next_start.hour && s.start_time.min == next_start.min }
           if follow_slot
             follow_slot.update_columns(booking_id: booking.id, is_available: false, updated_at: Time.current)
             Rails.logger.info "User##{id}: Linked follow-up slot #{follow_slot.id} to booking #{booking.id}"

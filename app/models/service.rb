@@ -3,7 +3,7 @@ class Service < ApplicationRecord
   has_many :bookings, dependent: :destroy
 
   # Service types
-  SERVICE_TYPES = ['маникюр', 'педикюр', 'массаж'].freeze
+  SERVICE_TYPES = %w[маникюр педикюр массаж].freeze
 
   # Validations
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }

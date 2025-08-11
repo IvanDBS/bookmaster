@@ -18,7 +18,7 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
       get '/api/v1/working_day_exceptions'
 
       expect(response).to have_http_status(:success)
-      response_data = JSON.parse(response.body)
+      response_data = response.parsed_body
       expect(response_data.length).to eq(2)
       expect(response_data.map { |e| e['id'] }).to contain_exactly(exception1.id, exception2.id)
     end
@@ -42,12 +42,12 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     end
 
     it 'creates a working day exception' do
-      expect {
+      expect do
         post '/api/v1/working_day_exceptions', params: valid_params
-      }.to change(WorkingDayException, :count).by(1)
+      end.to change(WorkingDayException, :count).by(1)
 
       expect(response).to have_http_status(:created)
-      response_data = JSON.parse(response.body)
+      response_data = response.parsed_body
       expect(response_data['date']).to eq((Date.current + 3.days).to_s)
       expect(response_data['is_working']).to be true
       expect(response_data['reason']).to eq('Special working day')
@@ -62,19 +62,19 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
 
   describe 'POST /api/v1/working_day_exceptions/toggle' do
     let(:toggle_date) { Date.current + 5.days }
-    
+
     context 'when no exception exists' do
       it 'creates new exception with opposite status' do
         # Assuming Monday (day 1) is working day by default
         monday_date = Date.current.beginning_of_week + 1.day # Monday
-        
-        expect {
-          post '/api/v1/working_day_exceptions/toggle', 
+
+        expect do
+          post '/api/v1/working_day_exceptions/toggle',
                params: { date: monday_date }
-        }.to change(WorkingDayException, :count).by(1)
+        end.to change(WorkingDayException, :count).by(1)
 
         expect(response).to have_http_status(:created)
-        response_data = JSON.parse(response.body)
+        response_data = response.parsed_body
         expect(response_data['date']).to eq(monday_date.to_s)
         expect(response_data['is_working']).to be false # Opposite of working day
       end
@@ -84,15 +84,15 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
       let!(:existing_exception) { create(:working_day_exception, user: master, date: toggle_date, is_working: false) }
 
       it 'toggles the existing exception' do
-        expect {
-          post '/api/v1/working_day_exceptions/toggle', 
+        expect do
+          post '/api/v1/working_day_exceptions/toggle',
                params: { date: toggle_date }
-        }.not_to change(WorkingDayException, :count)
+        end.not_to change(WorkingDayException, :count)
 
         expect(response).to have_http_status(:success)
-        response_data = JSON.parse(response.body)
+        response_data = response.parsed_body
         expect(response_data['is_working']).to be true # Toggled from false
-        
+
         existing_exception.reload
         expect(existing_exception.is_working).to be true
       end
@@ -100,7 +100,7 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
 
     it 'requires authentication' do
       sign_out master
-      post '/api/v1/working_day_exceptions/toggle', 
+      post '/api/v1/working_day_exceptions/toggle',
            params: { date: toggle_date }
       expect(response).to have_http_status(:unauthorized)
     end
@@ -118,14 +118,14 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     end
 
     it 'updates the working day exception' do
-      put "/api/v1/working_day_exceptions/#{exception.id}", 
+      put "/api/v1/working_day_exceptions/#{exception.id}",
           params: update_params
 
       expect(response).to have_http_status(:success)
-      response_data = JSON.parse(response.body)
+      response_data = response.parsed_body
       expect(response_data['is_working']).to be true
       expect(response_data['reason']).to eq('Updated reason')
-      
+
       exception.reload
       expect(exception.is_working).to be true
       expect(exception.reason).to eq('Updated reason')
@@ -133,7 +133,7 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
 
     it 'requires authentication' do
       sign_out master
-      put "/api/v1/working_day_exceptions/#{exception.id}", 
+      put "/api/v1/working_day_exceptions/#{exception.id}",
           params: update_params
       expect(response).to have_http_status(:unauthorized)
     end
@@ -143,9 +143,9 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     let!(:exception) { create(:working_day_exception, user: master, date: Date.current + 10.days) }
 
     it 'deletes the working day exception' do
-      expect {
+      expect do
         delete "/api/v1/working_day_exceptions/#{exception.id}"
-      }.to change(WorkingDayException, :count).by(-1)
+      end.to change(WorkingDayException, :count).by(-1)
 
       expect(response).to have_http_status(:no_content)
     end

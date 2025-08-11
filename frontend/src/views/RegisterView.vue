@@ -8,9 +8,7 @@
           <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-red)"></div>
         </div>
       </div>
-      <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">
-        Создать аккаунт
-      </h2>
+      <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">Создать аккаунт</h2>
       <p class="mt-2 text-center text-sm text-gray-600">
         Или
         <router-link to="/login" class="font-medium text-lime-600 hover:text-lime-500">
@@ -24,9 +22,7 @@
         <form class="space-y-6" @submit.prevent="handleSubmit">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label for="first_name" class="block text-sm font-medium text-gray-700">
-                Имя
-              </label>
+              <label for="first_name" class="block text-sm font-medium text-gray-700"> Имя </label>
               <div class="mt-1">
                 <input
                   id="first_name"
@@ -61,9 +57,7 @@
           </div>
 
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">
-              Email
-            </label>
+            <label for="email" class="block text-sm font-medium text-gray-700"> Email </label>
             <div class="mt-1">
               <input
                 id="email"
@@ -79,9 +73,7 @@
           </div>
 
           <div>
-            <label for="phone" class="block text-sm font-medium text-gray-700">
-              Телефон
-            </label>
+            <label for="phone" class="block text-sm font-medium text-gray-700"> Телефон </label>
             <div class="mt-1">
               <input
                 id="phone"
@@ -97,9 +89,7 @@
           </div>
 
           <div>
-            <label for="role" class="block text-sm font-medium text-gray-700">
-              Роль
-            </label>
+            <label for="role" class="block text-sm font-medium text-gray-700"> Роль </label>
             <div class="mt-1">
               <select
                 id="role"
@@ -116,9 +106,7 @@
           </div>
 
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">
-              Пароль
-            </label>
+            <label for="password" class="block text-sm font-medium text-gray-700"> Пароль </label>
             <div class="mt-1">
               <input
                 id="password"
@@ -183,13 +171,15 @@
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
               </div>
               <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">
-                  Ошибка регистрации
-                </h3>
+                <h3 class="text-sm font-medium text-red-800">Ошибка регистрации</h3>
                 <div class="mt-2 text-sm text-red-700">
                   {{ error }}
                 </div>
@@ -220,19 +210,21 @@ const form = reactive({
   role: '',
   password: '',
   password_confirmation: '',
-  terms: false
+  terms: false,
 })
 
 const isFormValid = computed(() => {
-  return form.first_name && 
-         form.last_name && 
-         form.email && 
-         form.phone && 
-         form.role && 
-         form.password && 
-         form.password_confirmation && 
-         form.terms &&
-         form.password === form.password_confirmation
+  return (
+    form.first_name &&
+    form.last_name &&
+    form.email &&
+    form.phone &&
+    form.role &&
+    form.password &&
+    form.password_confirmation &&
+    form.terms &&
+    form.password === form.password_confirmation
+  )
 })
 
 const handleSubmit = async () => {
@@ -243,10 +235,10 @@ const handleSubmit = async () => {
 
   loading.value = true
   error.value = ''
-  
+
   try {
     const response = await authStore.register(form)
-    
+
     // Перенаправляем в зависимости от роли
     if (response.user.role === 'master') {
       router.push('/master/dashboard')
@@ -259,4 +251,4 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
-</script> 
+</script>

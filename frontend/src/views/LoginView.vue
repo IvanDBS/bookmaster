@@ -8,9 +8,7 @@
           <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-red)"></div>
         </div>
       </div>
-      <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">
-        Войти в аккаунт
-      </h2>
+      <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">Войти в аккаунт</h2>
       <p class="mt-2 text-center text-sm text-gray-600">
         Или
         <router-link to="/register" class="font-medium text-lime-600 hover:text-lime-500">
@@ -23,9 +21,7 @@
       <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <form class="space-y-6" @submit.prevent="handleSubmit">
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">
-              Email
-            </label>
+            <label for="email" class="block text-sm font-medium text-gray-700"> Email </label>
             <div class="mt-1">
               <input
                 id="email"
@@ -41,9 +37,7 @@
           </div>
 
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">
-              Пароль
-            </label>
+            <label for="password" class="block text-sm font-medium text-gray-700"> Пароль </label>
             <div class="mt-1">
               <input
                 id="password"
@@ -73,9 +67,7 @@
             </div>
 
             <div class="text-sm">
-              <a href="#" class="font-medium text-lime-600 hover:text-lime-500">
-                Забыли пароль?
-              </a>
+              <a href="#" class="font-medium text-lime-600 hover:text-lime-500"> Забыли пароль? </a>
             </div>
           </div>
 
@@ -94,13 +86,15 @@
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
               </div>
               <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">
-                  Ошибка входа
-                </h3>
+                <h3 class="text-sm font-medium text-red-800">Ошибка входа</h3>
                 <div class="mt-2 text-sm text-red-700">
                   {{ error }}
                 </div>
@@ -126,16 +120,16 @@ const error = ref('')
 const form = reactive({
   email: '',
   password: '',
-  rememberMe: false
+  rememberMe: false,
 })
 
 const handleSubmit = async () => {
   loading.value = true
   error.value = ''
-  
+
   try {
     const response = await authStore.login(form.email, form.password)
-    
+
     // Перенаправляем в зависимости от роли
     if (response.user.role === 'master') {
       router.push('/master/dashboard')
@@ -148,4 +142,4 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
-</script> 
+</script>

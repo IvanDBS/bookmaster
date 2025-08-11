@@ -3,7 +3,10 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="flex justify-between items-center">
         <h3 class="text-lg font-semibold text-gray-900">Мои услуги</h3>
-        <button @click="showModal = true" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
+        <button
+          @click="showModal = true"
+          class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+        >
           Добавить услугу
         </button>
       </div>
@@ -13,8 +16,8 @@
         <p class="text-gray-500">У вас пока нет услуг</p>
       </div>
       <div v-else class="space-y-4">
-        <ServiceCard 
-          v-for="service in services" 
+        <ServiceCard
+          v-for="service in services"
           :key="service.id"
           :service="service"
           @edit-service="editService"
@@ -24,7 +27,7 @@
     </div>
 
     <!-- Service Modal -->
-    <ServiceModal 
+    <ServiceModal
       v-if="showModal"
       :show-modal="showModal"
       :editing-service-id="editingServiceId"
@@ -49,11 +52,11 @@ const {
   editingServiceId,
   newService,
   availableServiceTypes,
-  
+
   // Functions
   editService,
   deleteService,
   closeModal,
-  addService
+  addService,
 } = useServices()
-</script> 
+</script>

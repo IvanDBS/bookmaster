@@ -4,10 +4,7 @@
       <div class="flex justify-between items-center">
         <h3 class="text-lg font-semibold text-gray-900">Последние записи</h3>
         <!-- Кнопки сортировки -->
-        <BookingFilters 
-          :booking-filter="bookingFilter"
-          @set-booking-filter="setBookingFilter"
-        />
+        <BookingFilters :booking-filter="bookingFilter" @set-booking-filter="setBookingFilter" />
       </div>
     </div>
     <div class="p-6">
@@ -15,8 +12,8 @@
         <p class="text-gray-500">У вас пока нет записей</p>
       </div>
       <div v-else class="space-y-4">
-        <BookingCard 
-          v-for="booking in filteredBookings" 
+        <BookingCard
+          v-for="booking in filteredBookings"
           :key="booking.id"
           :booking="booking"
           @show-confirm-modal="showConfirmModal"
@@ -36,13 +33,13 @@ import BookingCard from './BookingCard.vue'
 const {
   // State
   bookingFilter,
-  
+
   // Computed
   filteredBookings,
-  
+
   // Functions
   setBookingFilter,
   showConfirmModal,
-  showCancelModal
+  showCancelModal,
 } = useBookings()
-</script> 
+</script>

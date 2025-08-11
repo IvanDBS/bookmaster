@@ -1,16 +1,16 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <AppHeader 
-      :show-navigation="true" 
-      user-type="master" 
-      :pending-bookings-count="pendingBookingsCount" 
-      @scroll-to-section="handleScrollToSection" 
-      @notification-click="handleNotificationClick" 
+    <AppHeader
+      :show-navigation="true"
+      user-type="master"
+      :pending-bookings-count="pendingBookingsCount"
+      @scroll-to-section="handleScrollToSection"
+      @notification-click="handleNotificationClick"
     />
-    
+
     <!-- Confirmation Modal -->
-    <ConfirmationModal 
+    <ConfirmationModal
       :is-visible="showConfirmationModal"
       :type="modalType"
       :booking="selectedBooking"
@@ -47,7 +47,8 @@
               <h4 class="text-lg font-bold">BookMaster</h4>
             </div>
             <p class="text-gray-400 leading-relaxed">
-              Удобное управление записями для мастеров и клиентов. Профессиональный инструмент для вашего бизнеса.
+              Удобное управление записями для мастеров и клиентов. Профессиональный инструмент для
+              вашего бизнеса.
             </p>
           </div>
           <div>
@@ -107,7 +108,7 @@ const {
   loadWorkingSchedules,
   loadWorkingDayExceptions,
   loadSlotsForVisibleDates,
-  refreshCalendar
+  refreshCalendar,
 } = useCalendar()
 
 const {
@@ -115,20 +116,20 @@ const {
   showConfirmationModal,
   modalType,
   selectedBooking,
-  
+
   // Computed
   pendingBookingsCount,
-  
+
   // Functions
   loadBookings,
   closeConfirmationModal,
-  handleModalConfirm
+  handleModalConfirm,
 } = useBookings()
 
 const {
   // Functions
   loadServices,
-  loadServiceTypes
+  loadServiceTypes,
 } = useServices()
 
 // User data
@@ -150,13 +151,13 @@ const handleNotificationClick = () => {
 
 onMounted(async () => {
   console.log('MasterDashboard mounted')
-  
+
   // Загружаем данные пользователя
   try {
     if (authStore.token) {
       const response = await fetch('http://localhost:3000/api/v1/auth/profile', {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          Authorization: `Bearer ${authStore.token}`,
         },
       })
       if (response.ok) {
@@ -166,7 +167,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error loading user data:', error)
   }
-  
+
   // Загружаем все данные
   await loadWorkingSchedules()
   await loadWorkingDayExceptions()
@@ -174,11 +175,11 @@ onMounted(async () => {
   await loadServiceTypes()
   await loadBookings()
   await loadSlotsForVisibleDates()
-  
+
   // Проверяем, возвращаемся ли мы из настроек расписания
   const fromSettings = sessionStorage.getItem('fromScheduleSettings')
   const clearCache = sessionStorage.getItem('clearSlotsCache')
-  
+
   if (fromSettings === 'true' || clearCache === 'true') {
     console.log('Returning from schedule settings or cache clear requested, refreshing calendar...')
     await refreshCalendar()
@@ -191,4 +192,4 @@ onMounted(async () => {
 onActivated(() => {
   // Это будет обработано в useCalendar
 })
-</script> 
+</script>

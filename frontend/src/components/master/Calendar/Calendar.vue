@@ -3,7 +3,7 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="flex justify-between items-center">
         <h3 class="text-lg font-semibold text-gray-900">Календарь записей</h3>
-        <button 
+        <button
           @click="goToScheduleSettings"
           class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm"
         >
@@ -15,7 +15,7 @@
       <!-- Two Months Calendar -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Current Month -->
-        <CalendarMonth 
+        <CalendarMonth
           :dates="calendarDates"
           :month-year="currentMonthYear"
           :show-previous-button="true"
@@ -27,7 +27,7 @@
         />
 
         <!-- Next Month -->
-        <CalendarMonth 
+        <CalendarMonth
           :dates="nextMonthDates"
           :month-year="nextMonthYear"
           :show-next-button="true"
@@ -43,7 +43,7 @@
       <CalendarLegend />
 
       <!-- Selected Date Slots -->
-      <CalendarSlots 
+      <CalendarSlots
         v-if="selectedDate"
         :selected-date="selectedDate"
         :selected-date-slots="selectedDateSlots"
@@ -57,23 +57,27 @@
 
       <!-- Selected Date Bookings -->
       <div v-if="selectedDateBookings.length > 0" class="mt-6">
-        <h5 class="font-semibold text-gray-900 mb-3">
-          Записи на {{ formatSelectedDate() }}
-        </h5>
+        <h5 class="font-semibold text-gray-900 mb-3">Записи на {{ formatSelectedDate() }}</h5>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div v-for="booking in sortedSelectedDateBookings" :key="booking.id" 
-               class="bg-gray-50 rounded-lg p-3 border-l-4"
-               :class="{
-                 'border-green-500': booking.status === 'confirmed',
-                 'border-yellow-500': booking.status === 'pending',
-                 'border-red-500': booking.status === 'cancelled'
-               }">
+          <div
+            v-for="booking in sortedSelectedDateBookings"
+            :key="booking.id"
+            class="bg-gray-50 rounded-lg p-3 border-l-4"
+            :class="{
+              'border-green-500': booking.status === 'confirmed',
+              'border-yellow-500': booking.status === 'pending',
+              'border-red-500': booking.status === 'cancelled',
+            }"
+          >
             <div class="flex justify-between items-start mb-2">
               <div class="flex-1">
                 <h6 class="font-semibold text-gray-900 text-sm">{{ booking.service?.name }}</h6>
                 <p class="text-xs text-gray-600">{{ booking.client_name }}</p>
               </div>
-              <span :class="getStatusClass(booking.status)" class="px-2 py-1 rounded-full text-xs font-semibold ml-2">
+              <span
+                :class="getStatusClass(booking.status)"
+                class="px-2 py-1 rounded-full text-xs font-semibold ml-2"
+              >
                 {{ getStatusText(booking.status) }}
               </span>
             </div>
@@ -84,10 +88,16 @@
               <div class="text-right">
                 <p class="text-sm font-semibold text-gray-900">{{ booking.service?.price }} MDL</p>
                 <div v-if="booking.status === 'pending'" class="flex space-x-1 mt-1">
-                  <button @click="showConfirmModal(booking)" class="text-green-600 hover:text-green-700 text-xs font-medium">
+                  <button
+                    @click="showConfirmModal(booking)"
+                    class="text-green-600 hover:text-green-700 text-xs font-medium"
+                  >
                     ✓
                   </button>
-                  <button @click="showCancelModal(booking)" class="text-red-600 hover:text-red-700 text-xs font-medium">
+                  <button
+                    @click="showCancelModal(booking)"
+                    class="text-red-600 hover:text-red-700 text-xs font-medium"
+                  >
                     ✕
                   </button>
                 </div>
@@ -121,13 +131,13 @@ const {
   selectedDate,
   selectedDateSlots,
   isDayWorking,
-  
+
   // Computed
   currentMonthYear,
   nextMonthYear,
   calendarDates,
   nextMonthDates,
-  
+
   // Functions
   previousMonth,
   nextMonth,
@@ -138,22 +148,22 @@ const {
   getBookingDotClass,
   formatSelectedDate,
   loadSlotsForSelectedDate,
-  invalidateCacheForDate
+  invalidateCacheForDate,
 } = useCalendar()
 
 const {
   // State
   selectedDateBookings,
-  
+
   // Computed
   sortedSelectedDateBookings,
-  
+
   // Functions
   showConfirmModal,
   showCancelModal,
   getStatusClass,
   getStatusText,
-  formatTime
+  formatTime,
 } = useBookings()
 
 // Navigation function
@@ -176,4 +186,4 @@ const onToggleSlotBreak = async ({ slot, isBreak }) => {
     alert('Не удалось изменить статус слота: ' + e.message)
   }
 }
-</script> 
+</script>

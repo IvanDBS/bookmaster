@@ -2,17 +2,17 @@ require 'rails_helper'
 
 RSpec.describe User, type: :model do
   describe 'validations' do
-    it { should validate_presence_of(:email) }
-    it { should validate_presence_of(:first_name) }
-    it { should validate_presence_of(:last_name) }
-    it { should validate_presence_of(:phone) }
-    it { should validate_presence_of(:role) }
-    it { should validate_inclusion_of(:role).in_array(%w[master client]) }
+    it { is_expected.to validate_presence_of(:email) }
+    it { is_expected.to validate_presence_of(:first_name) }
+    it { is_expected.to validate_presence_of(:last_name) }
+    it { is_expected.to validate_presence_of(:phone) }
+    it { is_expected.to validate_presence_of(:role) }
+    it { is_expected.to validate_inclusion_of(:role).in_array(%w[master client]) }
   end
 
   describe 'associations' do
-    it { should have_many(:services).dependent(:destroy) }
-    it { should have_many(:bookings).dependent(:destroy) }
+    it { is_expected.to have_many(:services).dependent(:destroy) }
+    it { is_expected.to have_many(:bookings).dependent(:destroy) }
   end
 
   describe 'scopes' do
@@ -20,13 +20,13 @@ RSpec.describe User, type: :model do
     let!(:client) { create(:user, role: 'client') }
 
     it 'returns only masters' do
-      expect(User.masters).to include(master)
-      expect(User.masters).not_to include(client)
+      expect(described_class.masters).to include(master)
+      expect(described_class.masters).not_to include(client)
     end
 
     it 'returns only clients' do
-      expect(User.clients).to include(client)
-      expect(User.clients).not_to include(master)
+      expect(described_class.clients).to include(client)
+      expect(described_class.clients).not_to include(master)
     end
   end
 

@@ -6,20 +6,20 @@ export const useAuthStore = defineStore('auth', {
     user: null,
     token: localStorage.getItem('token') || null,
     loading: false,
-    error: null
+    error: null,
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.token,
     isMaster: (state) => state.user?.role === 'master',
-    isClient: (state) => state.user?.role === 'client'
+    isClient: (state) => state.user?.role === 'client',
   },
 
   actions: {
     async login(email, password) {
       this.loading = true
       this.error = null
-      
+
       try {
         const response = await api.login(email, password)
         this.user = response.user
@@ -37,7 +37,7 @@ export const useAuthStore = defineStore('auth', {
     async register(userData) {
       this.loading = true
       this.error = null
-      
+
       try {
         const response = await api.register(userData)
         this.user = response.user
@@ -54,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
 
     async getCurrentUser() {
       if (!this.token) return
-      
+
       try {
         const response = await api.getCurrentUser(this.token)
         this.user = response.user
@@ -76,6 +76,6 @@ export const useAuthStore = defineStore('auth', {
         this.error = null
         localStorage.removeItem('token')
       }
-    }
-  }
-}) 
+    },
+  },
+})
