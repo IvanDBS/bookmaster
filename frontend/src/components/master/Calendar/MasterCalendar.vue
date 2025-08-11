@@ -5,9 +5,9 @@
         <h3 class="text-xl font-semibold text-gray-900">Календарь записей</h3>
         <button
           @click="$emit('goToScheduleSettings')"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-lg transition-colors text-sm"
+          class="text-blue-500 border border-blue-500 hover:bg-blue-50 font-medium px-3 py-1.5 rounded-lg transition-colors text-sm"
         >
-          ⚙️ Настройки
+          Настройка расписания
         </button>
       </div>
     </div>

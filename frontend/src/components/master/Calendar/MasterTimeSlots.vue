@@ -151,8 +151,8 @@
     <div v-if="selectedDateSlots.length > 0" class="mt-4 flex justify-center">
       <button
         @click="$emit('addNewSlot')"
-        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
-        :class="[isAddingSlot ? 'bg-gray-400 text-white' : 'bg-blue-600 text-white']"
+        class="inline-flex items-center px-4 py-2 border text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+        :class="[isAddingSlot ? 'border-gray-300 text-gray-400' : 'border-blue-500 text-blue-500 hover:bg-blue-50']"
         :disabled="isAddingSlot"
       >
         <svg
@@ -214,7 +214,7 @@
       </p>
       <button
         @click="$emit('addNewSlot')"
-        class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors duration-200 shadow-sm"
+        class="inline-flex items-center px-3 py-1.5 border border-blue-500 text-blue-500 hover:bg-blue-50 text-xs font-medium rounded-lg transition-colors duration-200"
       >
         <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
