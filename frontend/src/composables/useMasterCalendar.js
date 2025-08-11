@@ -534,6 +534,14 @@ export function useMasterCalendar() {
   }
 
   // Calendar styling methods
+  const getDateHoverBgClass = (date) => {
+    // Подсветка при наведении тем же цветом, что и фоновый статус дня
+    if (date.isPast) return 'hover:bg-gray-100'
+    if (date.loadLevel === 'non_working') return 'hover:bg-gray-100'
+    if (date.totalSlots > 0 && date.availableSlots === 0) return 'hover:bg-red-100'
+    if (date.bookedSlots > 0) return 'hover:bg-orange-100'
+    return 'hover:bg-green-50'
+  }
   const getDateBgClass = (date) => {
     if (date.isPast) return 'bg-gray-50 border-gray-200'
 
@@ -670,6 +678,7 @@ export function useMasterCalendar() {
     addNewSlot,
     refreshCalendar,
     getDateBgClass,
+    getDateHoverBgClass,
     getDateBorderClass,
     getBookingDotClass,
     getSlotTypeText,

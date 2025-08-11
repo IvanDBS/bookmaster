@@ -111,7 +111,12 @@
             </svg>
           </button>
 
-          <button @click="handleLogout" class="btn-primary px-6 py-2">Выйти</button>
+          <button
+            @click="handleLogout"
+            class="px-4 py-2 text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            Выйти
+          </button>
         </div>
       </div>
 

@@ -5,7 +5,7 @@
         <h3 class="text-lg font-semibold text-gray-900">Мои услуги</h3>
         <button
           @click="showModal = true"
-          class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+          class="px-3 py-1.5 text-green-600 border border-green-500 hover:bg-green-50 rounded-lg transition-colors text-sm font-medium"
         >
           Добавить услугу
         </button>

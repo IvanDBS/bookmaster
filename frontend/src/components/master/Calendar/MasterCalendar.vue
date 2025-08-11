@@ -17,7 +17,7 @@
         <!-- Current Month -->
         <div>
           <div class="flex items-center justify-between mb-4">
-            <button @click="previousMonth" class="p-2 hover:bg-gray-100 rounded">
+            <button @click="previousMonth" class="p-3 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30" aria-label="Предыдущий месяц">
               <svg
                 class="w-5 h-5 text-gray-600"
                 fill="none"
@@ -53,8 +53,9 @@
               :key="date.key"
               @click="selectDate(date)"
               class="relative"
-              :class="[
-                'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2',
+             :class="[
+                'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2 hover:border-gray-300',
+                getDateHoverBgClass(date),
                 date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
                 date.isSelected ? 'border-blue-500 text-gray-900 shadow-md' : 'border-transparent',
                 date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
@@ -87,7 +88,7 @@
           <div class="flex items-center justify-between mb-4">
             <div></div>
             <h4 class="text-lg font-semibold text-gray-900">{{ nextMonthYear }}</h4>
-            <button @click="nextMonth" class="p-2 hover:bg-gray-100 rounded">
+            <button @click="nextMonth" class="p-3 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30" aria-label="Следующий месяц">
               <svg
                 class="w-5 h-5 text-gray-600"
                 fill="none"
@@ -121,8 +122,9 @@
               :key="date.key"
               @click="selectDate(date)"
               class="relative"
-              :class="[
-                'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2',
+             :class="[
+                'h-12 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all duration-200 border-2 hover:border-gray-300',
+                getDateHoverBgClass(date),
                 date.isCurrentMonth ? 'hover:shadow-md' : 'text-gray-400',
                 date.isSelected ? 'border-blue-500 text-gray-900 shadow-md' : 'border-transparent',
                 date.isToday && !date.isSelected ? 'bg-blue-50 border-blue-200 font-semibold' : '',
@@ -195,6 +197,7 @@ const {
   addNewSlot,
   getDateBgClass,
   getDateBorderClass,
+    getDateHoverBgClass,
 } = useMasterCalendar()
 
 // Props from MasterDashboard.vue

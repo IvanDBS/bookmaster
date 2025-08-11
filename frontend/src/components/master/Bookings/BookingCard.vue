@@ -7,7 +7,7 @@
         {{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}
       </p>
     </div>
-    <div class="text-right">
+    <div class="text-right tabular-nums">
       <span
         :class="getStatusClass(booking.status)"
         class="px-2 py-1 rounded-full text-xs font-semibold"
