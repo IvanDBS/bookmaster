@@ -41,8 +41,8 @@ class WorkingSchedule < ApplicationRecord
   end
 
   def total_slots_count
-    # Фиксируем продолжительность рабочего слота как 60 минут
-    working_duration_minutes / 60
+    return 0 unless slot_duration_minutes&.positive?
+    working_duration_minutes / slot_duration_minutes
   end
 
   # Генерация слотов для конкретной даты

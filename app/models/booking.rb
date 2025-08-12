@@ -63,8 +63,9 @@ class Booking < ApplicationRecord
 
   def set_end_time
     return unless start_time
-    # Фиксируем длительность брони на 60 минут согласно текущему требованию
-    self.end_time = start_time + 60.minutes
+    duration_minutes = service&.duration.to_i
+    duration_minutes = 60 if duration_minutes <= 0
+    self.end_time = start_time + duration_minutes.minutes
   end
 
   def start_time_in_future
@@ -83,19 +84,14 @@ class Booking < ApplicationRecord
 
   def no_time_conflicts
     return unless start_time && end_time && user_id
-    
+
+    # Конфликт по стандартному правилу пересечения интервалов:
+    # (start_a < end_b) AND (end_a > start_b)
     conflicting_bookings = Booking.where(user_id: user_id)
-                                .where.not(id: id) # исключаем текущую запись при обновлении
-                                .where(status: %w[pending confirmed])
-                                .where(
-                                  '(start_time < ? AND end_time > ?) OR ' \
-                                  '(start_time < ? AND end_time > ?) OR ' \
-                                  '(start_time >= ? AND end_time <= ?)',
-                                  end_time, start_time,
-                                  end_time, end_time,
-                                  start_time, end_time
-                                )
-    
+                                  .where.not(id: id)
+                                  .where(status: %w[pending confirmed])
+                                  .where('start_time < ? AND end_time > ?', end_time, start_time)
+
     if conflicting_bookings.exists?
       errors.add(:start_time, 'время уже занято другим бронированием')
     end

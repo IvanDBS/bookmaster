@@ -39,7 +39,8 @@ RSpec.describe Booking, type: :model do
 
     it 'sets end_time based on service duration' do
       booking.save
-      expect(booking.end_time).to eq(booking.start_time + booking.service.duration.minutes)
+      duration_minutes = ((booking.end_time - booking.start_time) / 60).to_i
+      expect(duration_minutes).to eq(booking.service.duration)
     end
   end
 

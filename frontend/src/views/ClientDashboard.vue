@@ -20,7 +20,19 @@
         <p class="text-gray-600 text-lg">Управляйте своими записями и находите новых мастеров</p>
       </div>
 
-      <!-- My Masters Section -->
+      <!-- Booking Wizard (минималистичный) -->
+      <BookingWizard>
+        <div class="space-y-8">
+          <!-- Stepper -->
+          <WizardStepper :current="currentStep" />
+          <!-- Step 1: choose service type -->
+          <Step1SelectType v-if="currentStep === 1" :service-types="serviceTypes" :selected-service-type="selectedServiceType" @select="selectServiceType" />
+          <!-- Step 2: choose master -->
+          <Step2SelectMaster v-if="currentStep === 2" :masters="mastersForType" :selected-service-type="selectedServiceType" :selected-master-id="selectedMaster?.id || null" @select="selectMaster" />
+        </div>
+      </BookingWizard>
+
+      <!-- My Masters Section AFTER wizard -->
       <div v-if="currentStep < 4" id="masters">
         <template v-if="selectedMasterForBooking">
           <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
@@ -306,6 +318,8 @@ import MyMasters from '../components/client/MyMasters.vue'
 import BookingWizard from '../components/client/BookingWizard.vue'
 import WizardStepper from '../components/client/WizardStepper.vue'
 import MasterServicesPicker from '../components/client/MasterServicesPicker.vue'
+import Step1SelectType from '../components/client/wizard/Step1SelectType.vue'
+import Step2SelectMaster from '../components/client/wizard/Step2SelectMaster.vue'
 import BookingsList from '../components/client/BookingsList.vue'
 import BookingHistory from '../components/client/BookingHistory.vue'
 import ClientCalendar from '../components/master/Calendar/ClientCalendar.vue'
