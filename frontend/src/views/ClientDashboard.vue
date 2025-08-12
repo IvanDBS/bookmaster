@@ -22,53 +22,7 @@
 
       
 
-      <!-- My Masters Section AFTER wizard -->
-      <div v-if="currentStep < 4" id="masters">
-        <template v-if="selectedMasterForBooking">
-          <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
-            <div class="flex items-center justify-between mb-6">
-              <h4 class="font-bold text-gray-900 text-xl">Выберите услугу</h4>
-              <button @click="cancelMasterSelection" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            <MasterServicesPicker
-              :services="selectedMasterForBooking.services || []"
-              :selected-id="selectedService?.id || null"
-              @select="(srv) => selectServiceAndGoToTime(selectedMasterForBooking, srv)"
-            />
-          </div>
-        </template>
-        <template v-else>
-          <MyMasters :masters="myMasters" @select-master="selectMasterForBooking" />
-        </template>
-      </div>
-
-      <!-- My Masters Section (moved above wizard) -->
-      <div v-if="currentStep < 4" id="masters">
-        <template v-if="selectedMasterForBooking">
-          <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
-            <div class="flex items-center justify-between mb-6">
-              <h4 class="text-lg font-semibold text-gray-900">Выберите услугу</h4>
-              <button @click="cancelMasterSelection" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            <MasterServicesPicker
-              :services="selectedMasterForBooking.services || []"
-              :selected-id="selectedService?.id || null"
-              @select="(srv) => selectServiceAndGoToTime(selectedMasterForBooking, srv)"
-            />
-          </div>
-        </template>
-        <template v-else>
-          <MyMasters :masters="myMasters" @select-master="selectMasterForBooking" />
-        </template>
-      </div>
+      <!-- My Masters Section removed per request: show only booking wizard -->
 
       <!-- Booking Wizard (минималистичный) -->
       <BookingWizard>
@@ -140,93 +94,47 @@
               </button>
             </div>
             <div class="flex justify-between">
-              <button class="text-sm text-gray-600" @click="currentStep = 1">← Назад</button>
+              <button class="text-sm text-gray-600" @click="goBackToStep1">← Назад</button>
               <button class="text-sm text-lime-700" @click="currentStep = 3">Далее →</button>
             </div>
           </div>
 
           <!-- Step 3: choose concrete service -->
-          <div v-if="currentStep === 3" class="space-y-5">
-            <div class="flex items-center justify-between">
-              <h4 class="text-sm font-semibold text-gray-900">
-                {{ selectedMaster?.user?.first_name }} {{ selectedMaster?.user?.last_name }}
-              </h4>
-              <button class="text-sm text-gray-500 hover:text-gray-700" @click="resetToStep1">
-                Выбрать другого мастера
-              </button>
-            </div>
-            <MasterServicesPicker
-              :services="selectedMasterServices"
-              :selected-id="selectedService?.id || null"
-              @select="selectConcreteService"
-            />
-            <div class="flex justify-between">
-              <button class="text-sm text-gray-600" @click="currentStep = 2">
-                ← Назад к выбору мастера
-              </button>
-            </div>
-          </div>
+          <Step3SelectService
+            v-if="currentStep === 3"
+            :master="selectedMaster"
+            :services="selectedMasterServices"
+            :selected-service-id="selectedService?.id || null"
+            @select="selectConcreteService"
+            @back="currentStep = 2"
+          />
 
           <!-- Step 4: choose time slot -->
-          <div v-if="currentStep === 4" class="space-y-5">
-            <h4 class="text-sm font-semibold text-gray-900">Выберите время</h4>
-
-            <!-- Calendar and Time Slots -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <!-- Calendar -->
-              <ClientCalendar :master-id="selectedMaster?.id" @date-selected="onDateSelected" />
-
-              <!-- Time Slots -->
-              <ClientTimeSlots
-                v-if="selectedCalendarDate"
-                :selected-date="selectedCalendarDate"
-                :master-id="selectedMaster?.id"
-                @slot-selected="onSlotSelected"
-              />
-            </div>
-
-            <div class="flex justify-between">
-              <button class="text-sm text-gray-600" @click="goBackToMasters">
-                ← Назад к выбору мастера
-              </button>
-            </div>
-          </div>
+          <Step4SelectTime
+            v-if="currentStep === 4"
+            :master-id="selectedMaster?.id"
+            :selected-date="selectedCalendarDate"
+            @date-selected="onDateSelected"
+            @slot-selected="onSlotSelected"
+            @back="goBackToMasters"
+          />
 
           <!-- Step 5: confirm -->
-          <div v-if="currentStep === 5" class="space-y-5">
-            <h4 class="text-sm font-semibold text-gray-900">Подтверждение</h4>
-            <div class="rounded-xl border border-gray-200 p-4">
-              <div class="text-sm text-gray-700">Услуга</div>
-              <div class="font-semibold text-gray-900">
-                {{ selectedService.name }} — {{ selectedService.price }} MDL ({{
-                  selectedService.duration
-                }}
-                мин)
-              </div>
-              <div class="mt-2 text-sm text-gray-700">Мастер</div>
-              <div class="font-semibold text-gray-900">
-                {{ selectedMaster.user.first_name }} {{ selectedMaster.user.last_name }}
-              </div>
-              <div class="mt-2 text-sm text-gray-700">Время</div>
-              <div class="font-semibold text-gray-900">
-                {{ formatBookingDate(selectedDate) }} •
-                {{ formatBookingTime(selectedSlot.start_time) }}–{{
-                  formatBookingTime(selectedSlot.end_time)
-                }}
-              </div>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="text-sm text-gray-600" @click="currentStep = 4">← Назад</button>
-              <button
-                @click="submitBooking"
-                class="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white font-bold px-8 py-3 rounded-lg transition-all duration-300 text-sm shadow-md hover:shadow-lg transform hover:scale-105"
-              >
-                Подтвердить запись
-              </button>
-            </div>
-          </div>
+          <Step5Confirm
+            v-if="currentStep === 5"
+            :master="selectedMaster"
+            :service="selectedService"
+            :date="selectedDate"
+            :slot="selectedSlot"
+            @back="currentStep = 4"
+            @submit="submitBooking"
+          />
         </div>
       </BookingWizard>
+      <!-- My Masters Section (ниже визарда) -->
+      <div id="masters" class="mt-8">
+        <MyMasters :masters="myMasters" @select-master="selectMasterForBooking" />
+      </div>
 
       <!-- My Current Bookings -->
       <BookingsList id="bookings" :bookings="currentBookings" />
@@ -328,40 +236,57 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { useClientBookingWizard } from '../composables/useClientBookingWizard'
+import { useClientMasters } from '../composables/useClientMasters'
 import AppHeader from '../components/AppHeader.vue'
+import AppFooter from '../components/AppFooter.vue'
 import MyMasters from '../components/client/MyMasters.vue'
 import BookingWizard from '../components/client/BookingWizard.vue'
 import WizardStepper from '../components/client/WizardStepper.vue'
-import MasterServicesPicker from '../components/client/MasterServicesPicker.vue'
 import Step1SelectType from '../components/client/wizard/Step1SelectType.vue'
 import Step2SelectMaster from '../components/client/wizard/Step2SelectMaster.vue'
+import Step3SelectService from '../components/client/wizard/Step3SelectService.vue'
+import Step4SelectTime from '../components/client/wizard/Step4SelectTime.vue'
+import Step5Confirm from '../components/client/wizard/Step5Confirm.vue'
 import BookingsList from '../components/client/BookingsList.vue'
 import BookingHistory from '../components/client/BookingHistory.vue'
-import ClientCalendar from '../components/master/Calendar/ClientCalendar.vue'
-import ClientTimeSlots from '../components/master/Calendar/ClientTimeSlots.vue'
 import api from '../services/api'
-import { useFormatters } from '../composables/useFormatters'
 
 const authStore = useAuthStore()
-const { formatBookingDate, formatBookingTime } = useFormatters()
+// formatters used inside step components
 
 const user = computed(() => authStore.user)
-const myMasters = ref([])
+// Masters list via composable
+const { myMasters, isLoadingMasters, loadMyMasters } = useClientMasters(authStore)
 const currentBookings = ref([])
 const bookingHistory = ref([])
 
-// Booking wizard state
-const currentStep = ref(1)
-const serviceTypes = ref(['маникюр', 'педикюр', 'массаж'])
-const selectedServiceType = ref(null)
-const mastersForType = ref([])
-const selectedMaster = ref(null)
-const selectedMasterServices = ref([])
-const selectedService = ref(null)
-const selectedDate = ref(new Date().toISOString().slice(0, 10))
-const selectedCalendarDate = ref(null)
-const daySlots = ref([])
-const selectedSlot = ref(null)
+// Booking wizard state via composable
+const {
+  currentStep,
+  serviceTypes,
+  selectedServiceType,
+  mastersForType,
+  selectedMaster,
+  selectedMasterServices,
+  selectedService,
+  selectedDate,
+  selectedCalendarDate,
+  daySlots,
+  selectedSlot,
+  loadServiceTypes,
+  selectServiceType,
+  selectMaster,
+  resetToStep1,
+  goBackToStep1,
+  goBackToMasters,
+  selectConcreteService,
+  fetchSlots,
+  selectSlot,
+  onDateSelected,
+  onSlotSelected,
+  submitBooking,
+} = useClientBookingWizard()
 const selectedMasterForBooking = ref(null)
 // Для клиента, авторизованного в системе, backend возьмет email/имя из профиля,
 // поэтому дополнительных полей на фронте не требуется
@@ -376,63 +301,14 @@ onMounted(async () => {
   await loadMyMasters()
 })
 
-const loadServiceTypes = async () => {
-  try {
-    const data = await api.getServiceTypes()
-    serviceTypes.value = data.service_types || serviceTypes.value
-  } catch (_) {}
-}
+// loadServiceTypes provided by useClientBookingWizard
 
-const loadMyMasters = async () => {
-  try {
-    // Получаем мастеров, к которым клиент записывался
-    const bookings = await api.getBookings(authStore.token)
-
-      // Создаем Map для уникальных мастеров
-      const mastersMap = new Map()
-
-      bookings.forEach((booking) => {
-        if (booking.user && !mastersMap.has(booking.user.id)) {
-          mastersMap.set(booking.user.id, {
-            id: booking.user.id,
-            first_name: booking.user.first_name,
-            last_name: booking.user.last_name,
-            services: [], // Инициализируем пустой массив услуг
-          })
-        }
-      })
-
-      // Загружаем услуги для каждого мастера параллельно через api layer
-      const mastersArray = Array.from(mastersMap.values())
-      await Promise.all(
-        mastersArray.map(async (master) => {
-          try {
-            master.services = await api.getServices({ master_id: master.id }, authStore.token)
-          } catch (error) {
-            console.error(`Error loading services for master ${master.id}:`, error)
-            master.services = []
-          }
-        }),
-      )
-
-      myMasters.value = mastersArray
-      console.log('Loaded my masters:', myMasters.value.length)
-    
-  } catch (error) {
-    console.error('Error loading my masters:', error)
-    myMasters.value = []
-  }
-}
+// loadMyMasters now provided by useClientMasters composable
 
 const loadCurrentBookings = async () => {
   try {
-    if (!authStore.token) {
-      console.log('No auth token, skipping loadCurrentBookings')
-      return
-    }
-    console.log('Loading current bookings...')
+    if (!authStore.token) { return }
     const data = await api.getBookings(authStore.token)
-    console.log('Loaded bookings:', data)
 
     // Разделяем записи на активные и историю
     const activeBookings = data.filter(
@@ -445,8 +321,7 @@ const loadCurrentBookings = async () => {
     currentBookings.value = activeBookings
     bookingHistory.value = historyBookings
 
-    console.log('Active bookings:', currentBookings.value.length)
-    console.log('History bookings:', bookingHistory.value.length)
+    
   } catch (e) {
     console.error('Failed to load client bookings:', e)
     currentBookings.value = []
@@ -456,134 +331,35 @@ const loadCurrentBookings = async () => {
 
 const loadBookingHistory = async () => {
   // История загружается вместе с активными записями в loadCurrentBookings
-  console.log('Booking history loaded:', bookingHistory.value.length)
+  
 }
 
-const selectServiceType = async (type) => {
-  selectedServiceType.value = type
-  const services = await api.getServicesByType(type)
-  const byMasterId = new Map()
-  services.forEach((s) => {
-    if (!byMasterId.has(s.user.id)) {
-      byMasterId.set(s.user.id, { id: s.user.id, user: s.user, services: [] })
-    }
-    byMasterId.get(s.user.id).services.push(s)
-  })
-  mastersForType.value = Array.from(byMasterId.values())
-  selectedMaster.value = null
-  selectedMasterServices.value = []
-  selectedService.value = null
-  currentStep.value = 2
-}
+// provided by useClientBookingWizard
 
 const minPrice = (services) => Math.min(...services.map((s) => s.price))
 
-const selectMaster = (master) => {
-  selectedMaster.value = master
-  selectedMasterServices.value = master.services
-  selectedService.value = null
-  currentStep.value = 3
-}
+// provided by useClientBookingWizard
 
-const resetToStep1 = () => {
-  // Сброс к началу для выбора другого мастера
-  selectedServiceType.value = null
-  selectedMaster.value = null
-  selectedMasterServices.value = []
-  selectedService.value = null
-  selectedSlot.value = null
-  currentStep.value = 1
-}
+// provided by useClientBookingWizard
 
-const selectConcreteService = (srv) => {
-  selectedService.value = srv
-  selectedSlot.value = null
-  daySlots.value = []
-  fetchSlots()
-  currentStep.value = 4
-}
+// provided by useClientBookingWizard
 
-const fetchSlots = async () => {
-  if (!selectedMaster.value) return
-  const res = await api.getPublicSlots(selectedMaster.value.id, selectedDate.value)
-  daySlots.value = res.slots || []
-}
+// provided by useClientBookingWizard
+
+// provided by useClientBookingWizard
 
 watch(selectedDate, fetchSlots)
 
-const selectSlot = (slot) => {
-  selectedSlot.value = slot
-  currentStep.value = 5
-}
+// provided by useClientBookingWizard
 
-const onDateSelected = (date) => {
-  console.log('Date selected in dashboard:', date)
-  selectedCalendarDate.value = date
-}
+// provided by useClientBookingWizard
 
-const onSlotSelected = (slot) => {
-  selectedSlot.value = slot
-  currentStep.value = 5
-}
+// provided by useClientBookingWizard
 
-const submitBooking = async () => {
-  try {
-    // Проверяем, что выбранная услуга принадлежит выбранному мастеру
-    if (!selectedMaster.value || !selectedService.value) {
-      throw new Error('Не выбран мастер или услуга')
-    }
-
-    console.log('Debug submitBooking:', {
-      selectedMaster: selectedMaster.value,
-      selectedService: selectedService.value,
-      masterServices: selectedMaster.value.services,
-      selectedMasterServices: selectedMasterServices.value,
-      selectedMasterId: selectedMaster.value?.id,
-      selectedServiceId: selectedService.value?.id,
-    })
-
-    // Проверяем, что услуга принадлежит мастеру
-    const masterServices = selectedMaster.value.services || selectedMasterServices.value || []
-    const serviceBelongsToMaster = masterServices.some((s) => s.id === selectedService.value.id)
-
-    console.log('Service belongs to master:', serviceBelongsToMaster)
-
-    if (!serviceBelongsToMaster) {
-      throw new Error('Услуга не найдена у выбранного мастера')
-    }
-
-    const payload = {
-      master_id: selectedMaster.value.id,
-      time_slot_id: selectedSlot.value.id,
-      booking: {
-        service_id: selectedService.value.id,
-        // имя/email/телефон возьмем из профиля пользователя на бэкенде
-      },
-    }
-
-    console.log('Submitting payload:', payload)
-    await api.createBooking(payload, authStore.token)
-    alert('Запись создана!')
-
-    // Обновляем список записей после создания новой записи
-    await loadCurrentBookings()
-    await loadMyMasters()
-
-    currentStep.value = 1
-    selectedServiceType.value = null
-    selectedMaster.value = null
-    selectedService.value = null
-    selectedSlot.value = null
-    selectedMasterForBooking.value = null
-  } catch (e) {
-    console.error('Booking error:', e)
-    alert('Не удалось создать запись: ' + e.message)
-  }
-}
+// provided by useClientBookingWizard
 
 const selectMasterForBooking = (master) => {
-  console.log('selectMasterForBooking called with:', master)
-  console.log('Master services:', master.services)
+  
   selectedMasterForBooking.value = master
 }
 
@@ -591,19 +367,10 @@ const cancelMasterSelection = () => {
   selectedMasterForBooking.value = null
 }
 
-const goBackToMasters = () => {
-  // Возвращаемся к выбору мастера
-  currentStep.value = 1
-  selectedServiceType.value = null
-  selectedMaster.value = null
-  selectedMasterServices.value = []
-  selectedService.value = null
-  selectedSlot.value = null
-  selectedMasterForBooking.value = null
-}
+// provided by useClientBookingWizard
 
 const selectServiceAndGoToTime = (master, service) => {
-  console.log('selectServiceAndGoToTime called with:', { master, service })
+  
 
   // Выбираем мастера и услугу, сразу переходим к выбору времени
   selectedServiceType.value = null
@@ -622,8 +389,7 @@ const selectServiceAndGoToTime = (master, service) => {
   selectedSlot.value = null
   selectedMasterForBooking.value = null // Скрываем услуги в карточке
 
-  console.log('Selected master services:', selectedMasterServices.value)
-  console.log('Selected service:', selectedService.value)
+  
 
   // Устанавливаем дату для календаря (сегодня или ближайший рабочий день)
   const today = new Date()
@@ -635,24 +401,35 @@ const selectServiceAndGoToTime = (master, service) => {
     isPast: false,
   }
 
-  console.log('Set selectedCalendarDate:', selectedCalendarDate.value)
+  
 
   currentStep.value = 4 // Переходим сразу к выбору времени
 
   // Скрываем секцию "Мои мастера" после выбора услуги
-  console.log('Hiding My Masters section, currentStep:', currentStep.value)
+  
 }
 
 const deleteBooking = async (bookingId) => {
   try {
     if (!confirm('Вы уверены, что хотите удалить эту запись из истории?')) return
     if (!authStore.token) throw new Error('Не авторизован')
+
+    // Оптимистично убираем запись из UI
+    const prevCurrent = [...currentBookings.value]
+    const prevHistory = [...bookingHistory.value]
+    currentBookings.value = prevCurrent.filter((b) => b.id !== bookingId)
+    bookingHistory.value = prevHistory.filter((b) => b.id !== bookingId)
+
+    // Серверный вызов
     await api.deleteBooking(bookingId, authStore.token)
-    alert('Запись удалена из истории')
-    await loadCurrentBookings()
+
+    // Фоновая синхронизация (не блокируем UI)
+    Promise.all([loadCurrentBookings(), loadMyMasters()]).catch(() => {})
   } catch (e) {
     console.error('Failed to delete booking:', e)
     alert('Не удалось удалить запись: ' + e.message)
+    // Явного отката не делаем, так как повторная загрузка пересоберет списки
+    await loadCurrentBookings().catch(() => {})
   }
 }
 

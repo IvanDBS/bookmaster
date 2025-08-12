@@ -432,60 +432,7 @@
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-16">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <div class="flex items-center space-x-3 mb-6">
-              <div class="flex space-x-1">
-                <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-blue)"></div>
-                <div
-                  class="w-3 h-3 rounded-full"
-                  style="background-color: var(--brand-yellow)"
-                ></div>
-                <div class="w-3 h-3 rounded-full" style="background-color: var(--brand-red)"></div>
-              </div>
-              <h4 class="text-lg font-bold">BookMaster</h4>
-            </div>
-            <p class="text-gray-400 leading-relaxed">
-              Удобное управление записями для мастеров и клиентов. Профессиональный инструмент для
-              вашего бизнеса.
-            </p>
-          </div>
-          <div>
-            <h4 class="text-sm font-semibold mb-6">Для мастеров</h4>
-            <ul class="text-gray-400 space-y-3">
-              <li><a href="#" class="hover:text-white transition-colors">Учет клиентов</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Расписание</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Уведомления</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Аналитика</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="text-sm font-semibold mb-6">Для клиентов</h4>
-            <ul class="text-gray-400 space-y-3">
-              <li><a href="#" class="hover:text-white transition-colors">Записаться</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">История</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Напоминания</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Отзывы</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="text-sm font-semibold mb-6">Поддержка</h4>
-            <ul class="text-gray-400 space-y-3">
-              <li><a href="#" class="hover:text-white transition-colors">Помощь</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Контакты</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">О нас</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Блог</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="border-t border-gray-800 mt-12 pt-8 text-center">
-          <p class="text-gray-400">© 2024 BookMaster. Все права защищены.</p>
-        </div>
-      </div>
-    </footer>
+    <AppFooter outerClass="py-16" />
   </div>
 </template>
 
@@ -494,6 +441,7 @@ import { ref, onMounted } from 'vue'
 import { UserCheck, Calendar, Sparkles, Footprints, Heart, ArrowRight } from 'lucide-vue-next'
 import { useServicesStore } from '../stores/services'
 import { useRouter } from 'vue-router'
+import AppFooter from '../components/AppFooter.vue'
 
 const servicesStore = useServicesStore()
 const router = useRouter()

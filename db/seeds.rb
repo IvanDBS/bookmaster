@@ -1,7 +1,10 @@
 # This file should contain all the record creation needed to seed the database with its default values.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
+puts "[SEEDS] Starting (env=#{Rails.env})"
+
 unless Rails.env.development?
+  puts "[SEEDS] Skipping: destructive seeds are disabled outside development (env=#{Rails.env})"
   Rails.logger.debug do
     "[SEEDS] Destructive operations are disabled outside development (current: #{Rails.env}). Skipping."
   end
@@ -313,6 +316,7 @@ if User.exists?(role: 'master') && User.exists?(role: 'client')
 end
 
 Rails.logger.debug "Seeds completed successfully!"
+puts "[SEEDS] Done"
 Rails.logger.debug { "Created #{User.where(role: 'master').count} masters" }
 Rails.logger.debug { "Created #{User.where(role: 'client').count} clients" }
 Rails.logger.debug { "Created #{Service.count} services" }

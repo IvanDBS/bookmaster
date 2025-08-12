@@ -192,6 +192,7 @@ const {
   previousMonth,
   nextMonth,
   selectDate,
+  loadSlotsForSelectedDate,
   toggleDayStatus,
   onToggleSlotBreak,
   addNewSlot,
@@ -199,6 +200,7 @@ const {
   getDateBgClass,
   getDateBorderClass,
     getDateHoverBgClass,
+  slotsCache,
 } = useMasterCalendar()
 
 // Props from MasterDashboard.vue
@@ -217,7 +219,23 @@ defineEmits(['goToScheduleSettings'])
 watch(
   () => props.refreshTick,
   async () => {
-    await refreshCalendar()
+    try {
+      // Лёгкое обновление: если выбрана дата, перезагружаем только её слоты
+      if (selectedDate.value) {
+        const dateString = `${selectedDate.value.getFullYear()}-${String(
+          selectedDate.value.getMonth() + 1,
+        ).padStart(2, '0')}-${String(selectedDate.value.getDate()).padStart(2, '0')}`
+        // Сбрасываем кэш для выбранной даты, затем подгружаем только её
+        slotsCache.value.delete(dateString)
+        await loadSlotsForSelectedDate(selectedDate.value)
+      } else {
+        // Если дата не выбрана, делаем полное обновление
+        await refreshCalendar()
+      }
+    } catch (e) {
+      // На случай ошибки в лёгком пути — гарантированный полный рефреш
+      await refreshCalendar()
+    }
   },
 )
 

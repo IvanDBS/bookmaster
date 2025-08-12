@@ -111,18 +111,34 @@ export function useBookings() {
       }
 
       const status = modalType.value === 'confirm' ? 'confirmed' : 'cancelled'
+      // Optimistic UI update in recentBookings to reduce visual latency
+      const previous = Array.isArray(recentBookings.value) ? [...recentBookings.value] : []
+      const idStr = String(bookingId)
+      const idx = previous.findIndex((b) => b && String(b.id) === idStr)
+      if (idx !== -1) {
+        const updated = { ...previous[idx], status }
+        recentBookings.value = [
+          ...previous.slice(0, idx),
+          updated,
+          ...previous.slice(idx + 1),
+        ]
+      }
+
+      // Сразу дёргаем рефреш календаря, чтобы не ждать сеть
+      refreshTick.value += 1
+
       await api.updateBookingStatus(bookingId, status, authStore.token)
 
-      await loadBookings()
+      // Фоновое обновление списка бронирований (не блокируем UI)
+      loadBookings().catch(() => {})
       closeConfirmationModal()
-      // Notify calendar and any listeners to refresh their data
-      refreshTick.value += 1
     } catch (error) {
       console.error(`Error ${modalType.value}ing booking:`, error)
       alert(
         `Ошибка при ${modalType.value === 'confirm' ? 'подтверждении' : 'отмене'} записи: ` +
           error.message,
       )
+      // Optional: could rollback optimistic change, but we reloaded on error anyway
     }
   }
 
