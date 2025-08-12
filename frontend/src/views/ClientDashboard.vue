@@ -20,17 +20,7 @@
         <p class="text-gray-600 text-lg">Управляйте своими записями и находите новых мастеров</p>
       </div>
 
-      <!-- Booking Wizard (минималистичный) -->
-      <BookingWizard>
-        <div class="space-y-8">
-          <!-- Stepper -->
-          <WizardStepper :current="currentStep" />
-          <!-- Step 1: choose service type -->
-          <Step1SelectType v-if="currentStep === 1" :service-types="serviceTypes" :selected-service-type="selectedServiceType" @select="selectServiceType" />
-          <!-- Step 2: choose master -->
-          <Step2SelectMaster v-if="currentStep === 2" :masters="mastersForType" :selected-service-type="selectedServiceType" :selected-master-id="selectedMaster?.id || null" @select="selectMaster" />
-        </div>
-      </BookingWizard>
+      
 
       <!-- My Masters Section AFTER wizard -->
       <div v-if="currentStep < 4" id="masters">
@@ -127,6 +117,7 @@
             </div>
             <div class="flex justify-between">
               <button class="text-sm text-gray-600" @click="currentStep = 1">← Назад</button>
+              <button class="text-sm text-lime-700" @click="currentStep = 3">Далее →</button>
             </div>
           </div>
 
