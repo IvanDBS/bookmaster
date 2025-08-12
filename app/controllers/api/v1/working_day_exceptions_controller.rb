@@ -19,7 +19,7 @@ module Api
         if @working_day_exception.save
           render json: @working_day_exception, status: :created
         else
-          render json: { errors: @working_day_exception.errors }, status: :unprocessable_entity
+          render_error(code: 'validation_error', message: @working_day_exception.errors.full_messages.join(', '), status: :unprocessable_entity)
         end
       end
 
@@ -27,7 +27,7 @@ module Api
         if @working_day_exception.update(working_day_exception_params)
           render json: @working_day_exception
         else
-          render json: { errors: @working_day_exception.errors }, status: :unprocessable_entity
+          render_error(code: 'validation_error', message: @working_day_exception.errors.full_messages.join(', '), status: :unprocessable_entity)
         end
       end
 
@@ -61,7 +61,7 @@ module Api
           render json: exception, status: :created
         end
       rescue StandardError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render_error(code: 'validation_error', message: e.message, status: :unprocessable_entity)
       end
 
       private

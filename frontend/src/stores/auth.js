@@ -16,6 +16,20 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    init() {
+      // Централизованная обработка 401 из api.js
+      if (typeof window !== 'undefined') {
+        window.addEventListener('api:unauthorized', () => {
+          this.logout()
+          // Мягкий редирект на /login если мы не там
+          try {
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/login'
+            }
+          } catch (_) {}
+        })
+      }
+    },
     async login(email, password) {
       this.loading = true
       this.error = null

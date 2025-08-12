@@ -9,7 +9,27 @@ class Api::V1::UsersController < Api::V1::BaseController
       @users = @users.joins(:services).where("LOWER(services.name) LIKE ?", "%#{params[:category].downcase}%")
     end
 
-    render json: @users, each_serializer: UserPublicSerializer
+    # Убираем дубликаты после join
+    @users = @users.distinct
+
+    # Опциональная пагинация. Если page/per_page заданы — возвращаем с метаданными,
+    # иначе сохраняем обратную совместимость (возвращаем массив пользователей)
+    if params[:page].present? || params[:per_page].present?
+      page = params[:page].to_i
+      per_page = params[:per_page].to_i
+      page = 1 if page <= 0
+      per_page = 20 if per_page <= 0 || per_page > 100
+
+      total = @users.count
+      @users = @users.offset((page - 1) * per_page).limit(per_page)
+
+      render json: {
+        users: ActiveModelSerializers::SerializableResource.new(@users, each_serializer: UserPublicSerializer),
+        meta: { page: page, per_page: per_page, total: total }
+      }
+    else
+      render json: @users, each_serializer: UserPublicSerializer
+    end
   end
 
   def show

@@ -108,14 +108,14 @@
                 >
                   <button
                     @click="bookings.showConfirmModal(booking)"
-                    class="text-green-600 hover:text-green-700 font-medium"
+                    class="text-green-600 hover:text-green-700 font-light focus:outline-none focus:ring-2 focus:ring-green-500/20 rounded"
                     title="Подтвердить"
                   >
                     Подтвердить
                   </button>
                   <button
                     @click="bookings.showCancelModal(booking)"
-                    class="text-red-600 hover:text-red-700 font-medium"
+                    class="text-red-600 hover:text-red-700 font-light focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded"
                     title="Отменить"
                   >
                     Отменить

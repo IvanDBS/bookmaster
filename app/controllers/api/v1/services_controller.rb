@@ -31,8 +31,26 @@ class Api::V1::ServicesController < Api::V1::BaseController
       end
     end
     
-    Rails.logger.info "Final services count: #{@services.count}"
-    render json: @services, each_serializer: ServicePublicSerializer
+    # Пагинация по запросу (опционально). Если page/per_page заданы — возвращаем с метаданными,
+    # иначе — совместимость с текущим фронтом (простой массив)
+    if params[:page].present? || params[:per_page].present?
+      page = params[:page].to_i
+      per_page = params[:per_page].to_i
+      page = 1 if page <= 0
+      per_page = 20 if per_page <= 0 || per_page > 100
+
+      total = @services.count
+      @services = @services.offset((page - 1) * per_page).limit(per_page)
+
+      Rails.logger.info "Final services count (paginated): #{@services.count}"
+      render json: {
+        services: ActiveModelSerializers::SerializableResource.new(@services, each_serializer: ServicePublicSerializer),
+        meta: { page: page, per_page: per_page, total: total }
+      }
+    else
+      Rails.logger.info "Final services count: #{@services.count}"
+      render json: @services, each_serializer: ServicePublicSerializer
+    end
   end
 
   def show

@@ -14,6 +14,7 @@ app.use(router)
 
 // Инициализация пользователя если есть токен
 const authStore = useAuthStore()
+authStore.init?.()
 if (authStore.token) {
   authStore.getCurrentUser()
 }

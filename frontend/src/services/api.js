@@ -10,12 +10,11 @@ class ApiService {
   // Global 401 handler for protected requests
   handleUnauthorized = async () => {
     try {
-      // Best-effort cleanup without importing the store to avoid circular deps
-      localStorage.removeItem('token')
+      if (typeof window !== 'undefined') {
+        // Сообщаем приложению о 401, чтобы Pinia-store выполнил корректный logout
+        window.dispatchEvent(new CustomEvent('api:unauthorized'))
+      }
     } catch (_) {}
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login'
-    }
   }
 
   // Helpers

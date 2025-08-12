@@ -116,7 +116,7 @@ Rails.application.configure do
   # Enable HSTS (can be configured at proxy level as well)
   config.ssl_options = { hsts: { expires: 31536000, preload: true, subdomains: true } }
 
-  # CSP is managed via secure_headers initializer
+  # CSP is managed via secure_headers initializer (keep Rails header disabled to avoid duplication)
   config.action_dispatch.default_headers.delete('Content-Security-Policy')
 
 end

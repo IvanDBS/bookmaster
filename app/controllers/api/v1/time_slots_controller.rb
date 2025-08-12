@@ -29,7 +29,7 @@ module Api
       # Публичная выдача слотов по мастеру и дате для клиентского сценария (без авторизации)
       def public_index
         master = User.masters.find_by(id: params[:master_id])
-        return render json: { error: 'Мастер не найден' }, status: :not_found unless master
+        return render_error(code: 'not_found', message: 'Мастер не найден', status: :not_found) unless master
 
         date = params[:date] ? Date.parse(params[:date]) : Date.current
         master.ensure_slots_for_date(date)
@@ -176,7 +176,7 @@ module Api
       end
 
       def ensure_master!
-        render json: { error: 'Access denied. Masters only.' }, status: :forbidden unless current_user&.master?
+        render_error(code: 'forbidden', message: 'Access denied. Masters only.', status: :forbidden) unless current_user&.master?
       end
     end
   end

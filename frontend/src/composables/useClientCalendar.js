@@ -123,13 +123,8 @@ export function useClientCalendar() {
     console.log(`Loading slots for date: ${dateString}, master: ${masterId.value}`)
 
     try {
-      const url = new URL(`${api.baseURL}/time_slots/public`)
-      url.searchParams.set('master_id', masterId.value)
-      url.searchParams.set('date', dateString)
-      const response = await fetch(url.toString())
-      if (!response.ok) throw new Error('Failed to fetch public time slots')
-      const data = await response.json()
-      slotsCache.value.set(dateString, data.slots || [])
+      const data = await api.getPublicSlots(masterId.value, dateString)
+      slotsCache.value.set(dateString, Array.isArray(data) ? data : (data.slots || []))
     } catch (error) {
       console.error('Error loading slots for date:', error)
       slotsCache.value.set(dateString, [])

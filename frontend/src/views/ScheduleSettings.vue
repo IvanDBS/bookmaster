@@ -181,6 +181,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import api from '../services/api'
 import AppHeader from '../components/AppHeader.vue'
 
 const authStore = useAuthStore()
@@ -213,18 +214,7 @@ const loadWorkingSchedules = async () => {
     }
 
     console.log('Loading working schedules...')
-    const response = await fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/working_schedules`, {
-      headers: {
-        Authorization: `Bearer ${authStore.token}`,
-      },
-    })
-
-    if (!response.ok) {
-      console.error('Failed to fetch working schedules:', response.status, response.statusText)
-      throw new Error('Failed to fetch working schedules')
-    }
-
-    const schedulesData = await response.json()
+    const schedulesData = await api.getWorkingSchedules(authStore.token)
 
     // Add day names and ensure all days are present, and format times
     workingSchedules.value = schedulesData.map((schedule) => {
@@ -347,9 +337,6 @@ const saveSchedule = async () => {
 
     console.log('Saving schedules:', workingSchedules.value)
 
-    // Обновляем только измененные дни
-    const originalSchedules = ref([]) // Сохраняем оригинальные данные для сравнения
-
     for (const schedule of workingSchedules.value) {
       // Проверяем валидность данных перед отправкой
       const scheduleData = {
@@ -363,29 +350,7 @@ const saveSchedule = async () => {
         },
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/working_schedules/${schedule.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authStore.token}`,
-          },
-          body: JSON.stringify(scheduleData),
-        },
-      )
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        const errorMessage = errorData.errors
-          ? Array.isArray(errorData.errors)
-            ? errorData.errors.join(', ')
-            : errorData.errors
-          : 'Failed to update schedule'
-        throw new Error(`Ошибка для ${schedule.day_name}: ${errorMessage}`)
-      }
-
-      const result = await response.json()
+      await api.updateWorkingSchedule(schedule.id, scheduleData.working_schedule, authStore.token)
 
       // Небольшая задержка между запросами
       await new Promise((resolve) => setTimeout(resolve, 100))

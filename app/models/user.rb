@@ -64,7 +64,8 @@ class User < ApplicationRecord
     return unless master?
     return if working_schedules.exists?
 
-    # Создаем стандартное расписание: Пн-Пт 9:00-18:00, обед 13:00-14:00
+    # Создаем стандартное расписание:
+    # Рабочие дни: Пн(1)–Пт(5) 09:00–18:00, обед 13:00–14:00
     (1..5).each do |day|
       working_schedules.create!(
         day_of_week: day,
@@ -77,20 +78,15 @@ class User < ApplicationRecord
       )
     end
 
-    # Понедельник (0) тоже рабочий день
-    working_schedules.create!(
-      day_of_week: 0,
-      start_time: '09:00',
-      end_time: '18:00',
-      lunch_start: '13:00',
-      lunch_end: '14:00',
-      is_working: true,
-      slot_duration_minutes: 60
-    )
-
-    # Выходные дни - только воскресенье (6)
+    # Суббота (6) — выходной
     working_schedules.create!(
       day_of_week: 6,
+      is_working: false
+    )
+
+    # Воскресенье (0) — выходной
+    working_schedules.create!(
+      day_of_week: 0,
       is_working: false
     )
   end

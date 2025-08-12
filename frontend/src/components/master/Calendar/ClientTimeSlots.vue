@@ -51,6 +51,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import api from '../../../services/api'
 
 const props = defineProps({
   selectedDate: {
@@ -113,26 +114,12 @@ const loadSlotsForDate = async () => {
 
     console.log(`Loading slots for date: ${dateString}, master: ${props.masterId}`)
 
-    const response = await fetch(
-      `http://localhost:3000/api/v1/time_slots/public?master_id=${props.masterId}&date=${dateString}`,
+    const data = await api.getPublicSlots(props.masterId, dateString)
+    const slots = Array.isArray(data) ? data : (data.slots || [])
+    // Filter only available work slots (exclude blocked slots)
+    availableSlots.value = slots.filter(
+      (slot) => slot.is_available && !slot.booked && slot.slot_type === 'work',
     )
-
-    if (response.ok) {
-      const data = await response.json()
-      console.log('API response:', data)
-
-      // Filter only available work slots (exclude blocked slots)
-      availableSlots.value = data.slots.filter(
-        (slot) => slot.is_available && !slot.booked && slot.slot_type === 'work',
-      )
-
-      console.log('Total slots:', data.slots.length)
-      console.log('Work slots:', data.slots.filter((s) => s.slot_type === 'work').length)
-      console.log('Blocked slots:', data.slots.filter((s) => s.slot_type === 'blocked').length)
-      console.log('Available work slots:', availableSlots.value.length)
-
-      console.log('Available slots:', availableSlots.value.length)
-    }
   } catch (error) {
     console.error('Error loading slots:', error)
     availableSlots.value = []
