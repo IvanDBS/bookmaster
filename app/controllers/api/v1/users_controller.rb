@@ -1,5 +1,6 @@
-class Api::V1::UsersController < ApplicationController
-  before_action :authenticate_user!, except: [:index, :show]
+class Api::V1::UsersController < Api::V1::BaseController
+  # Публичные эндпойнты для каталога мастеров
+  skip_before_action :authenticate_user!, only: [:index, :show]
 
   def index
     @users = User.masters.includes(:services)

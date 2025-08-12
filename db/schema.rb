@@ -66,9 +66,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_08_124153) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["booking_id"], name: "index_time_slots_on_booking_id"
-    t.index ["date", "is_available"], name: "index_time_slots_on_date_and_is_available"
-    t.index ["user_id", "date", "start_time"], name: "index_time_slots_on_user_id_and_date_and_start_time", unique: true
-    t.index ["user_id", "date"], name: "index_time_slots_on_user_id_and_date"
+    t.index %w[date is_available], name: "index_time_slots_on_date_and_is_available"
+    t.index %w[user_id date start_time], name: "index_time_slots_on_user_id_and_date_and_start_time", unique: true
+    t.index %w[user_id date], name: "index_time_slots_on_user_id_and_date"
     t.index ["user_id"], name: "index_time_slots_on_user_id"
   end
 
@@ -99,7 +99,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_08_124153) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["date"], name: "index_working_day_exceptions_on_date"
-    t.index ["user_id", "date"], name: "index_working_day_exceptions_on_user_id_and_date", unique: true
+    t.index %w[user_id date], name: "index_working_day_exceptions_on_user_id_and_date", unique: true
     t.index ["user_id"], name: "index_working_day_exceptions_on_user_id"
   end
 
@@ -114,7 +114,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_08_124153) do
     t.integer "slot_duration_minutes", default: 60
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id", "day_of_week"], name: "index_working_schedules_on_user_id_and_day_of_week", unique: true
+    t.index %w[user_id day_of_week], name: "index_working_schedules_on_user_id_and_day_of_week", unique: true
     t.index ["user_id"], name: "index_working_schedules_on_user_id"
   end
 

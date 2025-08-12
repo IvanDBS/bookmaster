@@ -9,7 +9,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     # Read allowed origins from ENV, fallback to local dev defaults
     allowed_origins = ENV.fetch('CORS_ORIGINS', 'http://localhost:3000,http://localhost:8080,http://localhost:5173,http://localhost:5174')
-                        .split(',')
+                         .split(',')
 
     origins(*allowed_origins)
 

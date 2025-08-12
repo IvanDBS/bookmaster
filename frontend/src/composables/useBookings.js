@@ -30,7 +30,8 @@ export function useBookings() {
   })
 
   const pendingBookingsCount = computed(() => {
-    return recentBookings.value.filter((booking) => booking.status === 'pending').length
+    const safe = Array.isArray(recentBookings.value) ? recentBookings.value : []
+    return safe.filter((booking) => booking && booking.status === 'pending').length
   })
 
   const sortedSelectedDateBookings = computed(() => {

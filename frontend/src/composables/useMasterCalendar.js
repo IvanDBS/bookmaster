@@ -1,4 +1,5 @@
 import { ref, computed, onMounted, onActivated, nextTick } from 'vue'
+import { createCalendarStyleUtils } from './useCalendarUtils'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 
@@ -534,74 +535,8 @@ export function useMasterCalendar() {
   }
 
   // Calendar styling methods
-  const getDateHoverBgClass = (date) => {
-    // Подсветка при наведении тем же цветом, что и фоновый статус дня
-    if (date.isPast) return 'hover:bg-gray-100'
-    if (date.loadLevel === 'non_working') return 'hover:bg-gray-100'
-    if (date.totalSlots > 0 && date.availableSlots === 0) return 'hover:bg-red-100'
-    if (date.bookedSlots > 0) return 'hover:bg-orange-100'
-    return 'hover:bg-green-50'
-  }
-  const getDateBgClass = (date) => {
-    if (date.isPast) return 'bg-gray-50 border-gray-200'
-
-    if (date.loadLevel === 'non_working') {
-      return 'bg-gray-100 border-gray-300 cursor-not-allowed' // Серый - выходной
-    }
-
-    // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
-    if (date.totalSlots > 0 && date.availableSlots === 0) {
-      return 'bg-red-100 border-red-300' // Красный - нет свободных слотов (приоритет над оранжевым)
-    }
-
-    // Если есть записи (bookedSlots > 0)
-    if (date.bookedSlots > 0) {
-      return 'bg-orange-100 border-orange-300' // Оранжевый - есть записи
-    }
-
-    // Если есть свободные слоты (рабочий день со свободными слотами)
-    return 'bg-green-50 border-green-300' // Зеленый - рабочий день со свободными слотами
-  }
-
-  const getDateBorderClass = (date) => {
-    if (date.isPast) return 'border-gray-200'
-
-    if (date.loadLevel === 'non_working') {
-      return 'border-gray-300' // Серый - выходной
-    }
-
-    // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
-    if (date.totalSlots > 0 && date.availableSlots === 0) {
-      return 'border-red-300' // Красный - нет свободных слотов (приоритет над оранжевым)
-    }
-
-    // Если есть записи (bookedSlots > 0)
-    if (date.bookedSlots > 0) {
-      return 'border-orange-300' // Оранжевый - есть записи
-    }
-
-    // Если есть свободные слоты (рабочий день с доступными слотами)
-    return 'border-green-300' // Зеленый - рабочий день со свободными слотами
-  }
-
-  const getBookingDotClass = (date) => {
-    if (date.loadLevel === 'non_working') {
-      return 'bg-gray-400' // Серые точки для выходного
-    }
-
-    // Если есть слоты, но нет свободных (все слоты забронированы или заблокированы)
-    if (date.totalSlots > 0 && date.availableSlots === 0) {
-      return 'bg-red-400' // Красные точки для дня без свободных слотов (приоритет над оранжевым)
-    }
-
-    // Если есть записи (bookedSlots > 0)
-    if (date.bookedSlots > 0) {
-      return 'bg-orange-400' // Оранжевые точки для дней с записями
-    }
-
-    // Если есть свободные слоты (рабочий день с доступными слотами)
-    return 'bg-green-400' // Зеленые точки для свободных рабочих дней
-  }
+  const { getDateBgClass, getDateHoverBgClass, getDateBorderClass, getBookingDotClass } =
+    createCalendarStyleUtils()
 
   // Slot helper functions
   const getSlotTypeText = (slotType) => {
