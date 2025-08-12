@@ -11,6 +11,8 @@ export function useBookings() {
   const showConfirmationModal = ref(false)
   const modalType = ref('confirm')
   const selectedBooking = ref(null)
+  // Signal to notify other parts (e.g., calendar) to refresh after booking changes
+  const refreshTick = ref(0)
 
   // Computed properties
   const filteredBookings = computed(() => {
@@ -59,7 +61,7 @@ export function useBookings() {
     }
   }
 
-  const loadBookingsForDate = async (date, selectedDateBookings) => {
+  const loadBookingsForDate = async (date) => {
     try {
       const startOfDay = new Date(date)
       startOfDay.setHours(0, 0, 0, 0)
@@ -112,6 +114,8 @@ export function useBookings() {
 
       await loadBookings()
       closeConfirmationModal()
+      // Notify calendar and any listeners to refresh their data
+      refreshTick.value += 1
     } catch (error) {
       console.error(`Error ${modalType.value}ing booking:`, error)
       alert(
@@ -153,6 +157,17 @@ export function useBookings() {
     return texts[status] || status
   }
 
+  // Price helper to normalize price retrieval for booking or embedded service
+  const getSlotPrice = (booking) => {
+    if (booking?.price) return Math.round(booking.price)
+    if (booking?.service?.price) return Math.round(booking.service.price)
+    // try to find full version in the current list by id
+    const source = Array.isArray(recentBookings?.value) ? recentBookings.value : []
+    const fullVersion = source.find((b) => b && b.id === booking?.id)
+    if (fullVersion?.service?.price) return Math.round(fullVersion.service.price)
+    return 0
+  }
+
   return {
     // State
     recentBookings,
@@ -161,6 +176,7 @@ export function useBookings() {
     modalType,
     selectedBooking,
     selectedDateBookings,
+    refreshTick,
 
     // Computed
     filteredBookings,
@@ -179,5 +195,6 @@ export function useBookings() {
     formatTime,
     getStatusClass,
     getStatusText,
+    getSlotPrice,
   }
 }

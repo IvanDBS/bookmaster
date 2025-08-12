@@ -82,7 +82,7 @@
                 </p>
               </div>
               <div class="text-right">
-                <p class="text-lg font-bold text-gray-900">{{ getBookingPrice(booking) }} MDL</p>
+                <p class="text-lg font-bold text-gray-900">{{ getSlotPrice(booking) }} MDL</p>
               </div>
             </div>
           </div>
@@ -131,6 +131,15 @@ const props = defineProps({
     required: false,
     default: null,
   },
+  getSlotPrice: {
+    type: Function,
+    required: false,
+    default: (booking) => {
+      if (booking?.price) return Math.round(booking.price)
+      if (booking?.service?.price) return Math.round(booking.service.price)
+      return 0
+    },
+  },
 })
 
 const emit = defineEmits(['close', 'confirm'])
@@ -166,17 +175,5 @@ const formatTime = (timeString) => {
   })
 }
 
-const getBookingPrice = (booking) => {
-  // Сначала проверяем прямую цену в записи
-  if (booking?.price) {
-    return Math.round(booking.price)
-  }
-
-  // Если есть цена в услуге
-  if (booking?.service?.price) {
-    return Math.round(booking.service.price)
-  }
-
-  return 0
-}
+// Цена берется из переданной функции родителя (или fallback по умолчанию)
 </script>

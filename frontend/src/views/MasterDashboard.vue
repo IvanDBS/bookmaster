@@ -14,6 +14,7 @@
       :is-visible="bookings.showConfirmationModal.value"
       :type="bookings.modalType.value"
       :booking="bookings.selectedBooking.value"
+      :get-slot-price="bookings.getSlotPrice"
       @close="bookings.closeConfirmationModal"
       @confirm="bookings.handleModalConfirm"
     />
@@ -30,7 +31,8 @@
           :show-cancel-modal="bookings.showCancelModal"
           :show-delete-modal="bookings.showCancelModal"
           :get-status-text="bookings.getStatusText"
-          :get-slot-price="getSlotPrice"
+          :get-slot-price="bookings.getSlotPrice"
+          :refresh-tick="bookings.refreshTick.value"
           @goToScheduleSettings="goToScheduleSettings"
         />
       </div>
@@ -228,16 +230,5 @@ const goToScheduleSettings = () => {
   router.push('/master/schedule')
 }
 
-const getSlotPrice = (booking) => {
-  if (booking?.price) return Math.round(booking.price)
-  if (!booking?.service?.price) {
-    const source = Array.isArray(bookings.recentBookings?.value)
-      ? bookings.recentBookings.value
-      : []
-    const fullVersion = source.find((b) => b && b.id === booking.id)
-    if (fullVersion?.service?.price) return Math.round(fullVersion.service.price)
-  }
-  if (booking?.service?.price) return Math.round(booking.service.price)
-  return 0
-}
+// price helper moved into useBookings
 </script>

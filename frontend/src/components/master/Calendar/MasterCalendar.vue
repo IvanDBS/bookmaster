@@ -176,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useMasterCalendar } from '../../../composables/useMasterCalendar.js'
 import CalendarLegend from './CalendarLegend.vue'
 import MasterTimeSlots from './MasterTimeSlots.vue'
@@ -195,6 +195,7 @@ const {
   toggleDayStatus,
   onToggleSlotBreak,
   addNewSlot,
+    refreshCalendar,
   getDateBgClass,
   getDateBorderClass,
     getDateHoverBgClass,
@@ -207,9 +208,18 @@ const props = defineProps({
   showDeleteModal: Function,
   getStatusText: Function,
   getSlotPrice: Function,
+  refreshTick: Number,
 })
 
 defineEmits(['goToScheduleSettings'])
+
+// Refresh calendar when bookings changed externally
+watch(
+  () => props.refreshTick,
+  async () => {
+    await refreshCalendar()
+  },
+)
 
 // Local UI state for add slot spinner
 const isAddingSlot = ref(false)

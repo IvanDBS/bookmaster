@@ -243,7 +243,7 @@ const props = defineProps({
   getSlotPrice: Function,
 })
 
-const emit = defineEmits(['toggleDayStatus', 'toggleSlotBreak', 'addNewSlot'])
+defineEmits(['toggleDayStatus', 'toggleSlotBreak', 'addNewSlot'])
 
 const formatSelectedDate = () => {
   if (!props.selectedDate) return ''
@@ -297,14 +297,7 @@ const getSlotStatusText = (slot) => {
 
 const isBreak = (slot) => slot.slot_type === 'blocked' || slot.slot_type === 'lunch'
 
-const getStatusText = (status) => {
-  const texts = {
-    pending: 'Ожидает подтверждения',
-    confirmed: 'Подтверждено',
-    cancelled: 'Отменено',
-  }
-  return texts[status] || status
-}
+// Removed duplicated status text helper; use parent-provided getStatusText
 </script>
 
 <style scoped></style>
