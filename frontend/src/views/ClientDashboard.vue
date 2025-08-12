@@ -21,107 +21,45 @@
       </div>
 
       <!-- My Masters Section -->
-      <div
-        v-if="currentStep < 4"
-        id="masters"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8"
-      >
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">
-            {{ selectedMasterForBooking ? 'Выберите услугу' : 'Мои мастера' }}
-          </h3>
-        </div>
-        <div class="p-6">
-          <div v-if="myMasters.length === 0" class="text-center py-8">
-            <p class="text-gray-500">У вас пока нет избранных мастеров</p>
-          </div>
-          <div v-else>
-            <!-- Показываем только выбранного мастера или всех мастеров -->
-            <div v-if="selectedMasterForBooking" class="grid grid-cols-1 gap-6">
-              <!-- Показываем только выбранного мастера -->
-              <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-center justify-between mb-6">
-                  <h4 class="font-bold text-gray-900 text-xl">Выберите услугу</h4>
-                  <button
-                    @click="cancelMasterSelection"
-                    class="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      ></path>
-                    </svg>
-                  </button>
-                </div>
-
-                <div class="space-y-3">
-                  <button
-                    v-for="service in selectedMasterForBooking.services"
-                    :key="service.id"
-                    @click="selectServiceAndGoToTime(selectedMasterForBooking, service)"
-                    class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-lime-400 hover:bg-gradient-to-r hover:from-lime-50 hover:to-lime-100 transition-all duration-300 shadow-sm hover:shadow-md"
-                  >
-                    <div class="flex justify-between items-center">
-                      <div>
-                        <div class="font-bold text-gray-900 text-lg">{{ service.name }}</div>
-                        <div class="text-sm text-gray-500">{{ service.duration }} мин</div>
-                      </div>
-                      <div class="text-right">
-                        <div class="font-bold text-lime-600 text-lg">{{ service.price }} MDL</div>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </div>
+      <div v-if="currentStep < 4" id="masters">
+        <template v-if="selectedMasterForBooking">
+          <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+              <h4 class="font-bold text-gray-900 text-xl">Выберите услугу</h4>
+              <button @click="cancelMasterSelection" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
             </div>
-
-            <!-- Показываем всех мастеров если никто не выбран -->
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div
-                v-for="master in myMasters"
-                :key="master.id"
-                class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 p-6"
+            <div class="space-y-3">
+              <button
+                v-for="service in selectedMasterForBooking.services"
+                :key="service.id"
+                @click="selectServiceAndGoToTime(selectedMasterForBooking, service)"
+                class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-lime-400 hover:bg-gradient-to-r hover:from-lime-50 hover:to-lime-100 transition-all duration-300 shadow-sm hover:shadow-md"
               >
-                <!-- Аватар в сдержанном стиле -->
-                <div class="flex items-center space-x-4 mb-5">
-                  <div
-                    class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center border border-gray-200 group-hover:border-gray-300 transition-colors duration-300"
-                  >
-                    <span class="text-gray-600 font-semibold text-lg"
-                      >{{ master.first_name[0] }}{{ master.last_name[0] }}</span
-                    >
+                <div class="flex justify-between items-center">
+                  <div>
+                    <div class="font-bold text-gray-900 text-lg">{{ service.name }}</div>
+                    <div class="text-sm text-gray-500">{{ service.duration }} мин</div>
                   </div>
-
-                  <div class="flex-1">
-                    <h4 class="font-semibold text-gray-900 text-lg mb-1">
-                      {{ master.first_name }} {{ master.last_name }}
-                    </h4>
-                    <p class="text-gray-500 text-sm">Мастер</p>
+                  <div class="text-right">
+                    <div class="font-bold text-lime-600 text-lg">{{ service.price }} MDL</div>
                   </div>
                 </div>
-
-                <!-- Кнопка в элегантном зеленом стиле -->
-                <button
-                  @click="selectMasterForBooking(master)"
-                  class="w-full bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 font-medium px-4 py-3 rounded-lg transition-all duration-300 text-sm border-2 border-green-200 hover:border-green-300 hover:shadow-sm"
-                >
-                  Записаться
-                </button>
-              </div>
+              </button>
             </div>
           </div>
-        </div>
+        </template>
+        <template v-else>
+          <MyMasters :masters="myMasters" @select-master="selectMasterForBooking" />
+        </template>
       </div>
 
       <!-- Booking Wizard (минималистичный) -->
-      <div id="search" class="bg-white rounded-xl shadow-lg border border-gray-100 mb-8">
-        <div class="px-8 py-6 border-b border-gray-100">
-          <h3 class="text-2xl font-bold text-gray-900">Запись на услугу</h3>
-        </div>
-        <div class="p-6 space-y-8">
+      <BookingWizard>
+        <div class="space-y-8">
           <!-- Stepper -->
           <div class="flex items-center justify-between">
             <div
@@ -342,110 +280,13 @@
             </div>
           </div>
         </div>
-      </div>
+      </BookingWizard>
 
       <!-- My Current Bookings -->
-      <div id="bookings" class="bg-white rounded-xl shadow-lg border border-gray-100 mb-8">
-        <div class="px-8 py-6 border-b border-gray-100">
-          <h3 class="text-2xl font-bold text-gray-900">Мои записи</h3>
-        </div>
-        <div class="p-6">
-          <div v-if="currentBookings.length === 0" class="text-center py-8">
-            <p class="text-gray-500">У вас пока нет активных записей</p>
-          </div>
-          <div v-else class="space-y-4">
-            <div
-              v-for="booking in currentBookings"
-              :key="booking.id"
-              class="flex justify-between items-center p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300"
-            >
-              <div class="flex-1">
-                <div>
-                  <h4 class="font-bold text-gray-900 text-lg">{{ booking.service?.name }}</h4>
-                  <p class="text-sm text-gray-600">
-                    {{ booking.user?.first_name }} {{ booking.user?.last_name }}
-                  </p>
-                  <p class="text-sm text-gray-600">
-                    {{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}
-                  </p>
-                </div>
-              </div>
-              <div class="text-right">
-                <span
-                  :class="getStatusClass(booking.status)"
-                  class="px-4 py-2 rounded-full text-xs font-bold shadow-sm"
-                >
-                  {{ getStatusText(booking.status) }}
-                </span>
-                <p class="text-lg font-bold text-gray-900 mt-2">{{ booking.service?.price }} MDL</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <BookingsList id="bookings" :bookings="currentBookings" />
 
       <!-- Booking History -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <div class="flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-900">История записей</h3>
-            <button
-              @click="clearHistory"
-              class="text-red-600 hover:text-red-700 text-sm font-medium"
-            >
-              Очистить историю
-            </button>
-          </div>
-        </div>
-        <div class="p-6">
-          <div v-if="bookingHistory.length === 0" class="text-center py-8">
-            <p class="text-gray-500">История записей пуста</p>
-          </div>
-          <div v-else class="space-y-4">
-            <div
-              v-for="booking in bookingHistory"
-              :key="booking.id"
-              class="flex justify-between items-center p-4 bg-gray-50 rounded-lg"
-            >
-              <div class="flex-1">
-                <div class="flex items-center space-x-4">
-                  <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span class="text-gray-600 font-semibold text-sm"
-                      >{{ booking.user?.first_name[0] }}{{ booking.user?.last_name[0] }}</span
-                    >
-                  </div>
-                  <div>
-                    <h4 class="font-semibold text-gray-900">{{ booking.service?.name }}</h4>
-                    <p class="text-sm text-gray-600">
-                      {{ booking.user?.first_name }} {{ booking.user?.last_name }}
-                    </p>
-                    <p class="text-sm text-gray-600">
-                      {{ formatDate(booking.start_time) }} в {{ formatTime(booking.start_time) }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div class="text-right">
-                <span
-                  :class="getStatusClass(booking.status)"
-                  class="px-3 py-1 rounded-full text-xs font-semibold"
-                >
-                  {{ getStatusText(booking.status) }}
-                </span>
-                <p class="text-sm font-semibold text-gray-900 mt-1">
-                  {{ booking.service?.price }} MDL
-                </p>
-                <button
-                  @click="deleteBooking(booking.id)"
-                  class="mt-2 text-red-600 hover:text-red-700 text-sm font-medium"
-                >
-                  Удалить
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <BookingHistory :bookings="bookingHistory" @delete-booking="deleteBooking" @clear-history="clearHistory" />
     </div>
 
     <!-- Footer -->
@@ -542,6 +383,10 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
+import MyMasters from '../components/client/MyMasters.vue'
+import BookingWizard from '../components/client/BookingWizard.vue'
+import BookingsList from '../components/client/BookingsList.vue'
+import BookingHistory from '../components/client/BookingHistory.vue'
 import ClientCalendar from '../components/master/Calendar/ClientCalendar.vue'
 import ClientTimeSlots from '../components/master/Calendar/ClientTimeSlots.vue'
 import api from '../services/api'
