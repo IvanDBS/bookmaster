@@ -589,12 +589,7 @@ const loadServiceTypes = async () => {
 const loadMyMasters = async () => {
   try {
     // Получаем мастеров, к которым клиент записывался
-    const response = await fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/bookings`, {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    })
-
-    if (response.ok) {
-      const bookings = await response.json()
+    const bookings = await api.getBookings(authStore.token)
 
       // Создаем Map для уникальных мастеров
       const mastersMap = new Map()
@@ -642,7 +637,7 @@ const loadMyMasters = async () => {
 
       myMasters.value = Array.from(mastersMap.values())
       console.log('Loaded my masters:', myMasters.value.length)
-    }
+    
   } catch (error) {
     console.error('Error loading my masters:', error)
     myMasters.value = []
@@ -656,11 +651,7 @@ const loadCurrentBookings = async () => {
       return
     }
     console.log('Loading current bookings...')
-    const res = await fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/bookings`, {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    })
-    if (!res.ok) throw new Error('Failed to load bookings')
-    const data = await res.json()
+    const data = await api.getBookings(authStore.token)
     console.log('Loaded bookings:', data)
 
     // Разделяем записи на активные и историю
@@ -796,6 +787,7 @@ const submitBooking = async () => {
 
     // Обновляем список записей после создания новой записи
     await loadCurrentBookings()
+    await loadMyMasters()
 
     currentStep.value = 1
     selectedServiceType.value = null
@@ -874,16 +866,10 @@ const selectServiceAndGoToTime = (master, service) => {
 const deleteBooking = async (bookingId) => {
   try {
     if (!confirm('Вы уверены, что хотите удалить эту запись из истории?')) return
-
-    const res = await fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/bookings/${bookingId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    })
-
-    if (!res.ok) throw new Error('Failed to delete booking')
-
+    if (!authStore.token) throw new Error('Не авторизован')
+    await api.deleteBooking(bookingId, authStore.token)
     alert('Запись удалена из истории')
-    await loadCurrentBookings() // Перезагружаем записи
+    await loadCurrentBookings()
   } catch (e) {
     console.error('Failed to delete booking:', e)
     alert('Не удалось удалить запись: ' + e.message)
@@ -893,19 +879,11 @@ const deleteBooking = async (bookingId) => {
 const clearHistory = async () => {
   try {
     if (!confirm('Вы уверены, что хотите очистить всю историю записей?')) return
-
-    // Удаляем все записи из истории
-    const deletePromises = bookingHistory.value.map((booking) =>
-      fetch(`${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/bookings/${booking.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${authStore.token}` },
-      }),
-    )
-
-    await Promise.all(deletePromises)
-
+    if (!authStore.token) throw new Error('Не авторизован')
+    await Promise.all(bookingHistory.value.map((b) => api.deleteBooking(b.id, authStore.token)))
     alert('История очищена')
-    await loadCurrentBookings() // Перезагружаем записи
+    await loadCurrentBookings()
+    await loadMyMasters()
   } catch (e) {
     console.error('Failed to clear history:', e)
     alert('Не удалось очистить историю: ' + e.message)
