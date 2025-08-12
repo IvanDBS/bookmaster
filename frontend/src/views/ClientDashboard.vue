@@ -61,63 +61,7 @@
       <BookingWizard>
         <div class="space-y-8">
           <!-- Stepper -->
-          <div class="flex items-center justify-between">
-            <div
-              class="flex items-center space-x-2"
-              :class="currentStep >= 1 ? 'text-lime-600' : 'text-gray-400'"
-            >
-              <div
-                class="w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold"
-                :class="currentStep >= 1 ? 'border-lime-500 bg-lime-50' : 'border-gray-300'"
-              >
-                <span v-if="currentStep > 1">✓</span>
-                <span v-else>1</span>
-              </div>
-              <span class="text-sm font-medium">Выбор услуги</span>
-            </div>
-
-            <div
-              class="flex items-center space-x-2"
-              :class="currentStep >= 2 ? 'text-lime-600' : 'text-gray-400'"
-            >
-              <div
-                class="w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold"
-                :class="currentStep >= 2 ? 'border-lime-500 bg-lime-50' : 'border-gray-300'"
-              >
-                <span v-if="currentStep > 2">✓</span>
-                <span v-else>2</span>
-              </div>
-              <span class="text-sm font-medium">Мастер</span>
-            </div>
-
-            <div
-              class="flex items-center space-x-2"
-              :class="currentStep >= 3 ? 'text-lime-600' : 'text-gray-400'"
-            >
-              <div
-                class="w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold"
-                :class="currentStep >= 3 ? 'border-lime-500 bg-lime-50' : 'border-gray-300'"
-              >
-                <span v-if="currentStep > 3">✓</span>
-                <span v-else>3</span>
-              </div>
-              <span class="text-sm font-medium">Время</span>
-            </div>
-
-            <div
-              class="flex items-center space-x-2"
-              :class="currentStep >= 4 ? 'text-lime-600' : 'text-gray-400'"
-            >
-              <div
-                class="w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold"
-                :class="currentStep >= 4 ? 'border-lime-500 bg-lime-50' : 'border-gray-300'"
-              >
-                <span v-if="currentStep > 4">✓</span>
-                <span v-else>4</span>
-              </div>
-              <span class="text-sm font-medium">Подтверждение</span>
-            </div>
-          </div>
+          <WizardStepper :current="currentStep" />
 
           <!-- Step 1: choose service type -->
           <div v-if="currentStep === 1" class="space-y-5">
@@ -197,23 +141,11 @@
                 Выбрать другого мастера
               </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                v-for="srv in selectedMasterServices"
-                :key="srv.id"
-                @click="selectConcreteService(srv)"
-                :class="[
-                  'rounded-xl border-2 p-5 text-left transition-all duration-300 transform hover:scale-105',
-                  selectedService?.id === srv.id
-                    ? 'border-lime-500 bg-gradient-to-br from-lime-50 to-lime-100 shadow-lg'
-                    : 'border-gray-200 hover:border-lime-300 hover:shadow-md',
-                ]"
-              >
-                <div class="font-bold text-gray-900 text-lg">{{ srv.name }}</div>
-                <div class="text-sm text-gray-500">{{ srv.duration }} мин</div>
-                <div class="mt-2 font-bold text-lime-600 text-lg">{{ srv.price }} MDL</div>
-              </button>
-            </div>
+            <MasterServicesPicker
+              :services="selectedMasterServices"
+              :selected-id="selectedService?.id || null"
+              @select="selectConcreteService"
+            />
             <div class="flex justify-between">
               <button class="text-sm text-gray-600" @click="currentStep = 2">
                 ← Назад к выбору мастера
@@ -385,6 +317,8 @@ import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
 import MyMasters from '../components/client/MyMasters.vue'
 import BookingWizard from '../components/client/BookingWizard.vue'
+import WizardStepper from '../components/client/WizardStepper.vue'
+import MasterServicesPicker from '../components/client/MasterServicesPicker.vue'
 import BookingsList from '../components/client/BookingsList.vue'
 import BookingHistory from '../components/client/BookingHistory.vue'
 import ClientCalendar from '../components/master/Calendar/ClientCalendar.vue'
