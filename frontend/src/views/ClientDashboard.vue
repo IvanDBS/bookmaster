@@ -32,24 +32,11 @@
                 </svg>
               </button>
             </div>
-            <div class="space-y-3">
-              <button
-                v-for="service in selectedMasterForBooking.services"
-                :key="service.id"
-                @click="selectServiceAndGoToTime(selectedMasterForBooking, service)"
-                class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-lime-400 hover:bg-gradient-to-r hover:from-lime-50 hover:to-lime-100 transition-all duration-300 shadow-sm hover:shadow-md"
-              >
-                <div class="flex justify-between items-center">
-                  <div>
-                    <div class="font-bold text-gray-900 text-lg">{{ service.name }}</div>
-                    <div class="text-sm text-gray-500">{{ service.duration }} мин</div>
-                  </div>
-                  <div class="text-right">
-                    <div class="font-bold text-lime-600 text-lg">{{ service.price }} MDL</div>
-                  </div>
-                </div>
-              </button>
-            </div>
+            <MasterServicesPicker
+              :services="selectedMasterForBooking.services || []"
+              :selected-id="selectedService?.id || null"
+              @select="(srv) => selectServiceAndGoToTime(selectedMasterForBooking, srv)"
+            />
           </div>
         </template>
         <template v-else>
@@ -324,8 +311,10 @@ import BookingHistory from '../components/client/BookingHistory.vue'
 import ClientCalendar from '../components/master/Calendar/ClientCalendar.vue'
 import ClientTimeSlots from '../components/master/Calendar/ClientTimeSlots.vue'
 import api from '../services/api'
+import { useFormatters } from '../composables/useFormatters'
 
 const authStore = useAuthStore()
+const { formatBookingDate, formatBookingTime } = useFormatters()
 
 const user = computed(() => authStore.user)
 const myMasters = ref([])
@@ -384,37 +373,20 @@ const loadMyMasters = async () => {
         }
       })
 
-      // Загружаем услуги для каждого мастера
-      for (const master of mastersMap.values()) {
-        try {
-          console.log(`Loading services for master ${master.first_name} (ID: ${master.id})`)
-          const servicesResponse = await fetch(
-            `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1/services?master_id=${master.id}`,
-            {
-              headers: { Authorization: `Bearer ${authStore.token}` },
-            },
-          )
-          if (servicesResponse.ok) {
-            const services = await servicesResponse.json()
-            master.services = services
-            console.log(
-              `Loaded ${services.length} services for master ${master.first_name}:`,
-              services.map((s) => s.name),
-            )
-          } else {
-            console.error(
-              `Failed to load services for master ${master.first_name}:`,
-              servicesResponse.status,
-            )
+      // Загружаем услуги для каждого мастера параллельно через api layer
+      const mastersArray = Array.from(mastersMap.values())
+      await Promise.all(
+        mastersArray.map(async (master) => {
+          try {
+            master.services = await api.getServices({ master_id: master.id }, authStore.token)
+          } catch (error) {
+            console.error(`Error loading services for master ${master.id}:`, error)
             master.services = []
           }
-        } catch (error) {
-          console.error(`Error loading services for master ${master.id}:`, error)
-          master.services = []
-        }
-      }
+        }),
+      )
 
-      myMasters.value = Array.from(mastersMap.values())
+      myMasters.value = mastersArray
       console.log('Loaded my masters:', myMasters.value.length)
     
   } catch (error) {
@@ -688,40 +660,5 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString('ru-R
 const formatTime = (dateString) =>
   new Date(dateString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
-const formatBookingDate = (dateString) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
-const formatBookingTime = (timeString) => {
-  if (!timeString) return ''
-  // Extract time from ISO string or time format
-  const time = timeString.includes('T')
-    ? timeString.split('T')[1].substring(0, 5)
-    : timeString.substring(0, 5)
-  return time
-}
-
-const getStatusClass = (status) => {
-  const classes = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
-  }
-  return classes[status] || 'bg-gray-100 text-gray-800'
-}
-
-const getStatusText = (status) => {
-  const texts = {
-    pending: 'Ожидает подтверждения',
-    confirmed: 'Подтверждено',
-    cancelled: 'Отменено',
-  }
-  return texts[status] || status
-}
+// Removed local booking/date/status helpers in favor of useFormatters()
 </script>
