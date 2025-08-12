@@ -41,7 +41,7 @@ class User < ApplicationRecord
   end
 
   # Методы для работы со слотами (только для мастеров)
-  def generate_slots_for_date(date)
+  def generate_slots_for_date(date, force_working: false)
     return [] unless master?
 
     Rails.logger.info "User##{id}: Attempting to generate slots for date #{date} (wday: #{date.wday})"
@@ -53,7 +53,7 @@ class User < ApplicationRecord
       return []
     end
 
-    schedule.generate_slots_for_date(date)
+    schedule.generate_slots_for_date(date, force_working: force_working)
   end
 
   def available_slots_for_date(date)
@@ -74,7 +74,7 @@ class User < ApplicationRecord
         lunch_start: '13:00',
         lunch_end: '14:00',
         is_working: true,
-        slot_duration_minutes: 60
+        slot_duration_minutes: 30
       )
     end
 
@@ -116,7 +116,7 @@ class User < ApplicationRecord
 
     # Генерируем слоты только если это рабочий день (по расписанию или исключению)
     if is_working_day
-      slot_data = generate_slots_for_date(date)
+      slot_data = generate_slots_for_date(date, force_working: true)
       Rails.logger.info "User##{id}: Generated #{slot_data.length} slots for date #{date}"
 
       slot_data.each do |slot_attrs|

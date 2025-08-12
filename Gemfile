@@ -15,6 +15,7 @@ gem "rack-cors"
 # Authentication
 gem "devise"
 gem "devise-jwt"
+gem "jwt", "~> 2.8"
 
 # Authorization (removed). If needed later, re-add with policies
 

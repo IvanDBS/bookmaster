@@ -76,6 +76,9 @@ Rails.application.configure do
   # Devise configuration
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
+  # Google OAuth (dev default) – безопасно только для локальной разработки
+  ENV['GOOGLE_OAUTH_CLIENT_ID'] ||= '35182841457-gmk8u309dkpq217uadqlf7n5e3qevj7t.apps.googleusercontent.com'
+
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 end

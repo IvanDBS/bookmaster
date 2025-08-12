@@ -35,12 +35,14 @@ export function useClientBookingWizard() {
     selectedServiceType.value = type
     const services = await api.getServicesByType(type)
     const byMasterId = new Map()
-    services.forEach((s) => {
-      if (!byMasterId.has(s.user.id)) {
-        byMasterId.set(s.user.id, { id: s.user.id, user: s.user, services: [] })
-      }
-      byMasterId.get(s.user.id).services.push(s)
-    })
+    services
+      .filter((s) => s && s.user && s.user.id)
+      .forEach((s) => {
+        if (!byMasterId.has(s.user.id)) {
+          byMasterId.set(s.user.id, { id: s.user.id, user: s.user, services: [] })
+        }
+        byMasterId.get(s.user.id).services.push(s)
+      })
     mastersForType.value = Array.from(byMasterId.values())
     selectedMaster.value = null
     selectedMasterServices.value = []
@@ -84,7 +86,7 @@ export function useClientBookingWizard() {
   const fetchSlots = async () => {
     if (!selectedMaster.value) return
     const res = await api.getPublicSlots(selectedMaster.value.id, selectedDate.value)
-    daySlots.value = res.slots || []
+    daySlots.value = Array.isArray(res) ? res : (res.slots || [])
   }
 
   watch(selectedDate, fetchSlots)
@@ -115,6 +117,10 @@ export function useClientBookingWizard() {
       }
       isSubmitting.value = true
       await api.createBooking(payload, authStore.token)
+      // Сообщаем приложению о создании записи, чтобы обновить списки
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('booking:created'))
+      }
       alert('Запись создана!')
       currentStep.value = 1
       selectedServiceType.value = null

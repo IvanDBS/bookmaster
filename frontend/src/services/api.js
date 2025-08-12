@@ -9,12 +9,10 @@ class ApiService {
 
   // Global 401 handler for protected requests
   handleUnauthorized = async () => {
-    try {
-      if (typeof window !== 'undefined') {
-        // Сообщаем приложению о 401, чтобы Pinia-store выполнил корректный logout
-        window.dispatchEvent(new CustomEvent('api:unauthorized'))
-      }
-    } catch (_) {}
+    if (typeof window !== 'undefined') {
+      // Сообщаем приложению о 401, чтобы Pinia-store выполнил корректный logout
+      window.dispatchEvent(new CustomEvent('api:unauthorized'))
+    }
   }
 
   // Helpers
@@ -40,11 +38,16 @@ class ApiService {
       body: JSON.stringify({ user: { email, password } }),
     })
 
-    const data = await response.json()
+    const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      const errorMessage = data.error || 'Login failed'
-      throw new Error(errorMessage)
+      const message = typeof data.error === 'string'
+        ? data.error
+        : (data && data.error && (data.error.message || data.error.code))
+          || data.message
+          || (Array.isArray(data?.errors) ? data.errors.join(', ') : null)
+          || 'Ошибка входа'
+      throw new Error(message)
     }
 
     return data
@@ -313,7 +316,8 @@ class ApiService {
   }
 
   async logout(token) {
-    const response = await fetch(`${this.baseURL}/auth/logout`, {
+    const url = this.buildUrl('/auth/logout')
+    const response = await fetch(url, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -330,6 +334,25 @@ class ApiService {
     }
 
     return await response.json()
+  }
+
+  async loginWithGoogle(idToken) {
+    const response = await fetch(`${this.baseURL}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: idToken }),
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = (data && data.error && (data.error.message || data.error.code))
+        || data.message
+        || (Array.isArray(data?.errors) ? data.errors.join(', ') : null)
+        || 'Ошибка входа через Google'
+      const err = new Error(message)
+      err.status = response.status
+      throw err
+    }
+    return data
   }
 
   // Users endpoints

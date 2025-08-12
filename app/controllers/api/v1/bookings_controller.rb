@@ -46,7 +46,6 @@ class Api::V1::BookingsController < Api::V1::BaseController
     end
 
     # Поддержка услуг длиннее одного слота: бронируем последовательность слотов
-    # Принудительно используем 60 минутные цепочки
     # Кол-во слотов для услуги исходя из длительности услуги и длительности слота
     required_slots = (service.duration.to_f / slot.duration_minutes).ceil
     slots_chain = [slot]

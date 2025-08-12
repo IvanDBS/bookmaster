@@ -82,6 +82,16 @@
             </button>
           </div>
 
+          <div class="relative">
+            <div class="my-4 flex items-center">
+              <div class="flex-grow border-t border-gray-200"></div>
+              <span class="mx-4 text-gray-400 text-xs">или</span>
+              <div class="flex-grow border-t border-gray-200"></div>
+            </div>
+            <!-- Google renders its own button here -->
+            <div id="gsi-button" class="flex justify-center"></div>
+          </div>
+
           <div v-if="error" class="bg-red-50 border border-red-200 rounded-md p-4">
             <div class="flex">
               <div class="flex-shrink-0">
@@ -111,11 +121,13 @@
 import { ref, reactive } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import api from '../services/api'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const loading = ref(false)
 const error = ref('')
+const loadingGoogle = ref(false)
 
 const form = reactive({
   email: '',
@@ -142,4 +154,64 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+
+const loadGoogleScript = () =>
+  new Promise((resolve, reject) => {
+    if (window.google && window.google.accounts && window.google.accounts.id) return resolve()
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Не удалось загрузить Google SDK'))
+    document.head.appendChild(script)
+  })
+
+const initGoogleButton = async () => {
+  try {
+    loadingGoogle.value = true
+    await loadGoogleScript()
+    const CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_CLIENT_ID)
+      ? import.meta.env.VITE_GOOGLE_CLIENT_ID
+      : '35182841457-gmk8u309dkpq217uadqlf7n5e3qevj7t.apps.googleusercontent.com'
+    window.google.accounts.id.initialize({
+      client_id: CLIENT_ID,
+      auto_select: false,
+      itp_support: true,
+      callback: async (resp) => {
+        try {
+          error.value = ''
+          const result = await api.loginWithGoogle(resp.credential)
+          authStore.user = result.user
+          authStore.token = result.token
+          localStorage.setItem('token', result.token)
+          if (result.user.role === 'master') {
+            router.push('/master/dashboard')
+          } else {
+            router.push('/client/dashboard')
+          }
+        } catch (e) {
+          error.value = e.message || 'Ошибка входа через Google'
+        }
+      },
+    })
+    const container = document.getElementById('gsi-button')
+    if (container) {
+      window.google.accounts.id.renderButton(container, {
+        theme: 'outline',
+        size: 'large',
+        shape: 'rectangular',
+        text: 'continue_with',
+        width: 320,
+      })
+    }
+  } catch (e) {
+    if (!error.value) error.value = e.message || 'Не удалось инициализировать Google'
+  } finally {
+    loadingGoogle.value = false
+  }
+}
+
+// Инициализируем кнопку при загрузке страницы
+initGoogleButton()
 </script>

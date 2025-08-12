@@ -259,7 +259,7 @@ const loadWorkingSchedules = async () => {
 
       // Ensure slot_duration_minutes is a number if working, otherwise null
       formattedSchedule.slot_duration_minutes = formattedSchedule.is_working
-        ? formattedSchedule.slot_duration_minutes || 60
+        ? formattedSchedule.slot_duration_minutes || 30
         : null
 
       return formattedSchedule
@@ -308,7 +308,7 @@ const loadWorkingSchedules = async () => {
           schedule.lunch_end = '14:00'
         }
         if (!schedule.slot_duration_minutes) {
-          schedule.slot_duration_minutes = 60
+          schedule.slot_duration_minutes = 30
         }
       } else {
         // Очищаем время при отключении рабочего дня
@@ -380,7 +380,7 @@ const setDefaultSchedule = () => {
       schedule.end_time = '19:00'
       schedule.lunch_start = '13:00'
       schedule.lunch_end = '14:00'
-      schedule.slot_duration_minutes = 60
+      schedule.slot_duration_minutes = 30
     } else {
       // Weekends
       schedule.is_working = false
@@ -397,7 +397,7 @@ const setWeekendSchedule = () => {
       schedule.end_time = '19:00'
       schedule.lunch_start = '13:00'
       schedule.lunch_end = '14:00'
-      schedule.slot_duration_minutes = 60
+      schedule.slot_duration_minutes = 30
     } else {
       // Weekends
       schedule.is_working = false
@@ -412,7 +412,7 @@ const setFullWeekSchedule = () => {
     schedule.end_time = '19:00'
     schedule.lunch_start = '13:00'
     schedule.lunch_end = '14:00'
-    schedule.slot_duration_minutes = 60
+    schedule.slot_duration_minutes = 30
   })
 }
 

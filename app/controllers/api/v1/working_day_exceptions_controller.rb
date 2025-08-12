@@ -42,24 +42,62 @@ module Api
 
         exception = current_user.working_day_exceptions.find_by(date: date)
 
-        if exception
-          # Исключение существует - переключаем статус
-          exception.update!(is_working: !exception.is_working)
-          render json: exception
-        else
-          # Исключения нет - создаем новое
-          # Определяем, какой статус должен быть противоположным базовому расписанию
-          schedule = current_user.working_schedules.find_by(day_of_week: date.wday)
-          base_is_working = schedule&.is_working || false
+        schedule = current_user.working_schedules.find_by(day_of_week: date.wday)
+        base_is_working = schedule&.is_working || false
+        target_is_working = if exception
+                              !exception.is_working
+                            else
+                              !base_is_working
+                            end
 
+        # Если хотим сделать день выходным, проверим, нет ли активных записей
+        if target_is_working == false
+          active_bookings = Booking.where(user_id: current_user.id,
+                                          start_time: date.all_day,
+                                          status: %w[pending confirmed])
+          if active_bookings.exists?
+            return render_error(code: 'validation_error',
+                                message: 'Нельзя сделать день выходным: на эту дату есть активные записи',
+                                status: :unprocessable_entity)
+          end
+        end
+
+        if exception
+          exception.update!(is_working: target_is_working, reason: params[:reason] || exception.reason)
+        else
           exception = current_user.working_day_exceptions.create!(
             date: date,
-            is_working: !base_is_working,
+            is_working: target_is_working,
             reason: params[:reason]
           )
-
-          render json: exception, status: :created
         end
+
+        # Обновляем слоты в соответствии с новым статусом дня
+        if target_is_working
+          # Убеждаемся, что у расписания на этот день заданы часы и длительность слота
+          schedule ||= current_user.working_schedules.find_or_initialize_by(day_of_week: date.wday)
+          if schedule.start_time.blank? || schedule.end_time.blank? || schedule.slot_duration_minutes.blank?
+            # Пытаемся скопировать шаблон с ближайшего рабочего дня
+            template = current_user.working_schedules.working_days
+                                   .where('start_time IS NOT NULL AND end_time IS NOT NULL')
+                                   .order(:day_of_week)
+                                   .first
+            schedule.start_time ||= template&.start_time || '09:00'
+            schedule.end_time   ||= template&.end_time   || '18:00'
+            schedule.lunch_start ||= template&.lunch_start || '13:00'
+            schedule.lunch_end   ||= template&.lunch_end   || '14:00'
+            schedule.slot_duration_minutes ||= template&.slot_duration_minutes || 30
+            schedule.is_working = true
+            schedule.save!
+          end
+          # Становится рабочим — генерируем слоты и синхронизируем
+          current_user.ensure_slots_for_date(date)
+        else
+          # Становится выходным — удаляем все свободные слоты на дату
+          current_user.time_slots.for_date(date).where(booking_id: nil).delete_all
+        end
+
+        render json: exception, status: :ok
       rescue StandardError => e
         render_error(code: 'validation_error', message: e.message, status: :unprocessable_entity)
       end

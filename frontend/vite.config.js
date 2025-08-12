@@ -10,6 +10,13 @@ export default defineConfig(({ mode }) => ({
     vue(),
     ...(mode === 'production' ? [] : [vueDevTools()]),
   ],
+  server: {
+    headers: {
+      // Смягчаем COOP в dev, чтобы Google GIS мог использовать postMessage
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      'Cross-Origin-Embedder-Policy': 'unsafe-none',
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

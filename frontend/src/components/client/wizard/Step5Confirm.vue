@@ -12,7 +12,7 @@
       </div>
       <div class="mt-2 text-sm text-gray-700">Время</div>
       <div class="font-semibold text-gray-900">
-        {{ formatBookingDate(date) }} • {{ formatBookingTime(slot.start_time) }}–{{ formatBookingTime(slot.end_time) }}
+        {{ formatBookingDate(date) }} • {{ formatBookingTime(timeSlot.start_time) }}–{{ formatBookingTime(timeSlot.end_time) }}
       </div>
     </div>
     <div class="flex items-center justify-between">
@@ -27,7 +27,7 @@
 <script setup>
 import { useFormatters } from '../../../composables/useFormatters'
 const { formatBookingDate, formatBookingTime } = useFormatters()
-defineProps({ master: Object, service: Object, date: String, slot: Object })
+defineProps({ master: Object, service: Object, date: String, timeSlot: Object })
 defineEmits(['back', 'submit'])
 </script>
 

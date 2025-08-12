@@ -396,6 +396,7 @@ DEPENDENCIES
   error_highlight (>= 0.4.0)
   factory_bot_rails
   faker
+  jwt (~> 2.8)
   listen
   lograge
   pg (~> 1.1)

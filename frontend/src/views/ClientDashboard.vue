@@ -114,6 +114,7 @@
             v-if="currentStep === 4"
             :master-id="selectedMaster?.id"
             :selected-date="selectedCalendarDate"
+            :service="selectedService"
             @date-selected="onDateSelected"
             @slot-selected="onSlotSelected"
             @back="goBackToMasters"
@@ -125,7 +126,7 @@
             :master="selectedMaster"
             :service="selectedService"
             :date="selectedDate"
-            :slot="selectedSlot"
+            :time-slot="selectedSlot"
             @back="currentStep = 4"
             @submit="submitBooking"
           />
@@ -359,8 +360,11 @@ watch(selectedDate, fetchSlots)
 // provided by useClientBookingWizard
 
 const selectMasterForBooking = (master) => {
-  
-  selectedMasterForBooking.value = master
+  selectedServiceType.value = null
+  selectedMaster.value = { id: master.id, user: master, services: master.services }
+  selectedMasterServices.value = master.services
+  selectedService.value = null
+  currentStep.value = 3
 }
 
 const cancelMasterSelection = () => {

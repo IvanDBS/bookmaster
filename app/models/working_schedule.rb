@@ -46,9 +46,10 @@ class WorkingSchedule < ApplicationRecord
   end
 
   # Генерация слотов для конкретной даты
-  def generate_slots_for_date(date)
+  # force_working: игнорировать флаг is_working для разового включения рабочего дня (исключение)
+  def generate_slots_for_date(date, force_working: false)
     Rails.logger.info "WorkingSchedule##{id}: generate_slots_for_date called for date #{date} (wday: #{date.wday}). is_working: #{is_working}"
-    unless is_working && start_time && end_time
+    unless (is_working || force_working) && start_time && end_time
       Rails.logger.info "WorkingSchedule##{id}: Not generating slots for #{date} because is_working is false or times are missing."
       return []
     end
