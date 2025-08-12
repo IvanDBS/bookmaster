@@ -2,6 +2,7 @@ class Api::V1::BookingsController < Api::V1::BaseController
   before_action :set_booking, only: [:show, :update_status, :destroy]
   before_action :authenticate_user!
   before_action :ensure_booking_owner!, only: [:show, :update_status, :destroy]
+  before_action :ensure_client!, only: [:create]
 
   def index
     @bookings = if current_user.master?
@@ -14,36 +15,34 @@ class Api::V1::BookingsController < Api::V1::BaseController
              .order(created_at: :desc)
                 end
     
-    render json: @bookings
+    render json: @bookings, each_serializer: BookingPublicSerializer
   end
 
   def show
-    render json: @booking
+    render json: @booking, serializer: BookingPublicSerializer
   end
 
   # Клиент создает бронирование, указывая master_id, service_id и time_slot_id
   # Бронирование атомарно привязывается к слоту и помечает слот занятым
   def create
     master = User.masters.find_by(id: params[:master_id])
-    return render json: { error: 'Мастер не найден' }, status: :not_found unless master
+    return render_error(code: 'not_found', message: 'Мастер не найден', status: :not_found) unless master
 
     service = master.services.find_by(id: booking_params[:service_id])
     unless service
-      return render json: { error: 'Услуга не найдена у выбранного мастера' }, 
-                    status: :unprocessable_entity
+      return render_error(code: 'validation_error', message: 'Услуга не найдена у выбранного мастера', status: :unprocessable_entity)
     end
 
     slot = master.time_slots.find_by(id: params[:time_slot_id])
-    return render json: { error: 'Слот не найден' }, status: :not_found unless slot
+    return render_error(code: 'not_found', message: 'Слот не найден', status: :not_found) unless slot
 
     unless slot.can_be_booked?
-      return render json: { error: 'Слот недоступен для бронирования' }, 
-                    status: :unprocessable_entity
+      return render_error(code: 'validation_error', message: 'Слот недоступен для бронирования', status: :unprocessable_entity)
     end
 
     # Дополнительно запрещаем создавать бронь на слоты с типом lunch/blocked
     if %w[lunch blocked].include?(slot.slot_type)
-      return render json: { error: 'Нельзя бронировать перерыв/нерабочее время' }, status: :unprocessable_entity
+      return render_error(code: 'validation_error', message: 'Нельзя бронировать перерыв/нерабочее время', status: :unprocessable_entity)
     end
 
     # Поддержка услуг длиннее одного слота: бронируем последовательность слотов
@@ -67,10 +66,17 @@ class Api::V1::BookingsController < Api::V1::BaseController
 
     begin
       Booking.transaction do
-        # Блокируем все слоты по очереди
-        slots_chain.each do |s|
-          s.with_lock do
-            raise ActiveRecord::Rollback, 'Слот уже занят или недоступен' unless s.can_be_booked?
+        # Жёсткая блокировка всех слотов цепочки до конца транзакции
+        locked_slots = TimeSlot.where(id: slots_chain.map(&:id)).lock.to_a
+
+        # Проверяем, что все ожидаемые слоты реально заблокированы и ещё доступны для брони
+        unless locked_slots.size == slots_chain.size
+          raise ActiveRecord::Rollback, 'Не удалось заблокировать все необходимые слоты'
+        end
+
+        locked_slots.each do |locked|
+          unless locked.can_be_booked? && locked.slot_type == 'work'
+            raise ActiveRecord::Rollback, 'Слот уже занят или недоступен'
           end
         end
 
@@ -81,7 +87,7 @@ class Api::V1::BookingsController < Api::V1::BaseController
           start_time: start_dt,
           end_time: start_dt + service.duration.minutes,
           client_name: booking_params[:client_name].presence || current_user&.full_name || 'Клиент',
-          client_email: booking_params[:client_email].presence || current_user&.email || 'client@example.com',
+          client_email: current_user&.email || 'client@example.com',
           client_phone: booking_params[:client_phone].presence || current_user&.phone
         )
 
@@ -89,10 +95,11 @@ class Api::V1::BookingsController < Api::V1::BaseController
           raise ActiveRecord::Rollback, @booking.errors.full_messages.join(', ')
         end
 
-        slots_chain.each { |s| s.update!(booking: @booking, is_available: false) }
+        # Помечаем слоты занятыми в рамках той же транзакции под блокировкой
+        locked_slots.each { |s| s.update!(booking: @booking, is_available: false) }
       end
     rescue StandardError => e
-      return render json: { error: e.message }, status: :unprocessable_entity
+      return render_error(code: 'validation_error', message: e.message, status: :unprocessable_entity)
     end
 
     # После создания — синхронизируем слоты, чтобы UI у мастера сразу показал занятость
@@ -104,24 +111,24 @@ class Api::V1::BookingsController < Api::V1::BaseController
     new_status = params[:status]
     
     unless %w[confirmed cancelled completed].include?(new_status)
-      return render json: { error: 'Неверный статус' }, status: :bad_request
+      return render_error(code: 'bad_request', message: 'Неверный статус', status: :bad_request)
     end
     
     # При подтверждении проверяем только базовые условия
     if new_status == 'confirmed'
       # Проверяем, что запись еще не подтверждена
       if @booking.confirmed?
-        return render json: { error: 'Запись уже подтверждена' }, status: :unprocessable_entity
+        return render_error(code: 'validation_error', message: 'Запись уже подтверждена', status: :unprocessable_entity)
       end
       
       # Проверяем, что запись не отменена
       if @booking.cancelled?
-        return render json: { error: 'Нельзя подтвердить отмененную запись' }, status: :unprocessable_entity
+        return render_error(code: 'validation_error', message: 'Нельзя подтвердить отмененную запись', status: :unprocessable_entity)
       end
       
       # Проверяем, что время записи еще не прошло
       if @booking.start_time < Time.current
-        return render json: { error: 'Нельзя подтвердить прошедшую запись' }, status: :unprocessable_entity
+        return render_error(code: 'validation_error', message: 'Нельзя подтвердить прошедшую запись', status: :unprocessable_entity)
       end
     end
 
@@ -139,13 +146,13 @@ class Api::V1::BookingsController < Api::V1::BaseController
       @booking.user.reconcile_bookings_with_slots_for_date(@booking.start_time.to_date)
       render json: @booking
     else
-      render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
+      render_error(code: 'validation_error', message: @booking.errors.full_messages.join(', '), status: :unprocessable_entity)
     end
   end
 
   def destroy
     unless @booking
-      return render json: { error: 'Запись не найдена' }, status: :not_found
+      return render_error(code: 'not_found', message: 'Запись не найдена', status: :not_found)
     end
     
     # Сохраняем ссылки до удаления
@@ -161,12 +168,12 @@ class Api::V1::BookingsController < Api::V1::BaseController
         user.reconcile_bookings_with_slots_for_date(date)
         render json: { message: 'Запись успешно удалена' }
       else
-        render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
+        render_error(code: 'validation_error', message: @booking.errors.full_messages.join(', '), status: :unprocessable_entity)
       end
     rescue StandardError => e
       Rails.logger.error "Error destroying booking #{@booking.id}: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
-      render json: { error: "Ошибка при удалении записи: #{e.message}" }, status: :internal_server_error
+      render_error(code: 'internal_error', message: "Ошибка при удалении записи: #{e.message}", status: :internal_server_error)
     end
   end
 
@@ -183,7 +190,12 @@ class Api::V1::BookingsController < Api::V1::BaseController
   def ensure_booking_owner!
     unless (current_user.master? && @booking.user == current_user) ||
            @booking.client_email == current_user.email
-      render json: { error: 'Доступ запрещен' }, status: :forbidden
+      render_error(code: 'forbidden', message: 'Доступ запрещен', status: :forbidden)
     end
+  end
+
+  def ensure_client!
+    # В текущей версии бронирование создают клиенты. Если потребуется — можно расширить до мастеров.
+    render_error(code: 'forbidden', message: 'Доступ запрещен. Только клиенты могут создавать бронирования.', status: :forbidden) unless current_user&.client?
   end
 end

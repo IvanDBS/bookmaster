@@ -2,7 +2,7 @@ module Api
   module V1
     class TimeSlotsController < Api::V1::BaseController
       before_action :authenticate_user!, except: [:public_index]
-      before_action :ensure_master!, only: [:index, :show, :update]
+      before_action :ensure_master!, only: [:index, :show, :update, :add_slot]
 
       def index
         date = params[:date] ? Date.parse(params[:date]) : Date.current
@@ -19,36 +19,10 @@ module Api
         Rails.logger.info "Found #{slots.count} slots for date #{date}"
 
         render json: {
-          date: date,
-          slots: slots.map do |slot|
-            # Дополнительная защита: вычисляем занятость по пересечению с бронированиями,
-            # даже если по каким-то причинам booking_id у слота не проставлен
-            slot_start_dt = Time.zone.parse("#{slot.date} #{slot.start_time.strftime('%H:%M')}")
-            slot_end_dt   = Time.zone.parse("#{slot.date} #{slot.end_time.strftime('%H:%M')}")
-            overlapping_booking = Booking.where(user_id: current_user.id, status: %w[pending confirmed])
-                                         .where('(start_time < ?) AND (end_time > ?)', slot_end_dt, slot_start_dt)
-                                         .first
-            computed_booked = slot.booked? || overlapping_booking.present?
-            computed_available = slot.is_available && overlapping_booking.nil?
-            {
-              id: slot.id,
-              # Времена в человекочитаемом формате
-              start_time: slot.start_time.strftime('%H:%M'),
-              end_time: slot.end_time.strftime('%H:%M'),
-              # Стандартизированные ISO-времена (совмещаем дату и время)
-              start_at: slot_start_dt,
-              end_at: slot_end_dt,
-              duration_minutes: slot.duration_minutes,
-              is_available: computed_available,
-              slot_type: slot.slot_type,
-              booked: computed_booked,
-              booking: (if slot.booking_id
-                          booking_details(slot.booking)
-                        else
-                          (overlapping_booking ? booking_details(overlapping_booking) : nil)
-                        end)
-            }
-          end
+          slots: ActiveModelSerializers::SerializableResource.new(
+            slots,
+            each_serializer: TimeSlotSerializer
+          )
         }
       end
 
@@ -63,44 +37,13 @@ module Api
         master.reconcile_bookings_with_slots_for_date(date)
 
         slots = master.time_slots.for_date(date).order(:start_time)
-        render json: {
-          date: date,
-          slots: slots.map do |slot|
-            slot_start_dt = Time.zone.parse("#{slot.date} #{slot.start_time.strftime('%H:%M')}")
-            slot_end_dt   = Time.zone.parse("#{slot.date} #{slot.end_time.strftime('%H:%M')}")
-            {
-              id: slot.id,
-              start_time: slot.start_time,
-              end_time: slot.end_time,
-              start_at: slot_start_dt,
-              end_at: slot_end_dt,
-              duration_minutes: slot.duration_minutes,
-              is_available: slot.is_available,
-              slot_type: slot.slot_type,
-              booked: slot.booked?
-            }
-          end
-        }
+        render json: slots, each_serializer: TimeSlotPublicSerializer
       end
 
       def show
         slot = current_user.time_slots.find(params[:id])
 
-        slot_start_dt = Time.zone.parse("#{slot.date} #{slot.start_time.strftime('%H:%M')}")
-        slot_end_dt   = Time.zone.parse("#{slot.date} #{slot.end_time.strftime('%H:%M')}")
-        render json: {
-          id: slot.id,
-          date: slot.date,
-          start_time: slot.start_time,
-          end_time: slot.end_time,
-          start_at: slot_start_dt,
-          end_at: slot_end_dt,
-          duration_minutes: slot.duration_minutes,
-          is_available: slot.is_available,
-          slot_type: slot.slot_type,
-          booked: slot.booked?,
-          booking: slot.booking_id ? booking_details(slot.booking) : nil
-        }
+        render json: slot, serializer: TimeSlotSerializer
       end
 
       # PATCH /api/v1/time_slots/:id  { is_break: true|false }
@@ -108,7 +51,7 @@ module Api
       def update
         slot = current_user.time_slots.find(params[:id])
 
-        return render json: { error: 'Missing parameter is_break' }, status: :bad_request unless params.key?(:is_break)
+        return render_error(code: 'bad_request', message: 'Missing parameter is_break', status: :bad_request) unless params.key?(:is_break)
 
         is_break = ActiveModel::Type::Boolean.new.cast(params[:is_break])
 
@@ -120,8 +63,7 @@ module Api
                                      .first
 
         if is_break && (slot.booking_id.present? || overlapping_booking.present?)
-          return render json: { error: 'Нельзя поставить перерыв: на это время есть запись' },
-                        status: :unprocessable_entity
+          return render_error(code: 'validation_error', message: 'Нельзя поставить перерыв: на это время есть запись', status: :unprocessable_entity)
         end
 
         if is_break
@@ -143,7 +85,8 @@ module Api
       end
 
       # POST /api/v1/time_slots/add_slot
-      # Добавляет новый слот на 1 час после последнего слота на указанную дату
+      # Добавляет новый слот после последнего рабочего слота на указанную дату,
+      # с длительностью из расписания (slot_duration_minutes) и в пределах рабочего дня
       def add_slot
         date = params[:date] ? Date.parse(params[:date]) : Date.current
 
@@ -151,30 +94,52 @@ module Api
         existing_slots = current_user.time_slots.for_date(date).order(:start_time)
 
         if existing_slots.empty?
-          return render json: { error: 'Нет существующих слотов для определения времени нового слота' },
-                        status: :unprocessable_entity
+          return render_error(code: 'validation_error', message: 'Нет существующих слотов для определения времени нового слота', status: :unprocessable_entity)
         end
 
-        # Находим последний слот
-        last_slot = existing_slots.last
+        # Находим последний РАБОЧИЙ слот
+        last_work_slot = existing_slots.where(slot_type: 'work').last
+        return render_error(code: 'validation_error', message: 'Нет рабочих слотов для определения точки вставки', status: :unprocessable_entity) unless last_work_slot
 
-        # Вычисляем время начала нового слота (конец последнего слота)
-        new_start_time = last_slot.end_time
+        # Определяем длительность слота
+        schedule = current_user.working_schedules.find_by(day_of_week: date.wday)
+        slot_minutes = (schedule&.slot_duration_minutes || last_work_slot.duration_minutes).to_i
+        slot_minutes = 60 if slot_minutes <= 0
 
-        # Проверяем, что новый слот не выходит за пределы рабочего дня (до 23:59)
-        if new_start_time.hour >= 23
-          return render json: { error: 'Нельзя добавить слот после 23:00' }, status: :unprocessable_entity
+        # Время начала — конец последнего рабочего слота
+        new_start_time = last_work_slot.end_time
+        new_end_time = Time.zone.parse("2000-01-01 #{new_start_time.strftime('%H:%M')}") + slot_minutes.minutes
+
+        # Границы рабочего дня
+        if schedule&.is_working && schedule.start_time && schedule.end_time
+          if new_end_time > schedule.end_time
+            return render_error(code: 'validation_error', message: 'Нельзя добавить слот за пределами рабочего дня', status: :unprocessable_entity)
+          end
+
+          # Проверка пересечения с обедом
+          if schedule.lunch_start && schedule.lunch_end
+            lunch_start = schedule.lunch_start
+            lunch_end   = schedule.lunch_end
+            if (new_start_time < lunch_end) && (new_end_time > lunch_start)
+              return render_error(code: 'validation_error', message: 'Новый слот попадает на обед', status: :unprocessable_entity)
+            end
+          end
         end
 
-        # Вычисляем время окончания нового слота (1 час после начала)
-        new_end_time = Time.zone.parse("2000-01-01 #{new_start_time.strftime('%H:%M')}") + 1.hour
+        # Проверка пересечений с любыми слотами этого дня
+        overlap = existing_slots.any? do |s|
+          s.start_time < new_end_time && s.end_time > new_start_time
+        end
+        if overlap
+          return render_error(code: 'validation_error', message: 'Новый слот пересекается с существующими', status: :unprocessable_entity)
+        end
 
         # Создаем новый слот
         new_slot = current_user.time_slots.create!(
           date: date,
           start_time: new_start_time,
           end_time: new_end_time,
-          duration_minutes: 60,
+          duration_minutes: slot_minutes,
           is_available: true,
           slot_type: 'work'
         )

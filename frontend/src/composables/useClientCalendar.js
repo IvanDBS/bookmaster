@@ -3,7 +3,7 @@ import api from '../services/api'
 
 export function useClientCalendar() {
   // Reactive data
-  const currentDate = ref(new Date(2025, 7, 1)) // Август 2025
+  const currentDate = ref(new Date())
   const selectedDate = ref(null)
   const slotsCache = ref(new Map())
   const masterId = ref(null)

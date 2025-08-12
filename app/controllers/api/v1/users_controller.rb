@@ -4,30 +4,29 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   def index
     @users = User.masters.includes(:services)
-    
+
     if params[:category].present?
       @users = @users.joins(:services).where("LOWER(services.name) LIKE ?", "%#{params[:category].downcase}%")
     end
-    
-    render json: @users.as_json(
-      only: [:id, :first_name, :last_name, :phone, :bio, :address],
-      include: { services: { only: [:id, :name, :price, :duration] } }
-    )
+
+    render json: @users, each_serializer: UserPublicSerializer
   end
 
   def show
     @user = User.masters.find(params[:id])
-    render json: @user.as_json(
-      only: [:id, :first_name, :last_name, :phone, :bio, :address],
-      include: { services: { only: [:id, :name, :price, :duration, :description] } }
-    )
+    # Если смотрит владелец (мастер) — отдаём private профиль, иначе public
+    if current_user&.id == @user.id
+      render json: @user, serializer: UserPrivateSerializer
+    else
+      render json: @user, serializer: UserPublicSerializer
+    end
   end
 
   def update
     if current_user.update(user_params)
       render json: current_user.as_json(only: [:id, :email, :first_name, :last_name, :role, :phone, :bio, :address])
     else
-      render json: { errors: current_user.errors.full_messages }, status: :unprocessable_entity
+      render_error(code: 'validation_error', message: current_user.errors.full_messages.join(', '), status: :unprocessable_entity)
     end
   end
 

@@ -25,7 +25,7 @@ module Api
         rescue StandardError => e
           Rails.logger.error "Error in WorkingSchedulesController#index: #{e.message}"
           Rails.logger.error e.backtrace.join("\n")
-          render json: { error: "Internal Server Error" }, status: :internal_server_error
+          render_error(code: 'internal_error', message: 'Internal Server Error', status: :internal_server_error)
         end
       end
 
@@ -95,14 +95,14 @@ module Api
             }
           else
             Rails.logger.error "Schedule update failed: #{schedule.errors.full_messages}"
-            render json: { errors: schedule.errors.full_messages }, status: :unprocessable_entity
+            render_error(code: 'validation_error', message: schedule.errors.full_messages.join(', '), status: :unprocessable_entity)
             raise ActiveRecord::Rollback
           end
         end
       rescue StandardError => e
         Rails.logger.error "Exception during schedule update: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
-        render json: { errors: ["Internal server error: #{e.message}"] }, status: :internal_server_error
+        render_error(code: 'internal_error', message: 'Internal Server Error', status: :internal_server_error)
       end
 
       private
@@ -162,7 +162,7 @@ module Api
       end
 
       def ensure_master!
-        render json: { error: 'Access denied. Masters only.' }, status: :forbidden unless current_user&.master?
+        render_error(code: 'forbidden', message: 'Access denied. Masters only.', status: :forbidden) unless current_user&.master?
       end
     end
   end

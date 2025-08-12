@@ -6,7 +6,6 @@ class Api::V1::ServicesController < Api::V1::BaseController
 
   def index
     Rails.logger.info "ServicesController#index called by user: #{current_user&.id} (#{current_user&.role})"
-    
     @services = Service.includes(:user).active
     Rails.logger.info "Initial services count: #{@services.count}"
     
@@ -22,19 +21,23 @@ class Api::V1::ServicesController < Api::V1::BaseController
       @services = @services.where(user_id: params[:master_id])
     end
     
-    # Если пользователь авторизован и он мастер, показываем только его услуги
-    if current_user&.master?
-      @services = @services.where(user_id: current_user.id)
-      Rails.logger.info "After current_user filter: #{@services.count}"
+    # Если нужен только список услуг текущего мастера — используйте параметр mine=true
+    if params[:mine].present? && ActiveModel::Type::Boolean.new.cast(params[:mine])
+      if current_user&.master?
+        @services = @services.where(user_id: current_user.id)
+        Rails.logger.info "After mine=true filter: #{@services.count}"
+      else
+        return render_error(code: 'forbidden', message: 'Только мастера могут запрашивать свои услуги', status: :forbidden)
+      end
     end
     
     Rails.logger.info "Final services count: #{@services.count}"
-    render json: @services
+    render json: @services, each_serializer: ServicePublicSerializer
   end
 
   def show
     Rails.logger.info "ServicesController#show called for service: #{@service.id}"
-    render json: @service
+    render json: @service, serializer: ServicePublicSerializer
   end
 
   def service_types
@@ -46,18 +49,18 @@ class Api::V1::ServicesController < Api::V1::BaseController
     @service = current_user.services.build(service_params)
     
     if @service.save
-      render json: @service, status: :created
+      render json: @service, serializer: ServicePublicSerializer, status: :created
     else
-      render json: { errors: @service.errors.full_messages }, status: :unprocessable_entity
+      render_error(code: 'validation_error', message: @service.errors.full_messages.join(', '), status: :unprocessable_entity)
     end
   end
 
   def update
     Rails.logger.info "ServicesController#update called by user: #{current_user&.id} (#{current_user&.role}) for service: #{@service.id}"
     if @service.update(service_params)
-      render json: @service
+      render json: @service, serializer: ServicePublicSerializer
     else
-      render json: { errors: @service.errors.full_messages }, status: :unprocessable_entity
+      render_error(code: 'validation_error', message: @service.errors.full_messages.join(', '), status: :unprocessable_entity)
     end
   end
 
@@ -81,14 +84,14 @@ class Api::V1::ServicesController < Api::V1::BaseController
   def ensure_master!
     Rails.logger.info "ServicesController#ensure_master! called, current_user: #{current_user&.id} (#{current_user&.role})"
     unless current_user&.master?
-      render json: { error: 'Только мастера могут управлять услугами' }, status: :forbidden
+      render_error(code: 'forbidden', message: 'Только мастера могут управлять услугами', status: :forbidden)
     end
   end
 
   def ensure_service_owner!
     Rails.logger.info "ServicesController#ensure_service_owner! called, service user: #{@service.user&.id}, current_user: #{current_user&.id}"
     unless @service.user == current_user
-      render json: { error: 'Вы можете редактировать только свои услуги' }, status: :forbidden
+      render_error(code: 'forbidden', message: 'Вы можете редактировать только свои услуги', status: :forbidden)
     end
   end
 end

@@ -1,3 +1,19 @@
+## Production environment checklist (ENV)
+
+Set the following environment variables for production deployments:
+
+- `RAILS_MASTER_KEY` – Rails credentials decryption key
+- `SECRET_KEY_BASE` – Rails secret (if not using credentials)
+- `JWT_SECRET_KEY` – JWT secret used by devise-jwt (or set via credentials.jwt.secret_key)
+- `CORS_ORIGINS` – comma-separated list of allowed origins (e.g. https://app.example.com)
+- `SENTRY_DSN` – Sentry project DSN (optional but recommended)
+- `SENTRY_TRACES_SAMPLE_RATE` – e.g. `0.1`
+- `SENTRY_PROFILES_SAMPLE_RATE` – e.g. `0.1`
+- `VITE_API_URL` – Frontend base API URL (for the SPA)
+- `RAILS_LOG_LEVEL` – recommended `info` or `warn`
+- `DATABASE_URL` – Postgres connection string
+- `REDIS_URL` – if using Sidekiq or caching
+
 # BookMaster - Сервис онлайн-записи к мастерам
 
 Современный веб-сервис для онлайн-записи к мастерам маникюра, педикюра и массажа. Построен на Ruby on Rails API и Vue.js.

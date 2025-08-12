@@ -5,6 +5,8 @@ class Api::V1::AuthController < ApplicationController
     user = User.new(user_params)
     
     if user.save
+      # В dev сразу логиним пользователя, чтобы выдать JWT и унифицировать ответ с login
+      sign_in user
       token = request.env['warden-jwt_auth.token']
       render json: {
         user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
@@ -12,7 +14,7 @@ class Api::V1::AuthController < ApplicationController
         message: 'Пользователь успешно зарегистрирован'
       }, status: :created
     else
-      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      render_error(code: 'validation_error', message: user.errors.full_messages.join(', '), status: :unprocessable_entity)
     end
   end
   
@@ -32,7 +34,7 @@ class Api::V1::AuthController < ApplicationController
         message: 'Успешный вход'
       }
     else
-      render json: { error: 'Неверный email или пароль' }, status: :unauthorized
+      render_error(code: 'invalid_credentials', message: 'Неверный email или пароль', status: :unauthorized)
     end
   end
   

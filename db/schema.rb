@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_08_124153) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_08_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -29,6 +29,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_08_124153) do
     t.index ["service_id"], name: "index_bookings_on_service_id"
     t.index ["start_time"], name: "index_bookings_on_start_time"
     t.index ["status"], name: "index_bookings_on_status"
+    t.index ["user_id", "start_time"], name: "index_bookings_on_user_id_and_start_time"
     t.index ["user_id"], name: "index_bookings_on_user_id"
   end
 

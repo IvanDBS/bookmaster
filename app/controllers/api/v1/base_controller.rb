@@ -10,7 +10,7 @@ class Api::V1::BaseController < ApplicationController
   
   def authenticate_user!
     unless user_signed_in?
-      render json: { error: 'Необходима авторизация' }, status: :unauthorized
+      render_error(code: 'unauthorized', message: 'Необходима авторизация', status: :unauthorized)
     end
   end
 end 

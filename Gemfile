@@ -21,11 +21,14 @@ gem "devise-jwt"
 # API serialization
 gem "active_model_serializers"
 
-# Validation and error handling
-gem "dry-validation"
+# Validation and error handling (not used currently)
+# gem "dry-validation"
 
-# Date/Time handling
-gem "ice_cube"
+# Date/Time handling (not used currently)
+# gem "ice_cube"
+
+gem "rack-attack"
+gem "secure_headers"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop and debug your application
@@ -39,6 +42,12 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "faker"
   gem "shoulda-matchers"
+end
+
+group :production do
+  gem "lograge"
+  gem "sentry-ruby"
+  gem "sentry-rails"
 end
 
 group :development do

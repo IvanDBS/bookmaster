@@ -1,8 +1,9 @@
 Rails.application.routes.draw do
-  devise_for :users, controllers: {
-    sessions: 'devise/sessions',
-    registrations: 'devise/registrations'
-  }
+  # Keep Devise routes disabled in production API-only mode.
+  # Re-enable minimal mapping in test/development to support Devise test helpers (sign_in, etc.).
+  if Rails.env.test? || Rails.env.development?
+    devise_for :users, skip: [:sessions, :registrations, :passwords]
+  end
   
   # API routes
   namespace :api do

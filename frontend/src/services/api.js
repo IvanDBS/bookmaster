@@ -7,6 +7,17 @@ class ApiService {
     this.baseURL = API_BASE_URL
   }
 
+  // Global 401 handler for protected requests
+  handleUnauthorized = async () => {
+    try {
+      // Best-effort cleanup without importing the store to avoid circular deps
+      localStorage.removeItem('token')
+    } catch (_) {}
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login'
+    }
+  }
+
   // Helpers
   buildUrl(path, params = null) {
     const url = new URL(`${this.baseURL}${path}`)
@@ -69,6 +80,10 @@ class ApiService {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
     if (!response.ok) {
       throw new Error('Failed to fetch services')
     }
@@ -102,6 +117,10 @@ class ApiService {
       },
       body: JSON.stringify({ service: serviceData }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to create service')
@@ -119,6 +138,10 @@ class ApiService {
       },
       body: JSON.stringify({ service: serviceData }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to update service')
@@ -134,6 +157,10 @@ class ApiService {
         Authorization: `Bearer ${token}`,
       },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to delete service')
@@ -147,6 +174,10 @@ class ApiService {
         Authorization: `Bearer ${token}`,
       },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to fetch bookings')
@@ -164,6 +195,10 @@ class ApiService {
       },
       body: JSON.stringify({ master_id, time_slot_id, booking }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     const text = await response.text()
     const json = text ? JSON.parse(text) : {}
@@ -184,6 +219,10 @@ class ApiService {
       },
       body: JSON.stringify({ status }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to update booking status')
@@ -197,6 +236,10 @@ class ApiService {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
     if (!response.ok) {
       throw new Error('Failed to delete booking')
     }
@@ -221,6 +264,12 @@ class ApiService {
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      const err = new Error('Unauthorized')
+      err.status = 401
+      throw err
+    }
     if (!response.ok) {
       const err = new Error('Failed to fetch time slots')
       err.status = response.status
@@ -235,6 +284,10 @@ class ApiService {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ date }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
     const json = await response.json().catch(() => ({}))
     if (!response.ok) throw new Error(json.error || 'Failed to add slot')
     return json
@@ -249,6 +302,10 @@ class ApiService {
       },
       body: JSON.stringify({ is_break }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
     const json = await response.json().catch(() => ({}))
     if (!response.ok) {
       throw new Error(json.error || 'Failed to update slot')
@@ -263,6 +320,11 @@ class ApiService {
         Authorization: `Bearer ${token}`,
       },
     })
+    if (response.status === 401) {
+      // already unauthorized; still cleanup
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to logout')
@@ -278,6 +340,10 @@ class ApiService {
         Authorization: `Bearer ${token}`,
       },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to fetch current user')
@@ -293,6 +359,10 @@ class ApiService {
         Authorization: `Bearer ${token}`,
       },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to fetch working day exceptions')
@@ -310,6 +380,12 @@ class ApiService {
       },
       body: JSON.stringify({ date, reason }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      const err = new Error('Unauthorized')
+      err.status = 401
+      throw err
+    }
 
     if (!response.ok) {
       const err = new Error('Failed to toggle working day')
@@ -329,6 +405,10 @@ class ApiService {
       },
       body: JSON.stringify({ working_day_exception: exceptionData }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to create working day exception')
@@ -346,6 +426,10 @@ class ApiService {
       },
       body: JSON.stringify({ working_day_exception: exceptionData }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to update working day exception')
@@ -361,6 +445,10 @@ class ApiService {
         Authorization: `Bearer ${token}`,
       },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error('Failed to delete working day exception')
@@ -372,6 +460,10 @@ class ApiService {
     const response = await fetch(`${this.baseURL}/working_schedules`, {
       headers: { Authorization: `Bearer ${token}` },
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
     if (!response.ok) throw new Error('Failed to fetch working schedules')
     return await response.json()
   }
@@ -382,6 +474,10 @@ class ApiService {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ working_schedule: scheduleData }),
     })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
     const json = await response.json().catch(() => ({}))
     if (!response.ok) throw new Error(json.errors ? json.errors.join(', ') : 'Failed to update schedule')
     return json

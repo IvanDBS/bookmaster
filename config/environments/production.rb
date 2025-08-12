@@ -15,9 +15,8 @@ Rails.application.configure do
   # Full error reports are disabled and caching is turned on.
   config.consider_all_requests_local = false
 
-  # Ensures that a master key has been made available in ENV["RAILS_MASTER_KEY"], config/master.key, or an environment
-  # key such as config/credentials/production.key. This key is used to decrypt credentials (and other encrypted files).
-  # config.require_master_key = true
+  # Require master key for credentials in production
+  config.require_master_key = true
 
   # Disable serving static files from `public/`, relying on NGINX/Apache to do so instead.
   # config.public_file_server.enabled = false
@@ -87,4 +86,37 @@ Rails.application.configure do
   # ]
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Enforce SSL (already enabled above)
+  # config.force_ssl = true
+
+  # Lograge for concise logging
+  config.lograge.enabled = true if defined?(Lograge)
+  if defined?(Lograge)
+    config.lograge.keep_original_rails_log = false
+    config.lograge.formatter = Lograge::Formatters::Json.new
+    config.lograge.custom_options = lambda do |event|
+      params = event.payload[:params] || {}
+      filtered = params.except('controller', 'action', 'format', 'id', 'password', 'password_confirmation', 'authorization', 'client_name', 'client_email', 'client_phone')
+      {
+        time: Time.now.utc.iso8601,
+        request_id: event.payload[:request_id],
+        user_id: event.payload[:user_id],
+        params: filtered
+      }
+    end
+  end
+
+  # Basic security headers (CSP/HSTS can be managed by proxy or secure_headers gem)
+  config.action_dispatch.default_headers.merge!({
+    'X-Frame-Options' => 'SAMEORIGIN',
+    'X-Content-Type-Options' => 'nosniff',
+    'X-XSS-Protection' => '0'
+  })
+
+  # Enable HSTS (can be configured at proxy level as well)
+  config.ssl_options = { hsts: { expires: 31536000, preload: true, subdomains: true } }
+
+  # CSP is managed via secure_headers initializer
+  config.action_dispatch.default_headers.delete('Content-Security-Policy')
+
 end

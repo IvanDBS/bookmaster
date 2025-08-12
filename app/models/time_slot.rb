@@ -49,15 +49,8 @@ class TimeSlot < ApplicationRecord
     return unless user && date && start_time && end_time
 
     overlapping_slots = TimeSlot.where(user: user, date: date)
-                                .where.not(id: id) # исключаем себя при обновлении
-                                .where(
-                                  '(start_time < ? AND end_time > ?) OR ' \
-                                  '(start_time < ? AND end_time > ?) OR ' \
-                                  '(start_time >= ? AND end_time <= ?)',
-                                  start_time, start_time,
-                                  end_time, end_time,
-                                  start_time, end_time
-                                )
+                                .where.not(id: id)
+                                .where('start_time < ? AND end_time > ?', end_time, start_time)
 
     return unless overlapping_slots.exists?
 

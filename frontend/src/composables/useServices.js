@@ -20,8 +20,7 @@ export function useServices() {
 
   // Инициализация при монтировании компонента
   onMounted(async () => {
-    console.log('useServices mounted, auth token:', authStore.token)
-    console.log('Current user:', authStore.user)
+    // remove verbose logs in production; keep silent in dev as well
     await loadServices()
     await loadServiceTypes()
   })
@@ -29,15 +28,12 @@ export function useServices() {
   // API functions
   const loadServices = async () => {
     try {
-      if (!authStore.token) {
-        console.log('No auth token, skipping services load')
-        return
-      }
+      if (!authStore.token) return
 
       const servicesData = await api.getServices()
       // Если мастер — API все равно отдаст только собственные (см. контроллер)
       services.value = servicesData
-      console.log('Loaded services:', servicesData)
+      // no-op
     } catch (error) {
       console.error('Error loading services:', error)
       services.value = []

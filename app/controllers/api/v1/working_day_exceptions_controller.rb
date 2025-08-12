@@ -1,6 +1,7 @@
 module Api
   module V1
     class WorkingDayExceptionsController < Api::V1::BaseController
+      before_action :ensure_master!
       before_action :set_working_day_exception, only: [:show, :update, :destroy]
 
       def index
@@ -71,6 +72,10 @@ module Api
 
       def working_day_exception_params
         params.require(:working_day_exception).permit(:date, :is_working, :reason)
+      end
+
+      def ensure_master!
+        render_error(code: 'forbidden', message: 'Access denied. Masters only.', status: :forbidden) unless current_user&.master?
       end
     end
   end
