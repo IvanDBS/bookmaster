@@ -277,6 +277,12 @@ export function useMasterCalendar() {
   const loadWorkingDayExceptions = async () => {
     try {
       if (!authStore.token) {
+        // Попробуем восстановить пользователя/токен из профиля, если есть
+        try {
+          await authStore.getCurrentUser()
+        } catch (_) {}
+      }
+      if (!authStore.token) {
         workingDayExceptions.value = []
         return
       }
@@ -291,9 +297,11 @@ export function useMasterCalendar() {
 
   const toggleDayStatus = async () => {
     try {
-      if (!selectedDate.value || !authStore.token) {
-        return
+      if (!selectedDate.value) return
+      if (!authStore.token) {
+        try { await authStore.getCurrentUser() } catch (_) {}
       }
+      if (!authStore.token) return
 
       const dateString = `${selectedDate.value.getFullYear()}-${String(selectedDate.value.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.value.getDate()).padStart(2, '0')}`
 
@@ -315,7 +323,22 @@ export function useMasterCalendar() {
       slotsCache.value.delete(dateString)
 
       // Серверный вызов
-      const updatedException = await api.toggleWorkingDay(dateString, authStore.token)
+      let updatedException
+      try {
+        updatedException = await api.toggleWorkingDay(dateString, authStore.token)
+      } catch (err) {
+        // Если 401 — пробуем обновить профиль и повторить один раз
+        if (err && err.status === 401) {
+          try {
+            await authStore.getCurrentUser()
+            updatedException = await api.toggleWorkingDay(dateString, authStore.token)
+          } catch (inner) {
+            throw inner
+          }
+        } else {
+          throw err
+        }
+      }
 
       // Приводим локальное состояние к серверному
       const existingIndex = workingDayExceptions.value.findIndex((ex) => ex.date === dateString)
@@ -343,6 +366,9 @@ export function useMasterCalendar() {
 
   const loadSlotsForDate = async (date) => {
     try {
+      if (!authStore.token) {
+        try { await authStore.getCurrentUser() } catch (_) {}
+      }
       if (!authStore.token) {
         console.warn('No auth token available')
         return []

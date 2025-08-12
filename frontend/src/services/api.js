@@ -221,7 +221,11 @@ class ApiService {
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     })
-    if (!response.ok) throw new Error('Failed to fetch time slots')
+    if (!response.ok) {
+      const err = new Error('Failed to fetch time slots')
+      err.status = response.status
+      throw err
+    }
     return await response.json()
   }
 
@@ -308,7 +312,9 @@ class ApiService {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to toggle working day')
+      const err = new Error('Failed to toggle working day')
+      err.status = response.status
+      throw err
     }
 
     return await response.json()

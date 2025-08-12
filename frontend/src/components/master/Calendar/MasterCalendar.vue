@@ -16,7 +16,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Current Month -->
         <div>
-          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-between mb-4">
             <button @click="previousMonth" class="p-3 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30" aria-label="Предыдущий месяц">
               <svg
                 class="w-5 h-5 text-gray-600"
@@ -85,7 +85,7 @@
 
         <!-- Next Month -->
         <div>
-          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-between mb-4">
             <div></div>
             <h4 class="text-lg font-semibold text-gray-900">{{ nextMonthYear }}</h4>
             <button @click="nextMonth" class="p-3 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30" aria-label="Следующий месяц">
