@@ -46,6 +46,30 @@
         </template>
       </div>
 
+      <!-- My Masters Section (moved above wizard) -->
+      <div v-if="currentStep < 4" id="masters">
+        <template v-if="selectedMasterForBooking">
+          <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+              <h4 class="text-lg font-semibold text-gray-900">Выберите услугу</h4>
+              <button @click="cancelMasterSelection" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <MasterServicesPicker
+              :services="selectedMasterForBooking.services || []"
+              :selected-id="selectedService?.id || null"
+              @select="(srv) => selectServiceAndGoToTime(selectedMasterForBooking, srv)"
+            />
+          </div>
+        </template>
+        <template v-else>
+          <MyMasters :masters="myMasters" @select-master="selectMasterForBooking" />
+        </template>
+      </div>
+
       <!-- Booking Wizard (минималистичный) -->
       <BookingWizard>
         <div class="space-y-8">
