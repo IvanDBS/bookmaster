@@ -6,6 +6,7 @@ import RegisterView from '../views/RegisterView.vue'
 import ClientDashboard from '../views/ClientDashboard.vue'
 import MasterDashboard from '../views/MasterDashboard.vue'
 import ScheduleSettings from '../views/ScheduleSettings.vue'
+import AdminDashboard from '../views/AdminDashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,6 +15,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    {
+      path: '/admin',
+      name: 'admin-dashboard',
+      component: AdminDashboard,
+      meta: { requiresAuth: true, role: 'admin' },
     },
     {
       path: '/login',
