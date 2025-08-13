@@ -2,16 +2,19 @@
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version and Gemfile
 ARG RUBY_VERSION=3.1.6
+ARG RAILS_ENV=development
+ARG BUNDLE_WITHOUT=""
+ARG BUNDLE_DEPLOYMENT=0
 FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
 
 # Rails app lives here
 WORKDIR /rails
 
-# Set production environment
-ENV RAILS_ENV="production" \
-    BUNDLE_DEPLOYMENT="1" \
+# Set environment (defaults geared for development builds)
+ENV RAILS_ENV=${RAILS_ENV} \
+    BUNDLE_DEPLOYMENT=${BUNDLE_DEPLOYMENT} \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+    BUNDLE_WITHOUT=${BUNDLE_WITHOUT}
 
 
 # Throw-away build stage to reduce size of final image

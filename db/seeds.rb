@@ -75,7 +75,7 @@ masters = [
 ]
 
 masters.each do |master_data|
-  user = User.create!(master_data)
+  user = User.create!(master_data.merge(confirmed_at: Time.current))
   Rails.logger.debug { "Created master: #{user.full_name}" }
   
   # Создаем базовое рабочее расписание для мастера
@@ -206,7 +206,7 @@ clients = [
   },
   {
     email: 'test@example.com',
-    password: 'password123',
+    password: 'password',
     first_name: 'Тест',
     last_name: 'Пользователь',
     phone: '+7 (999) 123-45-67',
@@ -237,9 +237,23 @@ clients = [
 ]
 
 clients.each do |client_data|
-  user = User.create!(client_data)
+  user = User.create!(client_data.merge(confirmed_at: Time.current))
   Rails.logger.debug { "Created client: #{user.full_name}" }
 end
+
+# Admin user
+Rails.logger.debug "Creating admin user..."
+admin_email = 'ivan.teaca@gmail.com'
+User.create!(
+  email: admin_email,
+  password: 'password',
+  first_name: 'Ivan',
+  last_name: 'Admin',
+  phone: '+0000000000',
+  role: 'admin',
+  confirmed_at: Time.current
+)
+Rails.logger.debug { "Created admin: #{admin_email}" }
 
 Rails.logger.debug "Generating time slots for masters..."
 

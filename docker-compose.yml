@@ -20,6 +20,7 @@ services:
       - compose.env
     environment:
       BUNDLE_WITHOUT: ""
+      BUNDLE_DEPLOYMENT: "0"
       RAILS_MAX_THREADS: 5
     depends_on:
       - db
@@ -37,6 +38,7 @@ services:
       - compose.env
     environment:
       BUNDLE_WITHOUT: ""
+      BUNDLE_DEPLOYMENT: "0"
       RAILS_MAX_THREADS: 5
     depends_on:
       - db

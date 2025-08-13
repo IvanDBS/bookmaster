@@ -203,6 +203,9 @@ const initGoogleButton = async () => {
         try {
           error.value = ''
           const result = await api.loginWithGoogle(resp.credential)
+          if (!result || !result.user || !result.user.role) {
+            throw new Error('Некорректный ответ сервера: отсутствует роль пользователя')
+          }
           authStore.user = result.user
           authStore.token = result.token
           localStorage.setItem('token', result.token)

@@ -47,7 +47,6 @@ end
 group :development do
   gem "letter_opener_web"
   gem "web-console"
-  gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
   gem "annotate"
   gem "listen"
   gem "rubocop", require: false
