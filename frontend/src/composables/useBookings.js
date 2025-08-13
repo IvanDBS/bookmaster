@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
+import { useToast } from './useToast'
 
 export function useBookings() {
   const authStore = useAuthStore()
@@ -129,11 +130,18 @@ export function useBookings() {
       // Фоновое обновление списка бронирований (не блокируем UI)
       loadBookings().catch(() => {})
       closeConfirmationModal()
+      const toast = useToast()
+      toast.show(
+        modalType.value === 'confirm' ? 'Запись подтверждена' : 'Запись отменена',
+        modalType.value === 'confirm' ? 'green' : 'red',
+      )
     } catch (error) {
       console.error(`Error ${modalType.value}ing booking:`, error)
-      alert(
+      const toast = useToast()
+      toast.show(
         `Ошибка при ${modalType.value === 'confirm' ? 'подтверждении' : 'отмене'} записи: ` +
           error.message,
+        'red',
       )
       // Optional: could rollback optimistic change, but we reloaded on error anyway
     }

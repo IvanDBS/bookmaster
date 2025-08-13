@@ -69,20 +69,7 @@
               ]"
             >
               <span class="text-xs font-medium">{{ date.day }}</span>
-              <!-- Индикатор нерабочего дня (приоритет выше загруженности) -->
-              <!-- <div v-if="date.loadLevel === 'non_working'" class="mt-0.5">
-                <span class="text-xs text-gray-400">⚫</span>
-              </div> -->
-              <!-- Индикатор загруженности на основе слотов -->
-              <!-- <div v-else-if="date.totalSlots > 0" class="flex items-center space-x-0.5 mt-0.5">
-                <div v-for="n in Math.min(date.bookedSlots, 4)" :key="n" 
-                     :class="[
-                       'w-1 h-1 rounded-full',
-                       getBookingDotClass(date)
-                     ]">
-                </div>
-                <span v-if="date.bookedSlots > 4" class="text-xs font-bold">+</span>
-              </div> -->
+              
             </div>
           </div>
         </div>
@@ -142,20 +129,7 @@
               ]"
             >
               <span class="text-xs font-medium">{{ date.day }}</span>
-              <!-- Индикатор нерабочего дня (приоритет выше загруженности) -->
-              <!-- <div v-if="date.loadLevel === 'non_working'" class="mt-0.5">
-                <span class="text-xs text-gray-400">⚫</span>
-              </div> -->
-              <!-- Индикатор загруженности на основе слотов -->
-              <!-- <div v-else-if="date.totalSlots > 0" class="flex items-center space-x-0.5 mt-0.5">
-                <div v-for="n in Math.min(date.bookedSlots, 4)" :key="n" 
-                     :class="[
-                       'w-1 h-1 rounded-full',
-                       getBookingDotClass(date)
-                     ]">
-                </div>
-                <span v-if="date.bookedSlots > 4" class="text-xs font-bold">+</span>
-              </div> -->
+              
             </div>
           </div>
         </div>
@@ -173,9 +147,9 @@
         @toggle-day-status="toggleDayStatus"
         @toggle-slot-break="onToggleSlotBreak"
         @add-new-slot="addNewSlotWrapped"
-        :show-confirm-modal="props.showConfirmModal"
-        :show-cancel-modal="props.showCancelModal"
-        :show-delete-modal="props.showDeleteModal"
+        :on-confirm-booking="props.onConfirmBooking"
+        :on-cancel-booking="props.onCancelBooking"
+        :on-delete-booking="props.onDeleteBooking"
         :get-status-text="props.getStatusText"
         :get-slot-price="props.getSlotPrice"
       />
@@ -213,9 +187,9 @@ const {
 
 // Props from MasterDashboard.vue
 const props = defineProps({
-  showConfirmModal: Function,
-  showCancelModal: Function,
-  showDeleteModal: Function,
+  onConfirmBooking: Function,
+  onCancelBooking: Function,
+  onDeleteBooking: Function,
   getStatusText: Function,
   getSlotPrice: Function,
   refreshTick: Number,

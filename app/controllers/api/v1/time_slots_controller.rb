@@ -14,7 +14,7 @@ module Api
 
         # Получаем слоты на дату и гарантируем актуальность занятости по существующим броням
         current_user.reconcile_bookings_with_slots_for_date(date)
-        slots = current_user.time_slots.for_date(date).order(:start_time)
+        slots = current_user.time_slots.for_date(date).includes(booking: :service).order(:start_time)
 
         Rails.logger.info "Found #{slots.count} slots for date #{date}"
 
@@ -36,7 +36,7 @@ module Api
         # Дополнительно синхронизируем брони со слотами для защиты от несвязанностей
         master.reconcile_bookings_with_slots_for_date(date)
 
-        slots = master.time_slots.for_date(date).order(:start_time)
+        slots = master.time_slots.for_date(date).includes(booking: :service).order(:start_time)
         render json: slots, each_serializer: TimeSlotPublicSerializer
       end
 

@@ -115,7 +115,7 @@
               {{ props.getStatusText(slot.booking.status) }}
             </span>
             <button
-              @click="props.showDeleteModal(slot.booking)"
+              @click="props.onDeleteBooking(slot.booking)"
               class="text-red-600 hover:text-red-700 font-light focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded"
               title="Отменить запись"
             >
@@ -129,14 +129,14 @@
             class="flex justify-between items-center text-xs"
           >
             <button
-              @click="props.showConfirmModal(slot.booking)"
+              @click="props.onConfirmBooking(slot.booking)"
               class="text-green-600 hover:text-green-700 font-light focus:outline-none focus:ring-2 focus:ring-green-500/20 rounded"
               title="Подтвердить"
             >
               Подтвердить
             </button>
             <button
-              @click="props.showCancelModal(slot.booking)"
+              @click="props.onCancelBooking(slot.booking)"
               class="text-red-600 hover:text-red-700 font-light focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded"
               title="Отменить"
             >
@@ -235,14 +235,16 @@
 </template>
 
 <script setup>
+import { useFormatters } from '../../../composables/useFormatters'
+
 const props = defineProps({
   selectedDate: Date,
   selectedDateSlots: Array,
   isDayWorking: Boolean,
   isAddingSlot: Boolean,
-  showConfirmModal: Function,
-  showCancelModal: Function,
-  showDeleteModal: Function,
+  onConfirmBooking: Function,
+  onCancelBooking: Function,
+  onDeleteBooking: Function,
   getStatusText: Function,
   getSlotPrice: Function,
 })
@@ -258,48 +260,7 @@ const formatSelectedDate = () => {
   })
 }
 
-const getSlotTypeText = (slotType) => {
-  const texts = {
-    work: 'Рабочий слот',
-    lunch: 'Перерыв',
-    blocked: 'Перерыв',
-  }
-  return texts[slotType] || slotType
-}
-
-const getSlotStatusClass = (slot) => {
-  if (slot.slot_type === 'lunch') {
-    return 'bg-gray-100 text-gray-800'
-  }
-  if (slot.slot_type === 'blocked') {
-    return 'bg-red-100 text-red-800'
-  }
-  if (slot.booked) {
-    return 'bg-blue-100 text-blue-800'
-  }
-  if (slot.is_available) {
-    return 'bg-green-100 text-green-800'
-  }
-  return 'bg-gray-100 text-gray-800'
-}
-
-const getSlotStatusText = (slot) => {
-  if (slot.slot_type === 'lunch') {
-    return 'Перерыв'
-  }
-  if (slot.slot_type === 'blocked') {
-    return 'Перерыв'
-  }
-  if (slot.booked) {
-    return 'Занято'
-  }
-  if (slot.is_available) {
-    return 'Свободно'
-  }
-  return 'Недоступно'
-}
-
-const isBreak = (slot) => slot.slot_type === 'blocked' || slot.slot_type === 'lunch'
+const { getSlotTypeText, getSlotStatusClass, getSlotStatusText, isBreak } = useFormatters()
 
 // Removed duplicated status text helper; use parent-provided getStatusText
 </script>

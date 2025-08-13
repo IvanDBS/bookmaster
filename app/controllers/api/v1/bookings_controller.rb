@@ -6,8 +6,8 @@ class Api::V1::BookingsController < Api::V1::BaseController
 
   def index
     @bookings = if current_user.master?
-      # Для мастеров: отдаем записи + ближайшие слоты как справку (UI сам может игнорировать)
-      current_user.bookings.includes(:service).order(start_time: :desc)
+      # Для мастеров
+      current_user.bookings.includes(:service, :user).order(start_time: :desc)
     else
       # Для клиентов показываем записи где они клиенты, сортируем по дате создания (новые сверху)
       Booking.includes(:service, :user)

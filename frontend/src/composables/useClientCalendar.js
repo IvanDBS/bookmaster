@@ -46,18 +46,7 @@ export function useClientCalendar() {
       const totalBookableSlots = workSlots.length
       const totalAvailableSlots = availableSlots.length
 
-      // Отладочная информация для 20 августа
-      if (dateString === '2025-08-20') {
-        console.log('Debug August 20th:', {
-          daySlots: daySlots.length,
-          workSlots: workSlots.length,
-          blockedSlots: blockedSlots.length,
-          availableSlots: availableSlots.length,
-          bookedSlots: bookedSlots.length,
-          totalBookableSlots,
-          totalAvailableSlots,
-        })
-      }
+      
 
       dates.push({
         date: date,
@@ -145,10 +134,8 @@ export function useClientCalendar() {
   }
 
   const setMasterId = (id) => {
-    console.log('Setting master ID:', id)
     masterId.value = id
     if (id) {
-      console.log('Loading slots for master:', id)
       loadSlotsForVisibleDates()
     }
   }

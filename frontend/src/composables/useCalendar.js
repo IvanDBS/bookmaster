@@ -206,11 +206,8 @@ export function useCalendar() {
         String(date.getDate()).padStart(2, '0')
 
       if (slotsCache.value.has(dateString)) {
-        console.log(`Cache HIT for ${dateString}. Slots:`, slotsCache.value.get(dateString).length)
         return slotsCache.value.get(dateString)
       }
-
-      console.log('Loading slots for date:', dateString)
 
       const response = await fetch(`${api.baseURL}/time_slots?date=${dateString}`, {
         headers: { Authorization: `Bearer ${authStore.token}` },
@@ -222,14 +219,6 @@ export function useCalendar() {
       }
 
       const slotsData = await response.json()
-      console.log(
-        'Received slots for',
-        dateString,
-        ':',
-        slotsData.slots.length,
-        'Slots data:',
-        slotsData.slots,
-      )
 
       slotsCache.value.set(dateString, slotsData.slots)
 
@@ -278,8 +267,6 @@ export function useCalendar() {
       )
 
       await Promise.all(uniqueDates.map((date) => loadSlotsForDate(date)))
-
-      console.log('Loaded slots for dates:', uniqueDates.length)
     } catch (error) {
       console.error('Error loading slots for visible dates:', error)
     }
@@ -309,12 +296,10 @@ export function useCalendar() {
   }
 
   const refreshCalendar = async () => {
-    console.log('Refreshing calendar...')
     slotsCache.value.clear()
     await loadWorkingSchedules()
     await loadWorkingDayExceptions()
     await loadSlotsForVisibleDates()
-    console.log('Calendar refreshed')
   }
 
   // Calendar navigation functions
@@ -337,7 +322,6 @@ export function useCalendar() {
   }
 
   const selectDate = async (date) => {
-    console.log(`Selecting date: ${date.date.toDateString()}`)
     selectedDate.value = date.date
     await loadSlotsForSelectedDate(date.date)
   }
@@ -356,7 +340,7 @@ export function useCalendar() {
         String(selectedDate.value.getMonth() + 1).padStart(2, '0') +
         '-' +
         String(selectedDate.value.getDate()).padStart(2, '0')
-      console.log('Toggling day status for:', dateString)
+      
 
       const updatedException = await api.toggleWorkingDay(dateString, authStore.token)
 
@@ -371,10 +355,13 @@ export function useCalendar() {
       slotsCache.value.delete(dateKey)
       await loadSlotsForSelectedDate(selectedDate.value)
 
-      console.log('Day status toggled successfully:', updatedException)
+      
     } catch (error) {
       console.error('Error toggling day status:', error)
-      alert('Ошибка при изменении статуса дня: ' + error.message)
+      if (typeof window !== 'undefined') {
+        const { useToast } = await import('./useToast')
+        useToast().show('Ошибка при изменении статуса дня: ' + error.message, 'red')
+      }
     }
   }
 

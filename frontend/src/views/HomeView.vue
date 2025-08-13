@@ -476,7 +476,9 @@ const handleCreateAccount = () => {
 }
 
 const handleContactUs = () => {
-  alert('Свяжитесь с нами: +373 699 9 999')
+  import('../composables/useToast').then(({ useToast }) =>
+    useToast().show('Свяжитесь с нами: +373 699 9 999'),
+  )
 }
 </script>
 

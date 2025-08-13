@@ -27,9 +27,9 @@
       <!-- Calendar Section -->
       <div id="calendar" class="mb-6 mt-8">
         <MasterCalendar
-          :show-confirm-modal="bookings.showConfirmModal"
-          :show-cancel-modal="bookings.showCancelModal"
-          :show-delete-modal="bookings.showCancelModal"
+          :on-confirm-booking="bookings.showConfirmModal"
+          :on-cancel-booking="bookings.showCancelModal"
+          :on-delete-booking="bookings.showCancelModal"
           :get-status-text="bookings.getStatusText"
           :get-slot-price="bookings.getSlotPrice"
           :refresh-tick="bookings.refreshTick.value"
@@ -197,5 +197,5 @@ const goToScheduleSettings = () => {
   router.push('/master/schedule')
 }
 
-// price helper moved into useBookings
+  // price/status helpers moved into useBookings
 </script>

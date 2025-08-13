@@ -87,7 +87,7 @@ const formatSelectedDate = computed(() => {
   })
 })
 
-const formatTime = (timeString) => {
+  const formatTime = (timeString) => {
   if (!timeString) return ''
   // Extract time from ISO string or time format
   const time = timeString.includes('T')
@@ -148,10 +148,7 @@ const loadSlotsForDate = async () => {
       dateString = props.selectedDate.date
     }
 
-    console.log('Selected date object:', props.selectedDate)
-    console.log('Using date string:', dateString)
-
-    console.log(`Loading slots for date: ${dateString}, master: ${props.masterId}`)
+    
 
     const data = await api.getPublicSlots(props.masterId, dateString)
     const slots = Array.isArray(data) ? data : data.slots || []

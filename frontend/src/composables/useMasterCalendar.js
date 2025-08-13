@@ -2,6 +2,7 @@ import { ref, computed, onMounted, onActivated, nextTick } from 'vue'
 import { createCalendarStyleUtils } from './useCalendarUtils'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
+import { useFormatters } from './useFormatters'
 
 export function useMasterCalendar() {
   const authStore = useAuthStore()
@@ -13,6 +14,7 @@ export function useMasterCalendar() {
   const workingSchedules = ref([])
   const slotsCache = ref(new Map()) // Кэш слотов по датам
   const workingDayExceptions = ref([]) // Исключения по дням
+  const isLoadingVisibleDates = ref(false)
 
   // Computed properties
   const isDayWorking = computed(() => {
@@ -356,7 +358,10 @@ export function useMasterCalendar() {
         console.debug('Rollback after toggleDayStatus failed:', rollbackErr)
       }
       console.error('Error toggling day status:', error)
-      alert('Ошибка при изменении статуса дня: ' + error.message)
+      if (typeof window !== 'undefined') {
+        const { useToast } = await import('../composables/useToast')
+        useToast().show('Ошибка при изменении статуса дня: ' + error.message, 'red')
+      }
     }
   }
 
@@ -394,6 +399,8 @@ export function useMasterCalendar() {
   }
 
   const loadSlotsForVisibleDates = async () => {
+    if (isLoadingVisibleDates?.value) return
+    isLoadingVisibleDates.value = true
     try {
       const currentMonth = currentDate.value
       const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
@@ -441,6 +448,8 @@ export function useMasterCalendar() {
       await Promise.all(uniqueDates.map((date) => loadSlotsForDate(date)))
     } catch (error) {
       console.error('Error loading slots for visible dates:', error)
+    } finally {
+      isLoadingVisibleDates.value = false
     }
   }
 
@@ -520,7 +529,10 @@ export function useMasterCalendar() {
       selectedDateSlots.value = prevSlots
       if (dateKey) slotsCache.value.set(dateKey, prevSlots)
       console.error('Failed to toggle break for slot', slot.id, e)
-      alert('Не удалось изменить статус слота: ' + e.message)
+      if (typeof window !== 'undefined') {
+        const { useToast } = await import('../composables/useToast')
+        useToast().show('Не удалось изменить статус слота: ' + e.message, 'red')
+      }
     }
   }
 
@@ -542,7 +554,10 @@ export function useMasterCalendar() {
       await loadSlotsForSelectedDate(selectedDate.value)
     } catch (error) {
       console.error('Error adding new slot:', error)
-      alert('Ошибка при добавлении нового слота: ' + error.message)
+      if (typeof window !== 'undefined') {
+        const { useToast } = await import('../composables/useToast')
+        useToast().show('Ошибка при добавлении нового слота: ' + error.message, 'red')
+      }
     } finally {
       // isAddingSlot.value = false // will be handled in MasterDashboard
     }
@@ -552,49 +567,8 @@ export function useMasterCalendar() {
   const { getDateBgClass, getDateHoverBgClass, getDateBorderClass, getBookingDotClass } =
     createCalendarStyleUtils()
 
-  // Slot helper functions
-  const getSlotTypeText = (slotType) => {
-    const texts = {
-      work: 'Рабочий слот',
-      lunch: 'Перерыв',
-      blocked: 'Перерыв',
-    }
-    return texts[slotType] || slotType
-  }
-
-  const getSlotStatusClass = (slot) => {
-    if (slot.slot_type === 'lunch') {
-      return 'bg-gray-100 text-gray-800'
-    }
-    if (slot.slot_type === 'blocked') {
-      return 'bg-red-100 text-red-800'
-    }
-    if (slot.booked) {
-      return 'bg-blue-100 text-blue-800'
-    }
-    if (slot.is_available) {
-      return 'bg-green-100 text-green-800'
-    }
-    return 'bg-gray-100 text-gray-800'
-  }
-
-  const getSlotStatusText = (slot) => {
-    if (slot.slot_type === 'lunch') {
-      return 'Перерыв'
-    }
-    if (slot.slot_type === 'blocked') {
-      return 'Перерыв'
-    }
-    if (slot.booked) {
-      return 'Занято'
-    }
-    if (slot.is_available) {
-      return 'Свободно'
-    }
-    return 'Недоступно'
-  }
-
-  const isBreak = (slot) => slot.slot_type === 'blocked' || slot.slot_type === 'lunch'
+  // Slot helper functions from shared formatters
+  const { getSlotTypeText, getSlotStatusClass, getSlotStatusText, isBreak } = useFormatters()
 
   onMounted(async () => {
     await loadWorkingSchedules()

@@ -1,4 +1,5 @@
 import { ref, onMounted } from 'vue'
+import { useToast } from './useToast'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 
@@ -72,12 +73,12 @@ export function useServices() {
       await loadServices()
 
       const wasEditing = editingServiceId.value
-      alert(wasEditing ? 'Услуга успешно обновлена!' : 'Услуга успешно добавлена!')
+      useToast().show(wasEditing ? 'Услуга успешно обновлена!' : 'Услуга успешно добавлена!')
 
       closeModal()
     } catch (error) {
       console.error('Error adding service:', error)
-      alert('Ошибка при добавлении услуги: ' + error.message)
+      useToast().show('Ошибка при добавлении услуги: ' + error.message, 'red')
     }
   }
 
@@ -90,10 +91,10 @@ export function useServices() {
 
         await api.deleteService(serviceId, authStore.token)
         await loadServices()
-        alert('Услуга успешно удалена!')
+        useToast().show('Услуга успешно удалена!')
       } catch (error) {
         console.error('Error deleting service:', error)
-        alert('Ошибка при удалении услуги: ' + error.message)
+        useToast().show('Ошибка при удалении услуги: ' + error.message, 'red')
       }
     }
   }

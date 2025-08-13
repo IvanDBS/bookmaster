@@ -130,9 +130,8 @@ const {
 const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 // Override selectDate to emit the selected date
-const selectDate = (date) => {
+  const selectDate = (date) => {
   if (date.isPast) return
-  console.log('Date selected:', date)
   selectDateBase(date)
   emit('date-selected', date)
 }

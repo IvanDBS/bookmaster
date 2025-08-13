@@ -184,7 +184,10 @@ const onToggleSlotBreak = async ({ slot, isBreak }) => {
     await loadSlotsForSelectedDate(date)
   } catch (e) {
     console.error('Failed to toggle break for slot', slot.id, e)
-    alert('Не удалось изменить статус слота: ' + e.message)
+    if (typeof window !== 'undefined') {
+      const { useToast } = await import('../../../composables/useToast')
+      useToast().show('Не удалось изменить статус слота: ' + e.message, 'red')
+    }
   }
 }
 // defineOptions is not needed; component is used via import path

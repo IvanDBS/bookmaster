@@ -213,7 +213,7 @@ const loadWorkingSchedules = async () => {
       return
     }
 
-    console.log('Loading working schedules...')
+    
     const schedulesData = await api.getWorkingSchedules(authStore.token)
 
     // Add day names and ensure all days are present, and format times
@@ -320,7 +320,7 @@ const loadWorkingSchedules = async () => {
       }
     })
 
-    console.log('Processed schedules:', workingSchedules.value)
+    
   } catch (error) {
     console.error('Error loading working schedules:', error)
     workingSchedules.value = []
@@ -335,7 +335,7 @@ const saveSchedule = async () => {
       throw new Error('Не авторизован')
     }
 
-    console.log('Saving schedules:', workingSchedules.value)
+    
 
     for (const schedule of workingSchedules.value) {
       // Проверяем валидность данных перед отправкой
@@ -362,10 +362,16 @@ const saveSchedule = async () => {
     // Очищаем кэш слотов в sessionStorage для принудительного обновления календаря
     sessionStorage.setItem('clearSlotsCache', 'true')
 
-    alert('Расписание успешно сохранено!')
+    if (typeof window !== 'undefined') {
+      const { useToast } = await import('../composables/useToast')
+      useToast().show('Расписание успешно сохранено!')
+    }
   } catch (error) {
     console.error('Error saving schedule:', error)
-    alert('Ошибка при сохранении расписания: ' + error.message)
+    if (typeof window !== 'undefined') {
+      const { useToast } = await import('../composables/useToast')
+      useToast().show('Ошибка при сохранении расписания: ' + error.message, 'red')
+    }
   } finally {
     saving.value = false
   }
@@ -419,7 +425,6 @@ const setFullWeekSchedule = () => {
 // Navigation function
 const goBackToDashboard = async () => {
   // Очищаем кэш слотов перед возвратом в dashboard
-  console.log('Clearing slots cache before returning to dashboard...')
 
   // Устанавливаем флаг для обновления календаря в dashboard
   sessionStorage.setItem('fromScheduleSettings', 'true')
