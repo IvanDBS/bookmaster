@@ -5,7 +5,7 @@ services:
     env_file:
       - compose.env
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -19,6 +19,7 @@ services:
     env_file:
       - compose.env
     environment:
+      BUNDLE_WITHOUT: ""
       RAILS_MAX_THREADS: 5
     depends_on:
       - db
@@ -35,6 +36,7 @@ services:
     env_file:
       - compose.env
     environment:
+      BUNDLE_WITHOUT: ""
       RAILS_MAX_THREADS: 5
     depends_on:
       - db
@@ -44,21 +46,18 @@ services:
     command: bundle exec sidekiq
 
   frontend:
-    image: node:20-alpine
+    build: ./frontend
     container_name: bookmaster_frontend
-    working_dir: /app
-    env_file:
-      - .env.development
     environment:
       NODE_ENV: development
+      VITE_API_URL: http://localhost:3000
     depends_on:
       - web
     ports:
       - "5173:5173"
     volumes:
       - ./frontend:/app
-      - node_modules:/app/node_modules
-    command: sh -c "[ -d node_modules ] || npm ci && npm run dev -- --host 0.0.0.0"
+      - /app/node_modules
 
 volumes:
   pgdata:
