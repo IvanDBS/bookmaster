@@ -18,7 +18,7 @@ export function useClientCalendar() {
   })
 
   // Calendar date generation functions
-  const generateCalendarDates = (baseDate, isNextMonth = false) => {
+  const generateCalendarDates = (baseDate) => {
     const year = baseDate.getFullYear()
     const month = baseDate.getMonth()
 
@@ -108,9 +108,6 @@ export function useClientCalendar() {
   }
 
   const selectDate = (date) => {
-    console.log('Date selected in calendar:', date)
-    console.log('Date key:', date.key)
-    console.log('Date date:', date.date)
     selectedDate.value = date
   }
 
@@ -120,11 +117,10 @@ export function useClientCalendar() {
 
     const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
-    console.log(`Loading slots for date: ${dateString}, master: ${masterId.value}`)
 
     try {
       const data = await api.getPublicSlots(masterId.value, dateString)
-      slotsCache.value.set(dateString, Array.isArray(data) ? data : (data.slots || []))
+      slotsCache.value.set(dateString, Array.isArray(data) ? data : data.slots || [])
     } catch (error) {
       console.error('Error loading slots for date:', error)
       slotsCache.value.set(dateString, [])
@@ -137,8 +133,6 @@ export function useClientCalendar() {
     const year = currentDate.value.getFullYear()
     const month = currentDate.value.getMonth()
 
-    console.log(`Loading slots for master ${masterId.value} in ${year}-${month + 1}`)
-
     // Load slots for all visible dates in the calendar
     for (let day = 1; day <= 31; day++) {
       const date = new Date(year, month, day)
@@ -148,7 +142,6 @@ export function useClientCalendar() {
     }
 
     // Force calendar to update
-    console.log('Calendar cache after loading:', slotsCache.value.size, 'dates')
   }
 
   const setMasterId = (id) => {

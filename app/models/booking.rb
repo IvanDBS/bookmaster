@@ -3,6 +3,9 @@ class Booking < ApplicationRecord
   belongs_to :user
   belongs_to :service
 
+  # Status enum (string-backed)
+  enum :status, { pending: 'pending', confirmed: 'confirmed', cancelled: 'cancelled', completed: 'completed' }
+
   # Validations
   validates :start_time, presence: true
   validates :end_time, presence: true

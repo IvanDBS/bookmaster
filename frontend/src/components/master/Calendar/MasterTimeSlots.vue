@@ -152,7 +152,11 @@
       <button
         @click="$emit('addNewSlot')"
         class="inline-flex items-center px-4 py-2 border text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
-        :class="[isAddingSlot ? 'border-gray-300 text-gray-400' : 'border-blue-500 text-blue-500 hover:bg-blue-50']"
+        :class="[
+          isAddingSlot
+            ? 'border-gray-300 text-gray-400'
+            : 'border-blue-500 text-blue-500 hover:bg-blue-50',
+        ]"
         :disabled="isAddingSlot"
       >
         <svg

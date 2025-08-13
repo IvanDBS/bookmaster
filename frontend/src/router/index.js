@@ -65,7 +65,9 @@ router.beforeEach(async (to, from, next) => {
     if (authStore.token && !authStore.user) {
       try {
         await authStore.getCurrentUser()
-      } catch (_) {}
+      } catch {
+        // ignore
+      }
     }
 
     if (!authStore.isAuthenticated) {

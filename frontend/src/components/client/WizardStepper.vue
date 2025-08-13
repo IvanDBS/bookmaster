@@ -22,5 +22,3 @@
 defineProps({ current: { type: Number, required: true } })
 const steps = ['Выбор услуги', 'Мастер', 'Время', 'Подтверждение']
 </script>
-
-

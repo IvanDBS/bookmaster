@@ -16,7 +16,9 @@
         <span class="text-3xl mb-2" v-if="type === 'маникюр'">💅</span>
         <span class="text-3xl mb-2" v-else-if="type === 'педикюр'">🦶</span>
         <span class="text-3xl mb-2" v-else>💆‍♀️</span>
-        <span class="font-bold text-gray-900 text-lg">{{ type.charAt(0).toUpperCase() + type.slice(1) }}</span>
+        <span class="font-bold text-gray-900 text-lg">{{
+          type.charAt(0).toUpperCase() + type.slice(1)
+        }}</span>
         <span class="text-sm text-gray-500 mt-1">Выбор категории</span>
       </button>
     </div>
@@ -27,5 +29,3 @@
 defineProps({ serviceTypes: Array, selectedServiceType: String })
 defineEmits(['select'])
 </script>
-
-

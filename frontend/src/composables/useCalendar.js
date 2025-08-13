@@ -53,7 +53,7 @@ export function useCalendar() {
   })
 
   // Calendar date generation functions
-  const generateCalendarDates = (baseDate, isNextMonth = false) => {
+  const generateCalendarDates = (baseDate) => {
     const year = baseDate.getFullYear()
     const month = baseDate.getMonth()
 
@@ -167,7 +167,7 @@ export function useCalendar() {
       const schedulesData = await response.json()
       workingSchedules.value = schedulesData
 
-      console.log('Loaded working schedules:', workingSchedules.value)
+      // loaded
     } catch (error) {
       console.error('Error loading working schedules:', error)
       workingSchedules.value = []
@@ -184,8 +184,6 @@ export function useCalendar() {
 
       const exceptionsData = await api.getWorkingDayExceptions(authStore.token)
       workingDayExceptions.value = exceptionsData
-
-      console.log('Loaded working day exceptions:', workingDayExceptions.value.length)
     } catch (error) {
       console.error('Error loading working day exceptions:', error)
       workingDayExceptions.value = []

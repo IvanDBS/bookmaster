@@ -3,7 +3,10 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="flex justify-between items-center">
         <h3 class="text-lg font-semibold text-gray-900">История записей</h3>
-        <button @click="$emit('clear-history')" class="text-red-600 hover:text-red-700 text-sm font-medium">
+        <button
+          @click="$emit('clear-history')"
+          class="text-red-600 hover:text-red-700 text-sm font-medium"
+        >
           Очистить историю
         </button>
       </div>
@@ -37,11 +40,17 @@
             </div>
           </div>
           <div class="text-right">
-            <span :class="getStatusClass(booking.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
+            <span
+              :class="getStatusClass(booking.status)"
+              class="px-3 py-1 rounded-full text-xs font-semibold"
+            >
               {{ getStatusText(booking.status) }}
             </span>
             <p class="text-sm font-semibold text-gray-900 mt-1">{{ booking.service?.price }} MDL</p>
-            <button @click="$emit('delete-booking', booking.id)" class="mt-2 text-red-600 hover:text-red-700 text-sm font-medium">
+            <button
+              @click="$emit('delete-booking', booking.id)"
+              class="mt-2 text-red-600 hover:text-red-700 text-sm font-medium"
+            >
               Удалить
             </button>
           </div>
@@ -57,5 +66,3 @@ defineProps({ bookings: { type: Array, default: () => [] } })
 defineEmits(['delete-booking', 'clear-history'])
 const { formatDate, formatTime, getStatusClass, getStatusText } = useFormatters()
 </script>
-
-

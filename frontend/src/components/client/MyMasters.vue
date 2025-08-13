@@ -45,5 +45,3 @@
 defineProps({ masters: { type: Array, default: () => [] } })
 defineEmits(['select-master'])
 </script>
-
-

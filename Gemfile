@@ -54,3 +54,4 @@ group :development do
   gem "rubocop-rails", require: false
   gem "rubocop-rspec", require: false
 end
+gem "rubocop-discourse", "~> 3.12"

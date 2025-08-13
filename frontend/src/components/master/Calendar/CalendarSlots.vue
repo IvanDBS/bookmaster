@@ -112,8 +112,7 @@
 </template>
 
 <script setup>
-// Props
-const props = defineProps({
+defineProps({
   selectedDate: {
     type: Date,
     required: true,
@@ -132,8 +131,7 @@ const props = defineProps({
   },
 })
 
-// Emits
-const emit = defineEmits([
+defineEmits([
   'toggle-day-status',
   'confirm-booking',
   'cancel-booking',

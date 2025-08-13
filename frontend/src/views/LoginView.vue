@@ -96,7 +96,11 @@
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414L9 13.414l4.707-4.707z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414L9 13.414l4.707-4.707z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
               </div>
               <div class="ml-3">
@@ -187,9 +191,10 @@ const initGoogleButton = async () => {
   try {
     loadingGoogle.value = true
     await loadGoogleScript()
-    const CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_CLIENT_ID)
-      ? import.meta.env.VITE_GOOGLE_CLIENT_ID
-      : '35182841457-gmk8u309dkpq217uadqlf7n5e3qevj7t.apps.googleusercontent.com'
+    const CLIENT_ID =
+      typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_CLIENT_ID
+        ? import.meta.env.VITE_GOOGLE_CLIENT_ID
+        : '35182841457-gmk8u309dkpq217uadqlf7n5e3qevj7t.apps.googleusercontent.com'
     window.google.accounts.id.initialize({
       client_id: CLIENT_ID,
       auto_select: false,
@@ -249,7 +254,9 @@ onMounted(async () => {
       window.history.replaceState({}, '', url.toString())
       info.value = 'Email подтвержден. Теперь войдите.'
     } else if (registered === '1') {
-      info.value = email ? `Мы отправили письмо с подтверждением на ${email}` : 'Мы отправили письмо с подтверждением на ваш email'
+      info.value = email
+        ? `Мы отправили письмо с подтверждением на ${email}`
+        : 'Мы отправили письмо с подтверждением на ваш email'
     }
   } catch (e) {
     error.value = e.message || 'Не удалось подтвердить email'

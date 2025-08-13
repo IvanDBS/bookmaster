@@ -17,9 +17,10 @@ export function useBookings() {
   // Computed properties
   const filteredBookings = computed(() => {
     const safe = Array.isArray(recentBookings.value) ? recentBookings.value.filter(Boolean) : []
-    const filtered = bookingFilter.value === 'all'
-      ? safe
-      : safe.filter((booking) => booking && booking.status === bookingFilter.value)
+    const filtered =
+      bookingFilter.value === 'all'
+        ? safe
+        : safe.filter((booking) => booking && booking.status === bookingFilter.value)
 
     // Sort by creation time (newest first). Fallback to start_time if created_at is missing.
     return [...filtered].sort((a, b) => {
@@ -117,11 +118,7 @@ export function useBookings() {
       const idx = previous.findIndex((b) => b && String(b.id) === idStr)
       if (idx !== -1) {
         const updated = { ...previous[idx], status }
-        recentBookings.value = [
-          ...previous.slice(0, idx),
-          updated,
-          ...previous.slice(idx + 1),
-        ]
+        recentBookings.value = [...previous.slice(0, idx), updated, ...previous.slice(idx + 1)]
       }
 
       // Сразу дёргаем рефреш календаря, чтобы не ждать сеть

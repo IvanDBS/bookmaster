@@ -22,12 +22,13 @@ export const useAuthStore = defineStore('auth', {
       if (typeof window !== 'undefined') {
         window.addEventListener('api:unauthorized', () => {
           this.logout()
-          // Мягкий редирект на /login если мы не там
           try {
             if (window.location.pathname !== '/login') {
               window.location.href = '/login'
             }
-          } catch (_) {}
+          } catch {
+            // ignore navigation errors
+          }
         })
       }
     },
@@ -41,9 +42,9 @@ export const useAuthStore = defineStore('auth', {
         this.token = response.token
         localStorage.setItem('token', this.token)
         return response
-      } catch (error) {
-        this.error = error.message
-        throw error
+      } catch (err) {
+        this.error = err.message
+        throw err
       } finally {
         this.loading = false
       }
@@ -72,7 +73,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await api.getCurrentUser(this.token)
         this.user = response.user
-      } catch (error) {
+      } catch {
         this.logout()
       }
     },
@@ -82,8 +83,8 @@ export const useAuthStore = defineStore('auth', {
         if (this.token) {
           await api.logout(this.token)
         }
-      } catch (error) {
-        console.error('Logout error:', error)
+      } catch (e) {
+        console.error('Logout error:', e)
       } finally {
         this.user = null
         this.token = null

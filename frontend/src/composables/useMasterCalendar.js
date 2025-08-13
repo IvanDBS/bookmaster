@@ -76,8 +76,6 @@ export function useMasterCalendar() {
         (slot) => slot.booking && slot.booking.status === 'pending',
       )
 
-      // Общее количество слотов, которые могут быть забронированы (рабочие + заблокированные)
-      const totalBookableSlots = workSlots.length + blockedSlots.length
       // Количество доступных слотов (только рабочие, которые доступны и не забронированы)
       const totalAvailableSlots = availableSlots.length
 
@@ -179,8 +177,6 @@ export function useMasterCalendar() {
         (slot) => slot.booking && slot.booking.status === 'pending',
       )
 
-      // Общее количество слотов, которые могут быть забронированы (рабочие + заблокированные)
-      const totalBookableSlots = workSlots.length + blockedSlots.length
       // Количество доступных слотов (только рабочие, которые доступны и не забронированы)
       const totalAvailableSlots = availableSlots.length
 
@@ -276,7 +272,9 @@ export function useMasterCalendar() {
         // Попробуем восстановить пользователя/токен из профиля, если есть
         try {
           await authStore.getCurrentUser()
-        } catch (_) {}
+        } catch (err) {
+          console.debug('getCurrentUser failed in loadWorkingDayExceptions:', err)
+        }
       }
       if (!authStore.token) {
         workingDayExceptions.value = []
@@ -295,7 +293,11 @@ export function useMasterCalendar() {
     try {
       if (!selectedDate.value) return
       if (!authStore.token) {
-        try { await authStore.getCurrentUser() } catch (_) {}
+        try {
+          await authStore.getCurrentUser()
+        } catch (err) {
+          console.debug('getCurrentUser failed in toggleDayStatus (pre-check):', err)
+        }
       }
       if (!authStore.token) return
 
@@ -325,12 +327,8 @@ export function useMasterCalendar() {
       } catch (err) {
         // Если 401 — пробуем обновить профиль и повторить один раз
         if (err && err.status === 401) {
-          try {
-            await authStore.getCurrentUser()
-            updatedException = await api.toggleWorkingDay(dateString, authStore.token)
-          } catch (inner) {
-            throw inner
-          }
+          await authStore.getCurrentUser()
+          updatedException = await api.toggleWorkingDay(dateString, authStore.token)
         } else {
           throw err
         }
@@ -354,7 +352,9 @@ export function useMasterCalendar() {
           if (idx !== -1) workingDayExceptions.value.splice(idx, 1)
           await loadSlotsForSelectedDate(selectedDate.value)
         }
-      } catch (_) {}
+      } catch (rollbackErr) {
+        console.debug('Rollback after toggleDayStatus failed:', rollbackErr)
+      }
       console.error('Error toggling day status:', error)
       alert('Ошибка при изменении статуса дня: ' + error.message)
     }
@@ -363,7 +363,11 @@ export function useMasterCalendar() {
   const loadSlotsForDate = async (date) => {
     try {
       if (!authStore.token) {
-        try { await authStore.getCurrentUser() } catch (_) {}
+        try {
+          await authStore.getCurrentUser()
+        } catch (err) {
+          console.debug('getCurrentUser failed in loadSlotsForDate:', err)
+        }
       }
       if (!authStore.token) {
         console.warn('No auth token available')
@@ -506,7 +510,7 @@ export function useMasterCalendar() {
 
     try {
       if (!authStore.token) throw new Error('Не авторизован')
-      const json = await api.updateTimeSlot(slot.id, { is_break: isBreakNext }, authStore.token)
+      await api.updateTimeSlot(slot.id, { is_break: isBreakNext }, authStore.token)
       if (selectedDate.value) {
         slotsCache.value.delete(dateKey)
         await loadSlotsForSelectedDate(selectedDate.value)

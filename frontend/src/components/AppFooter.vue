@@ -13,8 +13,8 @@
             <h3 class="text-xl font-bold">BookMaster</h3>
           </div>
           <p class="text-gray-400 mb-4">
-            Удобная платформа для записи к мастерам. Найдите своего мастера и запишитесь на услугу
-            в несколько кликов.
+            Удобная платформа для записи к мастерам. Найдите своего мастера и запишитесь на услугу в
+            несколько кликов.
           </p>
           <div class="flex space-x-4">
             <a href="#" class="text-gray-400 hover:text-white transition-colors">
@@ -44,10 +44,14 @@
               <a href="#" class="text-gray-400 hover:text-white transition-colors">О нас</a>
             </li>
             <li>
-              <a href="#" class="text-gray-400 hover:text-white transition-colors">Как это работает</a>
+              <a href="#" class="text-gray-400 hover:text-white transition-colors"
+                >Как это работает</a
+              >
             </li>
             <li>
-              <a href="#" class="text-gray-400 hover:text-white transition-colors">Стать мастером</a>
+              <a href="#" class="text-gray-400 hover:text-white transition-colors"
+                >Стать мастером</a
+              >
             </li>
             <li>
               <a href="#" class="text-gray-400 hover:text-white transition-colors">Поддержка</a>
@@ -70,8 +74,12 @@
         <div class="flex flex-col md:flex-row justify-between items-center">
           <p class="text-gray-400 text-sm">© 2024 BookMaster. Все права защищены.</p>
           <div class="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Политика конфиденциальности</a>
-            <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Условия использования</a>
+            <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors"
+              >Политика конфиденциальности</a
+            >
+            <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors"
+              >Условия использования</a
+            >
           </div>
         </div>
       </div>
@@ -87,5 +95,3 @@ defineProps({
   },
 })
 </script>
-
-

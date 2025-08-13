@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { onMounted, watch } from 'vue'
 import { useClientCalendar } from '@/composables/useClientCalendar'
 
 const props = defineProps({
@@ -115,7 +115,7 @@ const props = defineProps({
 const emit = defineEmits(['date-selected'])
 
 const {
-  currentDate,
+  // currentDate,
   calendarDates,
   currentMonthName,
   currentYear,
@@ -139,7 +139,6 @@ const selectDate = (date) => {
 
 // Set master ID and load slots when component mounts or masterId changes
 onMounted(() => {
-  console.log('ClientCalendar mounted, masterId:', props.masterId)
   if (props.masterId) {
     setMasterId(props.masterId)
   }
@@ -149,7 +148,6 @@ onMounted(() => {
 watch(
   () => props.masterId,
   (newMasterId) => {
-    console.log('MasterId changed to:', newMasterId)
     if (newMasterId) {
       setMasterId(newMasterId)
     }

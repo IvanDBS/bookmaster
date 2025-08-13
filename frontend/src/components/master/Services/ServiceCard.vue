@@ -8,10 +8,7 @@
     <div class="text-right">
       <p class="text-lg font-semibold text-gray-900">{{ formatPrice(service.price) }} MDL</p>
       <div class="flex space-x-2 mt-2 text-xs font-light">
-        <button
-          @click="$emit('edit-service', service)"
-          class="text-blue-600 hover:text-blue-700"
-        >
+        <button @click="$emit('edit-service', service)" class="text-blue-600 hover:text-blue-700">
           Редактировать
         </button>
         <button
@@ -26,16 +23,14 @@
 </template>
 
 <script setup>
-// Props
-const props = defineProps({
+defineProps({
   service: {
     type: Object,
     required: true,
   },
 })
 
-// Emits
-const emit = defineEmits(['edit-service', 'delete-service'])
+defineEmits(['edit-service', 'delete-service'])
 
 const formatPrice = (value) => {
   const num = Number(value)

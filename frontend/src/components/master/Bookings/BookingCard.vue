@@ -38,16 +38,14 @@
 <script setup>
 import { useBookings } from '../../../composables/useBookings'
 
-// Props
-const props = defineProps({
+defineProps({
   booking: {
     type: Object,
     required: true,
   },
 })
 
-// Emits
-const emit = defineEmits(['show-confirm-modal', 'show-cancel-modal'])
+defineEmits(['show-confirm-modal', 'show-cancel-modal'])
 
 // Используем функции из composable
 const { formatDate, formatTime, getStatusClass, getStatusText } = useBookings()

@@ -10,6 +10,9 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
+      namespace :admin do
+        resources :users, only: [:index, :update, :destroy]
+      end
       # Auth routes
       post '/auth/register', to: 'auth#register'
       post '/auth/login', to: 'auth#login'

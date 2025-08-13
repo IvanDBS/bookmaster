@@ -25,7 +25,10 @@
             </div>
           </div>
           <div class="text-right">
-            <span :class="getStatusClass(booking.status)" class="px-4 py-2 rounded-full text-xs font-bold shadow-sm">
+            <span
+              :class="getStatusClass(booking.status)"
+              class="px-4 py-2 rounded-full text-xs font-bold shadow-sm"
+            >
               {{ getStatusText(booking.status) }}
             </span>
             <p class="text-lg font-bold text-gray-900 mt-2">{{ booking.service?.price }} MDL</p>
@@ -41,5 +44,3 @@ import { useFormatters } from '../../composables/useFormatters'
 const { formatDate, formatTime, getStatusClass, getStatusText } = useFormatters()
 defineProps({ bookings: { type: Array, default: () => [] } })
 </script>
-
-

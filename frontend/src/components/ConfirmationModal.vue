@@ -126,6 +126,14 @@ const props = defineProps({
     default: 'confirm', // 'confirm' or 'cancel' or 'delete'
     validator: (value) => ['confirm', 'cancel', 'delete'].includes(value),
   },
+  titleText: {
+    type: String,
+    default: '',
+  },
+  messageText: {
+    type: String,
+    default: '',
+  },
   booking: {
     type: Object,
     required: false,
@@ -144,26 +152,30 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'confirm'])
 
-const title =
+const baseTitle =
   props.type === 'confirm'
     ? 'Подтверждение записи'
     : props.type === 'cancel'
       ? 'Отмена записи'
       : 'Удаление записи'
 
-const message =
+const title = props.titleText || baseTitle
+
+const baseMessage =
   props.type === 'confirm'
     ? 'Вы уверены, что хотите подтвердить эту запись?'
     : props.type === 'cancel'
       ? 'Вы уверены, что хотите отменить эту запись?'
       : 'Вы уверены, что хотите удалить эту запись?'
 
+const message = props.messageText || baseMessage
+
 const closeModal = () => {
   emit('close')
 }
 
 const confirmAction = () => {
-  emit('confirm', props.booking.id)
+  emit('confirm', props.booking ? props.booking.id : true)
 }
 
 const formatTime = (timeString) => {

@@ -14,8 +14,10 @@ class Api::V1::BookingsController < Api::V1::BaseController
              .where(client_email: current_user.email)
              .order(created_at: :desc)
                 end
-    
-    render json: @bookings, each_serializer: BookingPublicSerializer
+
+    render json: {
+      data: ActiveModelSerializers::SerializableResource.new(@bookings, each_serializer: BookingPublicSerializer)
+    }
   end
 
   def show
@@ -51,7 +53,7 @@ class Api::V1::BookingsController < Api::V1::BaseController
     slots_chain = [slot]
     if required_slots > 1
       (1...required_slots).each do |i|
-        expected_start = Time.zone.parse("2000-01-01 #{slot.start_time.strftime('%H:%M')}") + (i * slot.duration)
+        expected_start = Time.zone.parse("2000-01-01 #{slot.start_time.strftime('%H:%M')}") + (i * slot.duration_minutes).minutes
         next_slot = master.time_slots.for_date(slot.date)
                           .find_by(start_time: expected_start, slot_type: 'work')
         unless next_slot&.can_be_booked? && next_slot.slot_type == 'work'

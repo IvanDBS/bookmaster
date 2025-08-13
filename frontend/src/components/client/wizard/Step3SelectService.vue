@@ -8,7 +8,11 @@
         Выбрать другого мастера
       </button>
     </div>
-    <MasterServicesPicker :services="services" :selected-id="selectedServiceId || null" @select="$emit('select', $event)" />
+    <MasterServicesPicker
+      :services="services"
+      :selected-id="selectedServiceId || null"
+      @select="$emit('select', $event)"
+    />
   </div>
 </template>
 
@@ -22,5 +26,3 @@ defineProps({
 })
 defineEmits(['select', 'back'])
 </script>
-
-

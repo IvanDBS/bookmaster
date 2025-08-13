@@ -20,8 +20,6 @@
         <p class="text-gray-600 text-lg">Управляйте своими записями и находите новых мастеров</p>
       </div>
 
-      
-
       <!-- My Masters Section removed per request: show only booking wizard -->
 
       <!-- Booking Wizard (минималистичный) -->
@@ -141,7 +139,19 @@
       <BookingsList id="bookings" :bookings="currentBookings" />
 
       <!-- Booking History -->
-      <BookingHistory :bookings="bookingHistory" @delete-booking="deleteBooking" @clear-history="clearHistory" />
+      <BookingHistory
+        :bookings="bookingHistory"
+        @delete-booking="openDeleteBookingModal"
+        @clear-history="openClearHistoryModal"
+      />
+      <ConfirmationModal
+        :is-visible="isConfirmVisible"
+        :type="confirmType"
+        :title-text="confirmTitle"
+        :message-text="confirmMessage"
+        @close="isConfirmVisible = false"
+        @confirm="handleConfirmModal"
+      />
     </div>
 
     <!-- Footer -->
@@ -239,26 +249,27 @@ import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useClientBookingWizard } from '../composables/useClientBookingWizard'
 import { useClientMasters } from '../composables/useClientMasters'
+import { useToast } from '../composables/useToast'
 import AppHeader from '../components/AppHeader.vue'
-import AppFooter from '../components/AppFooter.vue'
 import MyMasters from '../components/client/MyMasters.vue'
 import BookingWizard from '../components/client/BookingWizard.vue'
 import WizardStepper from '../components/client/WizardStepper.vue'
-import Step1SelectType from '../components/client/wizard/Step1SelectType.vue'
-import Step2SelectMaster from '../components/client/wizard/Step2SelectMaster.vue'
+// Removed unused wizard step imports
 import Step3SelectService from '../components/client/wizard/Step3SelectService.vue'
 import Step4SelectTime from '../components/client/wizard/Step4SelectTime.vue'
 import Step5Confirm from '../components/client/wizard/Step5Confirm.vue'
 import BookingsList from '../components/client/BookingsList.vue'
 import BookingHistory from '../components/client/BookingHistory.vue'
+import ConfirmationModal from '../components/ConfirmationModal.vue'
 import api from '../services/api'
 
 const authStore = useAuthStore()
+const { show: toast } = useToast()
 // formatters used inside step components
 
 const user = computed(() => authStore.user)
 // Masters list via composable
-const { myMasters, isLoadingMasters, loadMyMasters } = useClientMasters(authStore)
+const { myMasters, loadMyMasters } = useClientMasters(authStore)
 const currentBookings = ref([])
 const bookingHistory = ref([])
 
@@ -273,22 +284,19 @@ const {
   selectedService,
   selectedDate,
   selectedCalendarDate,
-  daySlots,
   selectedSlot,
   loadServiceTypes,
   selectServiceType,
   selectMaster,
-  resetToStep1,
   goBackToStep1,
   goBackToMasters,
   selectConcreteService,
   fetchSlots,
-  selectSlot,
   onDateSelected,
   onSlotSelected,
   submitBooking,
 } = useClientBookingWizard()
-const selectedMasterForBooking = ref(null)
+// const selectedMasterForBooking = ref(null)
 // Для клиента, авторизованного в системе, backend возьмет email/имя из профиля,
 // поэтому дополнительных полей на фронте не требуется
 
@@ -312,7 +320,9 @@ onBeforeUnmount(() => {
 const handleBookingCreated = async () => {
   try {
     await Promise.all([loadCurrentBookings(), loadMyMasters()])
-  } catch (_) {}
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 // loadServiceTypes provided by useClientBookingWizard
@@ -321,7 +331,9 @@ const handleBookingCreated = async () => {
 
 const loadCurrentBookings = async () => {
   try {
-    if (!authStore.token) { return }
+    if (!authStore.token) {
+      return
+    }
     const data = await api.getBookings(authStore.token)
 
     // Разделяем записи на активные и историю
@@ -334,8 +346,6 @@ const loadCurrentBookings = async () => {
 
     currentBookings.value = activeBookings
     bookingHistory.value = historyBookings
-
-    
   } catch (e) {
     console.error('Failed to load client bookings:', e)
     currentBookings.value = []
@@ -343,10 +353,7 @@ const loadCurrentBookings = async () => {
   }
 }
 
-const loadBookingHistory = async () => {
-  // История загружается вместе с активными записями в loadCurrentBookings
-  
-}
+// const loadBookingHistory = async () => {}
 
 // provided by useClientBookingWizard
 
@@ -380,55 +387,14 @@ const selectMasterForBooking = (master) => {
   currentStep.value = 3
 }
 
-const cancelMasterSelection = () => {
-  selectedMasterForBooking.value = null
-}
+// const cancelMasterSelection = () => {}
 
 // provided by useClientBookingWizard
 
-const selectServiceAndGoToTime = (master, service) => {
-  
-
-  // Выбираем мастера и услугу, сразу переходим к выбору времени
-  selectedServiceType.value = null
-
-  // Устанавливаем только выбранного мастера с его услугами
-  selectedMaster.value = {
-    id: master.id,
-    user: master,
-    services: master.services,
-  }
-
-  // Устанавливаем только услуги выбранного мастера
-  selectedMasterServices.value = master.services
-
-  selectedService.value = service
-  selectedSlot.value = null
-  selectedMasterForBooking.value = null // Скрываем услуги в карточке
-
-  
-
-  // Устанавливаем дату для календаря (сегодня или ближайший рабочий день)
-  const today = new Date()
-  selectedCalendarDate.value = {
-    date: today,
-    key: today.toISOString().split('T')[0],
-    isCurrentMonth: true,
-    isToday: true,
-    isPast: false,
-  }
-
-  
-
-  currentStep.value = 4 // Переходим сразу к выбору времени
-
-  // Скрываем секцию "Мои мастера" после выбора услуги
-  
-}
+// const selectServiceAndGoToTime = () => {}
 
 const deleteBooking = async (bookingId) => {
   try {
-    if (!confirm('Вы уверены, что хотите удалить эту запись из истории?')) return
     if (!authStore.token) throw new Error('Не авторизован')
 
     // Оптимистично убираем запись из UI
@@ -444,7 +410,7 @@ const deleteBooking = async (bookingId) => {
     Promise.all([loadCurrentBookings(), loadMyMasters()]).catch(() => {})
   } catch (e) {
     console.error('Failed to delete booking:', e)
-    alert('Не удалось удалить запись: ' + e.message)
+    toast(e.message || 'Не удалось удалить запись', 'red')
     // Явного отката не делаем, так как повторная загрузка пересоберет списки
     await loadCurrentBookings().catch(() => {})
   }
@@ -452,15 +418,14 @@ const deleteBooking = async (bookingId) => {
 
 const clearHistory = async () => {
   try {
-    if (!confirm('Вы уверены, что хотите очистить всю историю записей?')) return
     if (!authStore.token) throw new Error('Не авторизован')
     await Promise.all(bookingHistory.value.map((b) => api.deleteBooking(b.id, authStore.token)))
-    alert('История очищена')
+    toast('История очищена')
     await loadCurrentBookings()
     await loadMyMasters()
   } catch (e) {
     console.error('Failed to clear history:', e)
-    alert('Не удалось очистить историю: ' + e.message)
+    toast(e.message || 'Не удалось очистить историю', 'red')
   }
 }
 
@@ -479,9 +444,51 @@ const handleScrollToSection = (sectionId) => {
   }
 }
 
-const formatDate = (dateString) => new Date(dateString).toLocaleDateString('ru-RU')
-const formatTime = (dateString) =>
-  new Date(dateString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+// const formatDate = (dateString) => new Date(dateString).toLocaleDateString('ru-RU')
+// const formatTime = (dateString) => new Date(dateString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+// Confirmation modal state
+const isConfirmVisible = ref(false)
+const confirmType = ref('delete')
+const confirmTitle = ref('Удаление записи')
+const confirmMessage = ref('Вы уверены, что хотите удалить эту запись из истории?')
+const pendingBookingId = ref(null)
+const isClearHistory = ref(false)
+
+const openDeleteBookingModal = (bookingId) => {
+  isClearHistory.value = false
+  pendingBookingId.value = bookingId
+  confirmType.value = 'delete'
+  confirmTitle.value = 'Удаление записи'
+  confirmMessage.value = 'Вы уверены, что хотите удалить эту запись из истории?'
+  isConfirmVisible.value = true
+}
+
+const openClearHistoryModal = () => {
+  isClearHistory.value = true
+  pendingBookingId.value = null
+  confirmType.value = 'delete'
+  confirmTitle.value = 'Очистить историю'
+  confirmMessage.value = 'Вы уверены, что хотите удалить все записи из истории?'
+  isConfirmVisible.value = true
+}
+
+const handleConfirmModal = async () => {
+  isConfirmVisible.value = false
+  try {
+    if (isClearHistory.value) {
+      await clearHistory()
+    } else if (pendingBookingId.value) {
+      await deleteBooking(pendingBookingId.value)
+      toast('Запись удалена')
+    }
+  } catch (e) {
+    toast(e.message || 'Операция не выполнена', 'red')
+  } finally {
+    pendingBookingId.value = null
+    isClearHistory.value = false
+  }
+}
 
 // Removed local booking/date/status helpers in favor of useFormatters()
 </script>

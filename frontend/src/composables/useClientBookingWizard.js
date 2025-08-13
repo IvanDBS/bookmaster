@@ -1,9 +1,11 @@
 import { ref, watch } from 'vue'
+import { useToast } from './useToast'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 
 export function useClientBookingWizard() {
   const authStore = useAuthStore()
+  const { show: toast } = useToast()
 
   // Wizard state
   const currentStep = ref(1)
@@ -28,7 +30,9 @@ export function useClientBookingWizard() {
     try {
       const data = await api.getServiceTypes()
       serviceTypes.value = data.service_types || serviceTypes.value
-    } catch (_) {}
+    } catch (err) {
+      console.debug('Failed to load service types:', err)
+    }
   }
 
   const selectServiceType = async (type) => {
@@ -86,7 +90,7 @@ export function useClientBookingWizard() {
   const fetchSlots = async () => {
     if (!selectedMaster.value) return
     const res = await api.getPublicSlots(selectedMaster.value.id, selectedDate.value)
-    daySlots.value = Array.isArray(res) ? res : (res.slots || [])
+    daySlots.value = Array.isArray(res) ? res : res.slots || []
   }
 
   watch(selectedDate, fetchSlots)
@@ -121,7 +125,7 @@ export function useClientBookingWizard() {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('booking:created'))
       }
-      alert('Запись создана!')
+      toast('Запись создана')
       currentStep.value = 1
       selectedServiceType.value = null
       selectedMaster.value = null
@@ -129,7 +133,7 @@ export function useClientBookingWizard() {
       selectedService.value = null
       selectedSlot.value = null
     } catch (e) {
-      alert('Не удалось создать запись: ' + e.message)
+      toast(e.message || 'Не удалось создать запись', 'red')
     } finally {
       isSubmitting.value = false
     }
@@ -165,5 +169,3 @@ export function useClientBookingWizard() {
     submitBooking,
   }
 }
-
-

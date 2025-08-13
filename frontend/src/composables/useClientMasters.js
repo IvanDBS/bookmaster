@@ -26,13 +26,13 @@ export function useClientMasters(authStore) {
         mastersArray.map(async (master) => {
           try {
             master.services = await api.getServices({ master_id: master.id }, authStore.token)
-          } catch (_) {
+          } catch {
             master.services = []
           }
         }),
       )
       myMasters.value = mastersArray
-    } catch (e) {
+    } catch {
       myMasters.value = []
     } finally {
       isLoadingMasters.value = false
@@ -56,5 +56,3 @@ export function useClientMasters(authStore) {
     cancelMasterSelection,
   }
 }
-
-

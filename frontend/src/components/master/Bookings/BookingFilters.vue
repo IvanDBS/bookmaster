@@ -36,14 +36,12 @@
 </template>
 
 <script setup>
-// Props
-const props = defineProps({
+defineProps({
   bookingFilter: {
     type: String,
     required: true,
   },
 })
 
-// Emits
-const emit = defineEmits(['set-booking-filter'])
+defineEmits(['set-booking-filter'])
 </script>

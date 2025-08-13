@@ -32,5 +32,3 @@ export function createCalendarStyleUtils() {
 
   return { getDateHoverBgClass, getDateBgClass, getDateBorderClass, getBookingDotClass }
 }
-
-

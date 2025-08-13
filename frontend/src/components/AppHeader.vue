@@ -179,7 +179,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
 
-const props = defineProps({
+defineProps({
   showNavigation: {
     type: Boolean,
     default: false,
@@ -208,6 +208,7 @@ const handleLogout = async () => {
 }
 
 const scrollToSection = (sectionId) => {
+  // emit event for parent
   emit('scroll-to-section', sectionId)
   isMobileMenuOpen.value = false // Закрываем мобильное меню после клика
 }
@@ -221,20 +222,12 @@ const toggleMobileMenu = () => {
 }
 
 const goToHome = () => {
-  console.log('goToHome clicked!')
-  console.log('Current user:', user.value)
-  console.log('User role:', user.value?.role)
-  console.log('Current route:', router.currentRoute.value.path)
-
   // Переходим на главную страницу в зависимости от роли пользователя
   if (user.value?.role === 'master') {
-    console.log('Redirecting to master dashboard')
     router.push('/master/dashboard')
   } else if (user.value?.role === 'client') {
-    console.log('Redirecting to client dashboard')
     router.push('/client/dashboard')
   } else {
-    console.log('Redirecting to home')
     router.push('/')
   }
 }

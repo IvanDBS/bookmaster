@@ -114,6 +114,7 @@
 </template>
 
 <script setup>
+defineOptions({ name: 'MasterCalendarWrapper' })
 import { useRouter } from 'vue-router'
 import { useCalendar } from '../../../composables/useCalendar'
 import { useBookings } from '../../../composables/useBookings'
@@ -186,4 +187,5 @@ const onToggleSlotBreak = async ({ slot, isBreak }) => {
     alert('Не удалось изменить статус слота: ' + e.message)
   }
 }
+// defineOptions is not needed; component is used via import path
 </script>

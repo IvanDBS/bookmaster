@@ -101,7 +101,8 @@ const selectSlot = (slot) => {
   emit('slot-selected', slot)
 }
 
-const HHMM = (hours, minutes) => `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+const HHMM = (hours, minutes) =>
+  `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
 const addMinutesToHHMM = (timeHHMM, minutesToAdd) => {
   const [hh, mm] = timeHHMM.split(':').map((v) => parseInt(v, 10))
   const total = hh * 60 + mm + minutesToAdd
@@ -153,7 +154,7 @@ const loadSlotsForDate = async () => {
     console.log(`Loading slots for date: ${dateString}, master: ${props.masterId}`)
 
     const data = await api.getPublicSlots(props.masterId, dateString)
-    const slots = Array.isArray(data) ? data : (data.slots || [])
+    const slots = Array.isArray(data) ? data : data.slots || []
     allSlots.value = slots
     // Filter only starts that can fit the selected service duration
     availableSlots.value = filterByServiceDuration(slots)

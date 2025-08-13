@@ -1,6 +1,7 @@
-const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
-  ? `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1`
-  : 'http://localhost:3000/api/v1'
+const API_BASE_URL =
+  typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1`
+    : 'http://localhost:3000/api/v1'
 
 class ApiService {
   constructor() {
@@ -41,12 +42,13 @@ class ApiService {
     const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      const message = typeof data.error === 'string'
-        ? data.error
-        : (data && data.error && (data.error.message || data.error.code))
-          || data.message
-          || (Array.isArray(data?.errors) ? data.errors.join(', ') : null)
-          || 'Ошибка входа'
+      const message =
+        typeof data.error === 'string'
+          ? data.error
+          : (data && data.error && (data.error.message || data.error.code)) ||
+            data.message ||
+            (Array.isArray(data?.errors) ? data.errors.join(', ') : null) ||
+            'Ошибка входа'
       throw new Error(message)
     }
 
@@ -55,7 +57,8 @@ class ApiService {
 
   async register(userData) {
     // Не отправляем служебные поля формы (например, terms)
-    const { terms, ...sanitized } = userData || {}
+    const sanitized = { ...(userData || {}) }
+    delete sanitized.terms
     const response = await fetch(`${this.baseURL}/auth/register`, {
       method: 'POST',
       headers: {
@@ -67,11 +70,12 @@ class ApiService {
     const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      const message = (Array.isArray(data?.errors) ? data.errors.join(', ') : null)
-        || (data && data.error && (data.error.message || data.error.code))
-        || data.message
-        || (typeof data.error === 'string' ? data.error : null)
-        || 'Registration failed'
+      const message =
+        (Array.isArray(data?.errors) ? data.errors.join(', ') : null) ||
+        (data && data.error && (data.error.message || data.error.code)) ||
+        data.message ||
+        (typeof data.error === 'string' ? data.error : null) ||
+        'Registration failed'
       const err = new Error(message)
       err.status = response.status
       throw err
@@ -148,6 +152,62 @@ class ApiService {
     return await response.json()
   }
 
+  // Admin endpoints
+  async adminListUsers({ page = 1, per_page = 20, query = '' } = {}, token) {
+    const url = new URL(`${this.baseURL}/admin/users`)
+    url.searchParams.set('page', page)
+    url.searchParams.set('per_page', per_page)
+    if (query) url.searchParams.set('query', query)
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = data?.error?.message || data?.message || 'Failed to load users'
+      throw new Error(message)
+    }
+    return { users: data.data, meta: data.meta }
+  }
+
+  async adminUpdateUser(id, user, token) {
+    const response = await fetch(`${this.baseURL}/admin/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ user }),
+    })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = data?.error?.message || data?.message || 'Failed to update user'
+      throw new Error(message)
+    }
+    return data.data
+  }
+
+  async adminDeleteUser(id, token) {
+    const response = await fetch(`${this.baseURL}/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (response.status === 401) {
+      await this.handleUnauthorized()
+      throw new Error('Unauthorized')
+    }
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = data?.error?.message || data?.message || 'Failed to delete user'
+      throw new Error(message)
+    }
+    return data.data
+  }
+
   async createService(serviceData, token) {
     const response = await fetch(`${this.baseURL}/services`, {
       method: 'POST',
@@ -218,12 +278,12 @@ class ApiService {
       await this.handleUnauthorized()
       throw new Error('Unauthorized')
     }
-
+    const data = await response.json().catch(() => ({}))
     if (!response.ok) {
-      throw new Error('Failed to fetch bookings')
+      const message = data?.error?.message || 'Failed to fetch bookings'
+      throw new Error(message)
     }
-
-    return await response.json()
+    return data.data
   }
 
   async createBooking({ master_id, time_slot_id, booking }, token = null) {
@@ -382,10 +442,11 @@ class ApiService {
     })
     const data = await response.json().catch(() => ({}))
     if (!response.ok) {
-      const message = (data && data.error && (data.error.message || data.error.code))
-        || data.message
-        || (Array.isArray(data?.errors) ? data.errors.join(', ') : null)
-        || 'Ошибка входа через Google'
+      const message =
+        (data && data.error && (data.error.message || data.error.code)) ||
+        data.message ||
+        (Array.isArray(data?.errors) ? data.errors.join(', ') : null) ||
+        'Ошибка входа через Google'
       const err = new Error(message)
       err.status = response.status
       throw err
@@ -539,7 +600,8 @@ class ApiService {
       throw new Error('Unauthorized')
     }
     const json = await response.json().catch(() => ({}))
-    if (!response.ok) throw new Error(json.errors ? json.errors.join(', ') : 'Failed to update schedule')
+    if (!response.ok)
+      throw new Error(json.errors ? json.errors.join(', ') : 'Failed to update schedule')
     return json
   }
 }

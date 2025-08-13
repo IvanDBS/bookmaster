@@ -45,28 +45,44 @@
             <div class="flex space-x-1">
               <button
                 @click="bookings.setBookingFilter('all')"
-                :class="bookings.bookingFilter.value === 'all' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-700'"
+                :class="
+                  bookings.bookingFilter.value === 'all'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-700'
+                "
                 class="px-2 py-1 text-xs font-medium rounded transition-colors border bg-white"
               >
                 Все
               </button>
               <button
                 @click="bookings.setBookingFilter('pending')"
-                :class="bookings.bookingFilter.value === 'pending' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-gray-700'"
+                :class="
+                  bookings.bookingFilter.value === 'pending'
+                    ? 'border-yellow-500 text-yellow-600'
+                    : 'border-transparent text-gray-700'
+                "
                 class="px-2 py-1 text-xs font-medium rounded transition-colors border bg-white"
               >
                 Ожидает
               </button>
               <button
                 @click="bookings.setBookingFilter('confirmed')"
-                :class="bookings.bookingFilter.value === 'confirmed' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-700'"
+                :class="
+                  bookings.bookingFilter.value === 'confirmed'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-700'
+                "
                 class="px-2 py-1 text-xs font-medium rounded transition-colors border bg-white"
               >
                 Подтверждено
               </button>
               <button
                 @click="bookings.setBookingFilter('cancelled')"
-                :class="bookings.bookingFilter.value === 'cancelled' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-700'"
+                :class="
+                  bookings.bookingFilter.value === 'cancelled'
+                    ? 'border-red-500 text-red-600'
+                    : 'border-transparent text-gray-700'
+                "
                 class="px-2 py-1 text-xs font-medium rounded transition-colors border bg-white"
               >
                 Отменено

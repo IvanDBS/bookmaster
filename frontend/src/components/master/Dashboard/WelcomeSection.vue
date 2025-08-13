@@ -6,8 +6,7 @@
 </template>
 
 <script setup>
-// Props
-const props = defineProps({
+defineProps({
   user: {
     type: Object,
     required: true,

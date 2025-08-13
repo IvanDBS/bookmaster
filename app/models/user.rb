@@ -16,6 +16,9 @@ class User < ApplicationRecord
   # Validations
   validates :email, presence: true, uniqueness: true
   validates :role, presence: true, inclusion: { in: %w[master client admin] }
+
+  # Roles enum (string-backed)
+  enum :role, { client: 'client', master: 'master', admin: 'admin' }
   validates :first_name, presence: true, length: { minimum: 2, maximum: 50 }
   validates :last_name, presence: true, length: { minimum: 2, maximum: 50 }
   validates :phone, presence: true, format: { with: /\A\+?[\d\s\-\(\)]+\z/ }

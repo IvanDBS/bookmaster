@@ -82,10 +82,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+//
 
-// Props
-const props = defineProps({
+defineProps({
   dates: {
     type: Array,
     required: true,
@@ -116,6 +115,5 @@ const props = defineProps({
   },
 })
 
-// Emits
-const emit = defineEmits(['previous-month', 'next-month', 'select-date'])
+defineEmits(['previous-month', 'next-month', 'select-date'])
 </script>

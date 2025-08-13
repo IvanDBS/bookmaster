@@ -12,12 +12,17 @@
       </div>
       <div class="mt-2 text-sm text-gray-700">Время</div>
       <div class="font-semibold text-gray-900">
-        {{ formatBookingDate(date) }} • {{ formatBookingTime(timeSlot.start_time) }}–{{ formatBookingTime(timeSlot.end_time) }}
+        {{ formatBookingDate(date) }} • {{ formatBookingTime(timeSlot.start_time) }}–{{
+          formatBookingTime(timeSlot.end_time)
+        }}
       </div>
     </div>
     <div class="flex items-center justify-between">
       <button class="text-sm text-gray-600" @click="$emit('back')">← Назад</button>
-      <button class="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white font-bold px-8 py-3 rounded-lg transition-all duration-300 text-sm shadow-md hover:shadow-lg transform hover:scale-105" @click="$emit('submit')">
+      <button
+        class="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white font-bold px-8 py-3 rounded-lg transition-all duration-300 text-sm shadow-md hover:shadow-lg transform hover:scale-105"
+        @click="$emit('submit')"
+      >
         Подтвердить запись
       </button>
     </div>
@@ -30,5 +35,3 @@ const { formatBookingDate, formatBookingTime } = useFormatters()
 defineProps({ master: Object, service: Object, date: String, timeSlot: Object })
 defineEmits(['back', 'submit'])
 </script>
-
-

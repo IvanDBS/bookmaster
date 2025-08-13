@@ -15,7 +15,6 @@
       <button class="text-sm text-gray-600" @click="$emit('back')">← Назад к выбору мастера</button>
     </div>
   </div>
-  
 </template>
 
 <script setup>
@@ -25,5 +24,3 @@ import ClientTimeSlots from '../../master/Calendar/ClientTimeSlots.vue'
 defineProps({ masterId: Number, selectedDate: Object, service: Object })
 defineEmits(['date-selected', 'slot-selected', 'back'])
 </script>
-
-
