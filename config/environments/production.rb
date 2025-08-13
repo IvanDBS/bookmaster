@@ -64,6 +64,25 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "bookmaster_production"
 
   config.action_mailer.perform_caching = false
+  # Production mailer configuration
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch('APP_HOST', 'example.com'),
+    protocol: 'https'
+  }
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch('SMTP_ADDRESS', 'smtp.sendgrid.net'),
+    port: ENV.fetch('SMTP_PORT', 587).to_i,
+    user_name: ENV['SMTP_USERNAME'],
+    password: ENV['SMTP_PASSWORD'],
+    domain: ENV.fetch('SMTP_DOMAIN', ENV.fetch('APP_HOST', 'example.com')),
+    authentication: ENV.fetch('SMTP_AUTH', 'plain'),
+    enable_starttls_auto: ENV.fetch('SMTP_ENABLE_STARTTLS', 'true') == 'true',
+    open_timeout: 5,
+    read_timeout: 5
+  }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
@@ -80,10 +99,8 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
+  allowed_hosts = ENV.fetch('ALLOWED_HOSTS', '').split(',').map(&:strip).reject(&:empty?)
+  config.hosts = allowed_hosts if allowed_hosts.any?
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
   # Enforce SSL (already enabled above)

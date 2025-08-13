@@ -1,4 +1,8 @@
 class Rack::Attack
+  # Basic safelist for health checks and Sidekiq heartbeat
+  safelist('allow-healthcheck') do |req|
+    req.get? && req.path == '/up'
+  end
   # Throttle login and register endpoints by IP
   throttle('req/auth/login', limit: 10, period: 60) do |req|
     req.ip if req.post? && req.path == '/api/v1/auth/login'
