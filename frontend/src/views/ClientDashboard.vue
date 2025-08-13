@@ -235,7 +235,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useClientBookingWizard } from '../composables/useClientBookingWizard'
 import { useClientMasters } from '../composables/useClientMasters'
@@ -300,7 +300,20 @@ onMounted(async () => {
   }
   await loadCurrentBookings() // Это теперь загружает и активные записи, и историю
   await loadMyMasters()
+
+  // Реактивное обновление после создания бронирования в визарде
+  window.addEventListener('booking:created', handleBookingCreated)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('booking:created', handleBookingCreated)
+})
+
+const handleBookingCreated = async () => {
+  try {
+    await Promise.all([loadCurrentBookings(), loadMyMasters()])
+  } catch (_) {}
+}
 
 // loadServiceTypes provided by useClientBookingWizard
 

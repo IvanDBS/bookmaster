@@ -17,24 +17,17 @@ gem "devise"
 gem "devise-jwt"
 gem "jwt", "~> 2.8"
 
-# Authorization (removed). If needed later, re-add with policies
-
-# API serialization
 gem "active_model_serializers"
 
-# Validation and error handling (not used currently)
-# gem "dry-validation"
-
-# Date/Time handling (not used currently)
-# gem "ice_cube"
+gem "sidekiq"
 
 gem "rack-attack"
 gem "secure_headers"
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop and debug your application
+
   gem "byebug", platforms: [:mri, :mingw, :x64_mingw]
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+
   gem "debug", platforms: %i[ mri windows ]
   gem 'pry-byebug'
   
@@ -52,6 +45,7 @@ group :production do
 end
 
 group :development do
+  gem "letter_opener_web"
   gem "web-console"
   gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
   gem "annotate"
@@ -60,4 +54,3 @@ group :development do
   gem "rubocop-rails", require: false
   gem "rubocop-rspec", require: false
 end
-

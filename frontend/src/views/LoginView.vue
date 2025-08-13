@@ -92,6 +92,19 @@
             <div id="gsi-button" class="flex justify-center"></div>
           </div>
 
+          <div v-if="info" class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414L9 13.414l4.707-4.707z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-green-800">{{ info }}</h3>
+              </div>
+            </div>
+          </div>
+
           <div v-if="error" class="bg-red-50 border border-red-200 rounded-md p-4">
             <div class="flex">
               <div class="flex-shrink-0">
@@ -118,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
@@ -128,6 +141,7 @@ const router = useRouter()
 const loading = ref(false)
 const error = ref('')
 const loadingGoogle = ref(false)
+const info = ref('')
 
 const form = reactive({
   email: '',
@@ -214,4 +228,29 @@ const initGoogleButton = async () => {
 
 // Инициализируем кнопку при загрузке страницы
 initGoogleButton()
+
+// Если на странице есть confirmation_token в query — подтверждаем аккаунт
+onMounted(async () => {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('confirmation_token')
+    const registered = params.get('registered')
+    const email = params.get('email')
+    if (token) {
+      loading.value = true
+      await api.confirmEmail(token)
+      // Очистим query-параметры и покажем уведомление
+      const url = new URL(window.location.href)
+      url.searchParams.delete('confirmation_token')
+      window.history.replaceState({}, '', url.toString())
+      info.value = 'Email подтвержден. Теперь войдите.'
+    } else if (registered === '1') {
+      info.value = email ? `Мы отправили письмо с подтверждением на ${email}` : 'Мы отправили письмо с подтверждением на ваш email'
+    }
+  } catch (e) {
+    error.value = e.message || 'Не удалось подтвердить email'
+  } finally {
+    loading.value = false
+  }
+})
 </script>

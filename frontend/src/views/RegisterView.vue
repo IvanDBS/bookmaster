@@ -237,14 +237,9 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
-    const response = await authStore.register(form)
-
-    // Перенаправляем в зависимости от роли
-    if (response.user.role === 'master') {
-      router.push('/master/dashboard')
-    } else {
-      router.push('/client/dashboard')
-    }
+    await authStore.register(form)
+    // Сообщаем о необходимости подтвердить email и ведем на login с подсказкой
+    router.push({ path: '/login', query: { registered: '1', email: form.email } })
   } catch (err) {
     error.value = err.message || 'Ошибка регистрации. Попробуйте еще раз.'
   } finally {

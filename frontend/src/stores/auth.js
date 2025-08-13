@@ -54,9 +54,8 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const response = await api.register(userData)
-        this.user = response.user
-        this.token = response.token
-        localStorage.setItem('token', this.token)
+        // Не логиним автоматически: требуется подтверждение email
+        // Просто возвращаем ответ с сообщением
         return response
       } catch (error) {
         this.error = error.message

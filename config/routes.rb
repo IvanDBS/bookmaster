@@ -2,7 +2,9 @@ Rails.application.routes.draw do
   # Keep Devise routes disabled in production API-only mode.
   # Re-enable minimal mapping in test/development to support Devise test helpers (sign_in, etc.).
   if Rails.env.test? || Rails.env.development?
-    devise_for :users, skip: [:sessions, :registrations, :passwords]
+    devise_for :users, skip: [:sessions, :registrations, :passwords], controllers: {
+      confirmations: 'users/confirmations'
+    }
   end
   
   # API routes
@@ -11,6 +13,8 @@ Rails.application.routes.draw do
       # Auth routes
       post '/auth/register', to: 'auth#register'
       post '/auth/login', to: 'auth#login'
+      post '/auth/confirm', to: 'auth#confirm'
+      post '/auth/resend_confirmation', to: 'auth#resend_confirmation'
       post '/auth/google', to: 'auth#google'
       delete '/auth/logout', to: 'auth#logout'
       get '/auth/profile', to: 'auth#profile'
@@ -52,6 +56,14 @@ Rails.application.routes.draw do
         end
       end
     end
+  end
+
+  if Rails.env.development?
+    require 'sidekiq/web'
+    mount Sidekiq::Web => '/sidekiq'
+
+    # Letter Opener web UI to preview sent emails
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

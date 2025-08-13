@@ -3,6 +3,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
+         :confirmable,
          :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
 
   # Associations
@@ -38,6 +39,11 @@ class User < ApplicationRecord
 
   def display_name
     full_name.presence || email
+  end
+
+  # Deliver Devise emails asynchronously via ActiveJob/Sidekiq
+  def send_devise_notification(notification, *args)
+    devise_mailer.send(notification, self, *args).deliver_later
   end
 
   # Методы для работы со слотами (только для мастеров)

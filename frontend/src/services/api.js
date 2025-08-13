@@ -54,23 +54,61 @@ class ApiService {
   }
 
   async register(userData) {
+    // Не отправляем служебные поля формы (например, terms)
+    const { terms, ...sanitized } = userData || {}
     const response = await fetch(`${this.baseURL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user: userData }),
+      body: JSON.stringify({ user: sanitized }),
     })
 
-    const data = await response.json()
+    const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      const errorMessage = data.errors
-        ? data.errors.join(', ')
-        : data.error || 'Registration failed'
-      throw new Error(errorMessage)
+      const message = (Array.isArray(data?.errors) ? data.errors.join(', ') : null)
+        || (data && data.error && (data.error.message || data.error.code))
+        || data.message
+        || (typeof data.error === 'string' ? data.error : null)
+        || 'Registration failed'
+      const err = new Error(message)
+      err.status = response.status
+      throw err
     }
 
+    return data
+  }
+
+  async confirmEmail(confirmationToken) {
+    const response = await fetch(`${this.baseURL}/auth/confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirmation_token: confirmationToken }),
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = data.error || data.message || 'Не удалось подтвердить email'
+      const err = new Error(message)
+      err.status = response.status
+      throw err
+    }
+    return data
+  }
+
+  async resendConfirmation(email) {
+    const response = await fetch(`${this.baseURL}/auth/resend_confirmation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = data.error || data.message || 'Не удалось отправить письмо'
+      const err = new Error(message)
+      err.status = response.status
+      throw err
+    }
     return data
   }
 

@@ -5,23 +5,11 @@ class Api::V1::AuthController < ApplicationController
     user = User.new(user_params)
     
     if user.save
-      # В dev сразу логиним пользователя, чтобы выдать JWT и унифицировать ответ с login
-      sign_in user
-      token = request.env['warden-jwt_auth.token']
-      if token.blank?
-        # На некоторых кастомных экшенах Devise-JWT может не проставить токен в env.
-        # Тогда кодируем вручную через официальный энкодер.
-        begin
-          encoder = Warden::JWTAuth::UserEncoder.new
-          token, _payload = encoder.call(user, :user, nil)
-        rescue StandardError => e
-          Rails.logger.error("Google auth: failed to encode JWT: #{e.message}")
-        end
-      end
+      # Отправляем письмо подтверждения (асинхронно через ActiveJob/Sidekiq)
+      user.send_confirmation_instructions
       render json: {
         user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
-        token: token,
-        message: 'Пользователь успешно зарегистрирован'
+        message: 'Пользователь успешно зарегистрирован. Проверьте почту для подтверждения учетной записи.'
       }, status: :created
     else
       render_error(code: 'validation_error', message: user.errors.full_messages.join(', '), status: :unprocessable_entity)
@@ -36,6 +24,9 @@ class Api::V1::AuthController < ApplicationController
     user = User.find_by(email: email)
     
     if user&.valid_password?(password)
+      unless user.confirmed?
+        return render_error(code: 'unconfirmed', message: 'Email не подтвержден. Проверьте почту или запросите повторное письмо.', status: :unauthorized)
+      end
       sign_in user
       token = request.env['warden-jwt_auth.token']
       render json: {
@@ -46,6 +37,35 @@ class Api::V1::AuthController < ApplicationController
     else
       render_error(code: 'invalid_credentials', message: 'Неверный email или пароль', status: :unauthorized)
     end
+  end
+
+  def confirm
+    token = params[:confirmation_token]
+    return render_error(code: 'bad_request', message: 'Отсутствует confirmation_token', status: :bad_request) if token.blank?
+
+    user = User.confirm_by_token(token)
+    if user.errors.empty?
+      render json: { message: 'Email успешно подтвержден' }
+    else
+      render_error(code: 'invalid_token', message: user.errors.full_messages.join(', '), status: :unprocessable_entity)
+    end
+  end
+
+  def resend_confirmation
+    email = params[:email]
+    return render_error(code: 'bad_request', message: 'Отсутствует email', status: :bad_request) if email.blank?
+
+    user = User.find_by(email: email)
+    if user.nil?
+      return render json: { message: 'Если пользователь существует, письмо будет отправлено' }
+    end
+
+    if user.confirmed?
+      return render json: { message: 'Email уже подтвержден' }
+    end
+
+    user.resend_confirmation_instructions
+    render json: { message: 'Письмо с подтверждением отправлено' }
   end
   
   # Google Sign-In via ID token (Google Identity Services)
