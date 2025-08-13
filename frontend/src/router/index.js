@@ -90,7 +90,9 @@ router.beforeEach(async (to, from, next) => {
   // Проверка для страниц, доступных только неавторизованным пользователям
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
     // Перенаправляем на дашборд в зависимости от роли
-    if (authStore.user?.role === 'master') {
+    if (authStore.user?.role === 'admin') {
+      next('/admin')
+    } else if (authStore.user?.role === 'master') {
       next('/master/dashboard')
     } else if (authStore.user?.role === 'client') {
       next('/client/dashboard')

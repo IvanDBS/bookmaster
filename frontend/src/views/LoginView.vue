@@ -157,7 +157,9 @@ const handleSubmit = async () => {
     const response = await authStore.login(form.email, form.password)
 
     // Перенаправляем в зависимости от роли
-    if (response.user.role === 'master') {
+    if (response.user.role === 'admin') {
+      router.push('/admin')
+    } else if (response.user.role === 'master') {
       router.push('/master/dashboard')
     } else {
       router.push('/client/dashboard')
@@ -199,7 +201,9 @@ const initGoogleButton = async () => {
           authStore.user = result.user
           authStore.token = result.token
           localStorage.setItem('token', result.token)
-          if (result.user.role === 'master') {
+          if (result.user.role === 'admin') {
+            router.push('/admin')
+          } else if (result.user.role === 'master') {
             router.push('/master/dashboard')
           } else {
             router.push('/client/dashboard')
