@@ -53,11 +53,19 @@ class Api::V1::BookingsController < Api::V1::BaseController
     slots_chain = [slot]
     if required_slots > 1
       (1...required_slots).each do |i|
-        expected_start = Time.zone.parse("2000-01-01 #{slot.start_time.strftime('%H:%M')}") + (i * slot.duration_minutes).minutes
+        # Рассчитываем ожидаемое время старта следующего слота в минутах от полуночи
+        base_minutes = (slot.start_time.hour * 60) + slot.start_time.min
+        expected_total = base_minutes + (i * slot.duration_minutes)
+        exp_hour = (expected_total / 60) % 24
+        exp_min  = expected_total % 60
+
+        # Ищем следующий рабочий слот по совпадению часа и минуты начала
         next_slot = master.time_slots.for_date(slot.date)
-                          .find_by(start_time: expected_start, slot_type: 'work')
+                                     .where(slot_type: 'work')
+                                     .find { |s| s.start_time.hour == exp_hour && s.start_time.min == exp_min }
+
         unless next_slot&.can_be_booked? && next_slot.slot_type == 'work'
-          return render json: { error: 'Недостаточно последовательных свободных слотов для выбранной услуги' }, 
+          return render json: { error: 'Недостаточно последовательных свободных слотов для выбранной услуги' },
                         status: :unprocessable_entity
         end
 
@@ -87,6 +95,7 @@ class Api::V1::BookingsController < Api::V1::BaseController
           user: master,
           start_time: start_dt,
           end_time: start_dt + service.duration.minutes,
+          status: 'pending',
           client_name: booking_params[:client_name].presence || current_user&.full_name || 'Клиент',
           client_email: current_user&.email || 'client@example.com',
           client_phone: booking_params[:client_phone].presence || current_user&.phone

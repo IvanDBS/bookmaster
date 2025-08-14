@@ -27,7 +27,7 @@ class Api::V1::AuthController < ApplicationController
       unless user.confirmed?
         return render_error(code: 'unconfirmed', message: 'Email не подтвержден. Проверьте почту или запросите повторное письмо.', status: :unauthorized)
       end
-      sign_in user
+      sign_in user, store: false
       token = request.env['warden-jwt_auth.token']
       render json: {
         user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
@@ -101,7 +101,7 @@ class Api::V1::AuthController < ApplicationController
         end
       end
 
-      sign_in user
+      sign_in user, store: false
       token = request.env['warden-jwt_auth.token']
       if token.blank?
         begin

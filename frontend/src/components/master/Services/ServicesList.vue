@@ -34,7 +34,7 @@
       :new-service="newService"
       :available-service-types="availableServiceTypes"
       @close-modal="closeModal"
-      @add-service="addService"
+      @add-service="addService($event)"
     />
   </div>
 </template>

@@ -38,7 +38,6 @@ export function useClientCalendar() {
 
       // Анализируем слоты для определения статуса дня
       const workSlots = daySlots.filter((slot) => slot.slot_type === 'work')
-      const blockedSlots = daySlots.filter((slot) => slot.slot_type === 'blocked')
       const availableSlots = workSlots.filter((slot) => slot.is_available && !slot.booked)
       const bookedSlots = workSlots.filter((slot) => slot.booked)
 

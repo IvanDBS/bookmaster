@@ -1,12 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
-  let(:master) { create(:user, role: 'master') }
-  let(:client) { create(:user, role: 'client', email: 'client@example.com') }
+  let(:master) { create(:user, :confirmed, role: 'master') }
+  let(:client) { create(:user, :confirmed, role: 'client', email: 'client@example.com') }
 
   before do
     master.create_default_schedule!
-    sign_in master
+    post '/api/v1/auth/login', params: { user: { email: master.email, password: 'password123' } }
+    # do not set headers here; individual tests that need auth will pass headers explicitly
   end
 
   describe 'GET /api/v1/working_day_exceptions' do
@@ -15,7 +16,9 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     let!(:other_user_exception) { create(:working_day_exception, user: client, date: Date.current + 2.days) }
 
     it 'returns user\'s working day exceptions' do
-      get '/api/v1/working_day_exceptions'
+      post '/api/v1/auth/login', params: { user: { email: master.email, password: 'password123' } }
+      token = JSON.parse(response.body)['token']
+      get '/api/v1/working_day_exceptions', headers: { 'Authorization' => "Bearer #{token}" }
 
       expect(response).to have_http_status(:success)
       response_data = response.parsed_body
@@ -24,7 +27,6 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     end
 
     it 'requires authentication' do
-      sign_out master
       get '/api/v1/working_day_exceptions'
       expect(response).to have_http_status(:unauthorized)
     end
@@ -43,7 +45,9 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
 
     it 'creates a working day exception' do
       expect do
-        post '/api/v1/working_day_exceptions', params: valid_params
+      post '/api/v1/auth/login', params: { user: { email: master.email, password: 'password123' } }
+      token = JSON.parse(response.body)['token']
+      post '/api/v1/working_day_exceptions', params: valid_params, headers: { 'Authorization' => "Bearer #{token}" }
       end.to change(WorkingDayException, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -54,7 +58,6 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     end
 
     it 'requires authentication' do
-      sign_out master
       post '/api/v1/working_day_exceptions', params: valid_params
       expect(response).to have_http_status(:unauthorized)
     end
@@ -69,8 +72,10 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
         monday_date = Date.current.beginning_of_week + 1.day # Monday
 
         expect do
+          post '/api/v1/auth/login', params: { user: { email: master.email, password: 'password123' } }
+          token = JSON.parse(response.body)['token']
           post '/api/v1/working_day_exceptions/toggle',
-               params: { date: monday_date }
+               params: { date: monday_date }, headers: { 'Authorization' => "Bearer #{token}" }
         end.to change(WorkingDayException, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -85,8 +90,10 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
 
       it 'toggles the existing exception' do
         expect do
+          post '/api/v1/auth/login', params: { user: { email: master.email, password: 'password123' } }
+          token = JSON.parse(response.body)['token']
           post '/api/v1/working_day_exceptions/toggle',
-               params: { date: toggle_date }
+               params: { date: toggle_date }, headers: { 'Authorization' => "Bearer #{token}" }
         end.not_to change(WorkingDayException, :count)
 
         expect(response).to have_http_status(:success)
@@ -99,7 +106,6 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     end
 
     it 'requires authentication' do
-      sign_out master
       post '/api/v1/working_day_exceptions/toggle',
            params: { date: toggle_date }
       expect(response).to have_http_status(:unauthorized)
@@ -118,8 +124,10 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     end
 
     it 'updates the working day exception' do
+      post '/api/v1/auth/login', params: { user: { email: master.email, password: 'password123' } }
+      token = JSON.parse(response.body)['token']
       put "/api/v1/working_day_exceptions/#{exception.id}",
-          params: update_params
+          params: update_params, headers: { 'Authorization' => "Bearer #{token}" }
 
       expect(response).to have_http_status(:success)
       response_data = response.parsed_body
@@ -132,7 +140,6 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
     end
 
     it 'requires authentication' do
-      sign_out master
       put "/api/v1/working_day_exceptions/#{exception.id}",
           params: update_params
       expect(response).to have_http_status(:unauthorized)
@@ -144,14 +151,15 @@ RSpec.describe "Api::V1::WorkingDayExceptions", type: :request do
 
     it 'deletes the working day exception' do
       expect do
-        delete "/api/v1/working_day_exceptions/#{exception.id}"
+        post '/api/v1/auth/login', params: { user: { email: master.email, password: 'password123' } }
+        token = JSON.parse(response.body)['token']
+        delete "/api/v1/working_day_exceptions/#{exception.id}", headers: { 'Authorization' => "Bearer #{token}" }
       end.to change(WorkingDayException, :count).by(-1)
 
       expect(response).to have_http_status(:no_content)
     end
 
     it 'requires authentication' do
-      sign_out master
       delete "/api/v1/working_day_exceptions/#{exception.id}"
       expect(response).to have_http_status(:unauthorized)
     end

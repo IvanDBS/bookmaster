@@ -127,7 +127,7 @@ module Api
           current_user.time_slots.for_date(date).where(booking_id: nil).delete_all
         end
 
-        render json: exception, status: :ok
+        render json: exception, status: (exception.previously_new_record? ? :created : :ok)
       rescue StandardError => e
         render_error(code: 'validation_error', message: e.message, status: :unprocessable_entity)
       end

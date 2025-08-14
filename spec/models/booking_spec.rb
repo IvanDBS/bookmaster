@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Booking, type: :model do
-  let(:master) { create(:user, role: 'master') }
+  let(:master) { create(:user, :confirmed, role: 'master') }
   let(:service) { create(:service, user: master) }
 
   describe 'validations' do
@@ -10,7 +10,16 @@ RSpec.describe Booking, type: :model do
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_presence_of(:client_name) }
     it { is_expected.to validate_presence_of(:client_email) }
-    it { is_expected.to validate_inclusion_of(:status).in_array(%w[pending confirmed cancelled completed]) }
+    it {
+      is_expected.to define_enum_for(:status)
+        .backed_by_column_of_type(:string)
+        .with_values(
+          pending: 'pending',
+          confirmed: 'confirmed',
+          cancelled: 'cancelled',
+          completed: 'completed'
+        )
+    }
   end
 
   describe 'associations' do

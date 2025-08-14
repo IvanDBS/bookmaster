@@ -41,109 +41,104 @@
       class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2"
     >
       <div
-        v-for="slot in selectedDateSlots"
-        :key="slot.id"
+        v-for="item in groupedItems"
+        :key="item.type === 'booking' ? 'b-' + item.booking.id + '-' + item.start_time : 's-' + item.slot.id"
         class="bg-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
-        :class="{
-          'border-green-200 bg-green-50/30': slot.is_available && !slot.booked,
-          'border-blue-200 bg-blue-50/30': slot.booked,
-          'border-gray-200 bg-gray-50/30': slot.slot_type === 'lunch',
-          'border-red-200 bg-red-50/30': slot.slot_type === 'blocked',
-        }"
+        :class="item.type === 'booking'
+          ? 'border-blue-200 bg-blue-50/30'
+          : {
+              'border-green-200 bg-green-50/30': item.slot.is_available && !item.slot.booked,
+              'border-gray-200 bg-gray-50/30': item.slot.slot_type === 'lunch',
+              'border-red-200 bg-red-50/30': item.slot.slot_type === 'blocked',
+            }"
       >
-        <!-- Время и статус в одной строке -->
+        <!-- Заголовок с временем -->
         <div class="flex justify-between items-center mb-2">
-          <span class="text-sm font-semibold text-gray-900"
-            >{{ slot.start_time }}-{{ slot.end_time }}</span
-          >
+          <span class="text-sm font-semibold text-gray-900">
+            <template v-if="item.type === 'booking'">
+              {{ item.start_time }}-{{ item.end_time }}
+            </template>
+            <template v-else>
+              {{ item.slot.start_time }}-{{ item.slot.end_time }}
+            </template>
+          </span>
           <span
-            :class="getSlotStatusClass(slot)"
+            v-if="item.type !== 'booking'"
+            :class="getSlotStatusClass(item.slot)"
             class="px-2 py-1 rounded-full text-xs font-semibold"
           >
-            {{ getSlotStatusText(slot) }}
+            {{ getSlotStatusText(item.slot) }}
+          </span>
+          <span v-else class="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+            Занято
           </span>
         </div>
 
-        <!-- Тип слота (только для свободных слотов) -->
-        <p v-if="!slot.booked" class="text-xs text-gray-600 mb-2">
-          {{ getSlotTypeText(slot.slot_type) }}
-        </p>
-
-        <!-- Переключатель перерыва для свободных слотов -->
-        <div v-if="!slot.booked" class="flex justify-between items-center mb-2">
-          <button
-            @click="$emit('toggleSlotBreak', slot, !isBreak(slot))"
-            :class="[
-              'relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-blue-500',
-              isBreak(slot) ? 'bg-red-500' : 'bg-gray-200 hover:bg-gray-300',
-            ]"
-            :title="isBreak(slot) ? 'Сделать свободным' : 'Отметить как перерыв'"
-          >
-            <span
+        <!-- Действия/данные для свободного слота -->
+        <template v-if="item.type !== 'booking'">
+          <p v-if="!item.slot.booked" class="text-xs text-gray-600 mb-2">
+            {{ getSlotTypeText(item.slot.slot_type) }}
+          </p>
+          <div v-if="!item.slot.booked" class="flex justify-between items-center mb-2">
+            <button
+              @click="$emit('toggleSlotBreak', item.slot, !isBreak(item.slot))"
               :class="[
-                'inline-block h-3 w-3 transform rounded-full bg-white transition-all duration-200',
-                isBreak(slot) ? 'translate-x-4' : 'translate-x-0.5',
+                'relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-blue-500',
+                isBreak(item.slot) ? 'bg-red-500' : 'bg-gray-200 hover:bg-gray-300',
               ]"
-            />
-          </button>
-        </div>
-
-        <!-- Информация о записи (компактно) -->
-        <div v-if="slot.booking" class="space-y-2 text-xs">
-          <!-- Клиент -->
-          <div class="text-gray-700 font-medium">{{ slot.booking.client_name }}</div>
-
-          <!-- Услуга -->
-          <div class="text-gray-600">{{ slot.booking.service_name }}</div>
-
-          <!-- Цена -->
-          <div class="text-gray-600 text-xs">{{ props.getSlotPrice(slot.booking) }} MDL</div>
-
-          <!-- Статус записи и кнопка отмены в одной строке -->
-          <div
-            v-if="slot.booking.status === 'confirmed'"
-            class="flex justify-between items-center text-xs mb-2"
-          >
-            <span class="text-gray-500 flex items-center">
-              <svg class="w-3 h-3 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              {{ props.getStatusText(slot.booking.status) }}
-            </span>
-            <button
-              @click="props.onDeleteBooking(slot.booking)"
-              class="text-red-600 hover:text-red-700 font-light focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded"
-              title="Отменить запись"
+              :title="isBreak(item.slot) ? 'Сделать свободным' : 'Отметить как перерыв'"
             >
-              Отменить
+              <span
+                :class="[
+                  'inline-block h-3 w-3 transform rounded-full bg-white transition-all duration-200',
+                  isBreak(item.slot) ? 'translate-x-4' : 'translate-x-0.5',
+                ]"
+              />
             </button>
           </div>
+        </template>
 
-          <!-- Кнопки действий для pending -->
-          <div
-            v-if="slot.booking.status === 'pending'"
-            class="flex justify-between items-center text-xs"
-          >
-            <button
-              @click="props.onConfirmBooking(slot.booking)"
-              class="text-green-600 hover:text-green-700 font-light focus:outline-none focus:ring-2 focus:ring-green-500/20 rounded"
-              title="Подтвердить"
-            >
-              Подтвердить
-            </button>
-            <button
-              @click="props.onCancelBooking(slot.booking)"
-              class="text-red-600 hover:text-red-700 font-light focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded"
-              title="Отменить"
-            >
-              Отменить
-            </button>
+        <!-- Данные и действия для объединенной брони -->
+        <template v-else>
+          <div class="space-y-2 text-xs">
+            <div class="text-gray-700 font-medium">{{ item.booking.client_name }}</div>
+            <div class="text-gray-600">{{ item.booking.service_name }}</div>
+            <div class="text-gray-600 text-xs">{{ props.getSlotPrice(item.booking) }} MDL</div>
+
+            <div v-if="item.booking.status === 'confirmed'" class="flex justify-between items-center text-xs mb-2">
+              <span class="text-gray-500 flex items-center">
+                <svg class="w-3 h-3 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                {{ props.getStatusText(item.booking.status) }}
+              </span>
+              <button
+                @click="props.onDeleteBooking(item.booking)"
+                class="text-red-600 hover:text-red-700 font-light focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded"
+                title="Отменить запись"
+              >
+                Отменить
+              </button>
+            </div>
+
+            <div v-if="item.booking.status === 'pending'" class="flex justify-between items-center text-xs">
+              <button
+                @click="props.onConfirmBooking(item.booking)"
+                class="text-green-600 hover:text-green-700 font-light focus:outline-none focus:ring-2 focus:ring-green-500/20 rounded"
+                title="Подтвердить"
+              >
+                Подтвердить
+              </button>
+              <button
+                @click="props.onCancelBooking(item.booking)"
+                class="text-red-600 hover:text-red-700 font-light focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded"
+                title="Отменить"
+              >
+                Отменить
+              </button>
+            </div>
           </div>
-        </div>
+        </template>
       </div>
     </div>
 
@@ -236,6 +231,7 @@
 
 <script setup>
 import { useFormatters } from '../../../composables/useFormatters'
+import { computed } from 'vue'
 
 const props = defineProps({
   selectedDate: Date,
@@ -263,6 +259,53 @@ const formatSelectedDate = () => {
 const { getSlotTypeText, getSlotStatusClass, getSlotStatusText, isBreak } = useFormatters()
 
 // Removed duplicated status text helper; use parent-provided getStatusText
+
+// Группируем слоты выбранной даты: непрерывные занятые слоты одной брони → один блок
+const propsLocal = props
+const groupedItems = computed(() => {
+  const slots = Array.isArray(propsLocal.selectedDateSlots) ? [...propsLocal.selectedDateSlots] : []
+  if (slots.length === 0) return []
+
+  // Отсортировать по времени начала (HH:MM)
+  const toMinutes = (hhmm) => {
+    const [h, m] = String(hhmm || '00:00').split(':').map((v) => parseInt(v, 10))
+    return h * 60 + m
+  }
+  const sorted = slots.slice().sort((a, b) => toMinutes(a.start_time) - toMinutes(b.start_time))
+
+  const items = []
+  let i = 0
+  while (i < sorted.length) {
+    const s = sorted[i]
+    if (s.booking) {
+      // Начинаем группу брони
+      const bookingId = s.booking.id
+      let startMin = toMinutes(s.start_time)
+      let endMin = toMinutes(s.end_time)
+      let j = i + 1
+      while (j < sorted.length) {
+        const n = sorted[j]
+        if (!n.booking || n.booking.id !== bookingId) break
+        const nextStart = toMinutes(n.start_time)
+        if (nextStart !== endMin) break // не непрерывно
+        endMin = toMinutes(n.end_time)
+        j += 1
+      }
+      const fmt = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+      items.push({
+        type: 'booking',
+        booking: s.booking,
+        start_time: fmt(startMin),
+        end_time: fmt(endMin),
+      })
+      i = j
+    } else {
+      items.push({ type: 'slot', slot: s })
+      i += 1
+    }
+  }
+  return items
+})
 </script>
 
 <style scoped></style>

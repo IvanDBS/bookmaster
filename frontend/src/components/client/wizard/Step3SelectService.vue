@@ -13,6 +13,9 @@
       :selected-id="selectedServiceId || null"
       @select="$emit('select', $event)"
     />
+    <div class="flex justify-between">
+      <button class="text-sm text-gray-600" @click="$emit('back')">← Назад</button>
+    </div>
   </div>
 </template>
 

@@ -1,11 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe 'Admin::Users API', type: :request do
-  let!(:admin) { create(:user, role: 'admin', email: 'admin@example.com', password: 'password', phone: '+0000000000', first_name: 'Admin', last_name: 'User') }
-  let!(:user)  { create(:user, role: 'client', email: 'user@example.com', password: 'password', phone: '+0000000001', first_name: 'John', last_name: 'Doe') }
+  let!(:admin) { create(:user, :confirmed, role: 'admin', email: 'admin@example.com', password: 'password123', phone: '+0000000000', first_name: 'Admin', last_name: 'User') }
+  let!(:user)  { create(:user, :confirmed, role: 'client', email: 'user@example.com', password: 'password123', phone: '+0000000001', first_name: 'John', last_name: 'Doe') }
 
   def auth_headers(user)
-    post '/api/v1/auth/login', params: { user: { email: user.email, password: 'password' } }
+    post '/api/v1/auth/login', params: { user: { email: user.email, password: 'password123' } }
     token = JSON.parse(response.body)['token']
     { 'Authorization' => "Bearer #{token}" }
   end

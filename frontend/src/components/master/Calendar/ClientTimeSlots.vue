@@ -31,9 +31,11 @@
           <div class="flex justify-between items-center">
             <div>
               <h6 class="font-semibold text-gray-900 text-sm">
-                {{ formatTime(slot.start_time) }} - {{ formatTime(slot.end_time) }}
+                {{ formatTime(slot.start_time) }} - {{ endTimeForStart(slot.start_time) }}
               </h6>
-              <p class="text-xs text-gray-600 mt-1">{{ slot.duration_minutes }} минут</p>
+              <p class="text-xs text-gray-600 mt-1">
+                {{ props.service?.duration ? props.service.duration : slot.duration_minutes }} минут
+              </p>
             </div>
             <div class="flex items-center space-x-2">
               <span
@@ -109,6 +111,12 @@ const addMinutesToHHMM = (timeHHMM, minutesToAdd) => {
   const newH = Math.floor(total / 60)
   const newM = total % 60
   return HHMM(newH, newM)
+}
+
+const endTimeForStart = (startHHMM) => {
+  const minutes = props.service?.duration || 0
+  if (!minutes) return addMinutesToHHMM(startHHMM, allSlots.value[0]?.duration_minutes || 0)
+  return addMinutesToHHMM(startHHMM, minutes)
 }
 
 const filterByServiceDuration = (slots) => {

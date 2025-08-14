@@ -7,7 +7,11 @@ RSpec.describe User, type: :model do
     it { is_expected.to validate_presence_of(:last_name) }
     it { is_expected.to validate_presence_of(:phone) }
     it { is_expected.to validate_presence_of(:role) }
-    it { is_expected.to validate_inclusion_of(:role).in_array(%w[master client]) }
+    it {
+      is_expected.to define_enum_for(:role)
+        .backed_by_column_of_type(:string)
+        .with_values(client: 'client', master: 'master', admin: 'admin')
+    }
   end
 
   describe 'associations' do

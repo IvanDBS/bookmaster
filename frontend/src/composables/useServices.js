@@ -51,19 +51,31 @@ export function useServices() {
     }
   }
 
-  const addService = async () => {
+  const addService = async (payload = null) => {
     try {
       if (!authStore.token) {
         throw new Error('Не авторизован')
       }
 
-      const serviceData = {
-        name: newService.value.name,
-        description: newService.value.description,
-        price: parseInt(newService.value.price),
-        duration: parseInt(newService.value.duration),
-        service_type: newService.value.service_type,
+      const normalizeInt = (v) => {
+        if (typeof v === 'number') return v
+        if (typeof v === 'string') return parseInt(v.replace(/[^\d]/g, ''), 10)
+        return NaN
       }
+
+      const source = payload || newService.value || {}
+      const serviceData = {
+        name: String(source.name || '').trim(),
+        description: String(source.description || '').trim(),
+        price: normalizeInt(source.price),
+        duration: normalizeInt(source.duration),
+        service_type: String(source.service_type || '').trim(),
+      }
+
+      if (!serviceData.name || serviceData.name.length < 2) throw new Error('Введите название (мин. 2 символа)')
+      if (!serviceData.price || Number.isNaN(serviceData.price)) throw new Error('Укажите корректную цену')
+      if (!serviceData.duration || Number.isNaN(serviceData.duration)) throw new Error('Укажите корректную длительность')
+      if (!serviceData.service_type) throw new Error('Выберите тип услуги')
 
       if (editingServiceId.value) {
         await api.updateService(editingServiceId.value, serviceData, authStore.token)
@@ -78,7 +90,7 @@ export function useServices() {
       closeModal()
     } catch (error) {
       console.error('Error adding service:', error)
-      useToast().show('Ошибка при добавлении услуги: ' + error.message, 'red')
+      useToast().show('Ошибка при добавлении услуги: ' + (error?.message || 'Проверьте поля'), 'red')
     }
   }
 

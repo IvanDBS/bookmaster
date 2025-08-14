@@ -222,11 +222,17 @@ class ApiService {
       throw new Error('Unauthorized')
     }
 
+    const json = await response.json().catch(() => ({}))
     if (!response.ok) {
-      throw new Error('Failed to create service')
+      const message =
+        (json && json.error && (json.error.message || json.error.code)) ||
+        (Array.isArray(json?.errors) ? json.errors.join(', ') : null) ||
+        json.message ||
+        'Failed to create service'
+      throw new Error(message)
     }
 
-    return await response.json()
+    return json
   }
 
   async updateService(id, serviceData, token) {
