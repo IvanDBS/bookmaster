@@ -133,11 +133,15 @@ class User < ApplicationRecord
       Rails.logger.info "User##{id}: Generated #{slot_data.length} slots for date #{date}"
 
       slot_data.each do |slot_attrs|
+        # СТРОГАЯ ПРОВЕРКА: пропускаем некорректные интервалы (и любые попытки пересечь полночь)
+        if slot_attrs[:end_time] <= slot_attrs[:start_time]
+          Rails.logger.warn "User##{id}: Skipping invalid slot interval: #{slot_attrs[:start_time]} - #{slot_attrs[:end_time]}"
+          next
+        end
+
         # Ищем существующий слот по времени начала (точное совпадение часа и минуты)
         existing = time_slots.for_date(date)
-                             .where('EXTRACT(HOUR FROM start_time) = ? AND EXTRACT(MINUTE FROM start_time) = ?',
-                                    slot_attrs[:start_time].hour, slot_attrs[:start_time].min)
-                             .first
+                             .find_by(start_time: slot_attrs[:start_time])
 
         if existing
           # Не трогаем занятые и вручную заблокированные слоты
@@ -150,20 +154,44 @@ class User < ApplicationRecord
           }
           attrs_to_update[:is_available] = slot_attrs[:is_available] if existing.slot_type == slot_attrs[:slot_type]
 
-          # Обновляем через валидации, чтобы не появлялись слоты с end_time < start_time
-          existing.update!(attrs_to_update)
-          Rails.logger.info "User##{id}: Updated existing slot #{existing.id} for #{date}"
+          # СТРОГАЯ ПРОВЕРКА: не обновляем если новый end_time некорректен
+          if attrs_to_update[:end_time] && attrs_to_update[:end_time] <= (existing.start_time || slot_attrs[:start_time])
+            Rails.logger.warn "User##{id}: Skipping update for slot #{existing.id} due to invalid end_time"
+            next
+          end
+
+          # Обновляем через валидации, но избегаем ситуаций с end_time <= start_time
+          begin
+            existing.update!(attrs_to_update)
+            Rails.logger.info "User##{id}: Updated existing slot #{existing.id} for #{date}"
+          rescue ActiveRecord::RecordInvalid => e
+            Rails.logger.error "User##{id}: Failed to update slot #{existing.id}: #{e.message}"
+            next
+          end
         else
           # Создаем слот, если такого нет
-          time_slots.create!(
-            date: slot_attrs[:date],
-            start_time: slot_attrs[:start_time],
-            end_time: slot_attrs[:end_time],
-            duration_minutes: slot_attrs[:duration_minutes],
-            is_available: slot_attrs[:is_available],
-            slot_type: slot_attrs[:slot_type]
-          )
-          Rails.logger.info "User##{id}: Created slot: #{slot_attrs[:start_time]} - #{slot_attrs[:end_time]} (type: #{slot_attrs[:slot_type]}, available: #{slot_attrs[:is_available]})"
+          # Дополнительная проверка: если имеется любой пересекающийся слот, пропускаем создание
+          overlap_exists = time_slots.for_date(date)
+                                     .where('start_time < ? AND end_time > ?', slot_attrs[:end_time], slot_attrs[:start_time])
+                                     .exists?
+          if overlap_exists
+            Rails.logger.warn "User##{id}: Skipping creation due to overlap at #{slot_attrs[:start_time]}"
+            next
+          end
+          begin
+            time_slots.create!(
+              date: slot_attrs[:date],
+              start_time: slot_attrs[:start_time],
+              end_time: slot_attrs[:end_time],
+              duration_minutes: slot_attrs[:duration_minutes],
+              is_available: slot_attrs[:is_available],
+              slot_type: slot_attrs[:slot_type]
+            )
+            Rails.logger.info "User##{id}: Created slot: #{slot_attrs[:start_time]} - #{slot_attrs[:end_time]} (type: #{slot_attrs[:slot_type]}, available: #{slot_attrs[:is_available]})"
+          rescue ActiveRecord::RecordInvalid => e
+            Rails.logger.error "User##{id}: Failed to create slot for #{date}: #{e.message}"
+            next
+          end
         end
       rescue StandardError => e
         Rails.logger.error "User##{id}: Error ensuring slot for #{date}: #{e.message}"

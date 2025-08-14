@@ -26,18 +26,21 @@ class WorkingSchedule < ApplicationRecord
   end
 
   def working_duration_minutes
-    return 0 unless is_working && start_time && end_time
+    return 0 unless is_working
+    s = minutes_from_attr(:start_time)
+    e = minutes_from_attr(:end_time)
+    return 0 unless s && e && e > s
 
-    total_minutes = time_diff_in_minutes(end_time, start_time)
+    total_minutes = time_diff_in_minutes_index(e, s)
     lunch_minutes = lunch_duration_minutes
-
     [total_minutes - lunch_minutes, 0].max
   end
 
   def lunch_duration_minutes
-    return 0 unless lunch_start && lunch_end
-
-    time_diff_in_minutes(lunch_end, lunch_start)
+    ls = minutes_from_attr(:lunch_start)
+    le = minutes_from_attr(:lunch_end)
+    return 0 unless ls && le && le > ls
+    time_diff_in_minutes_index(le, ls)
   end
 
   def total_slots_count
@@ -56,47 +59,68 @@ class WorkingSchedule < ApplicationRecord
     return [] unless date.wday == day_of_week
     return [] unless slot_duration_minutes&.positive?
 
+    # Проверяем корректность рабочего времени (разрешаем 00:00-23:59)
+    if start_time == end_time
+      Rails.logger.error "WorkingSchedule##{id}: Invalid working hours: start_time equals end_time"
+      return []
+    end
+
     Rails.logger.info "WorkingSchedule##{id}: Generating slots for date #{date} (day #{day_of_week}) with is_working=#{is_working}, start_time=#{start_time&.strftime('%H:%M')}, end_time=#{end_time&.strftime('%H:%M')}"
 
-    slots = []
-    current_time = start_time
     slot_minutes = slot_duration_minutes || 60
+    start_m = minutes_from_attr(:start_time)
+    end_m   = minutes_from_attr(:end_time)
+    lunch_s_m = minutes_from_attr(:lunch_start)
+    lunch_e_m = minutes_from_attr(:lunch_end)
 
-    # Генерируем рабочие слоты
-    while current_time < end_time
-      slot_end = add_minutes_to_time(current_time, slot_minutes)
-      break if slot_end > end_time
+    # С 2025‑08: интервалы НЕ могут пересекать полночь. Если end <= start — не генерируем слоты.
+    if end_m.nil? || start_m.nil? || end_m <= start_m
+      Rails.logger.warn "WorkingSchedule##{id}: Skipping slot generation for #{date} because end_time <= start_time (cross-midnight intervals are not allowed)"
+      return []
+    end
 
-      # Проверяем, не попадает ли слот на обеденное время
-      if lunch_start && lunch_end && overlaps_with_lunch?(current_time, slot_end)
-        current_time = add_minutes_to_time(current_time, slot_minutes)
-        next
+    raw_slots = []
+    m = start_m
+    while m + slot_minutes <= end_m
+      raw_slots << [m, m + slot_minutes]
+      m += slot_minutes
+    end
+
+    # Фильтруем обед (если задан)
+    if lunch_s_m && lunch_e_m
+      raw_slots.reject! do |(a, b)|
+        lunch_overlaps_minutes?(a, b, lunch_s_m, lunch_e_m)
       end
+    end
 
-      slots << {
+    # Формируем структуры без TZ, как строки HH:MM:SS
+    slots = raw_slots.map do |(a, b)|
+      {
         user: user,
         date: date,
-        start_time: current_time,
-        end_time: slot_end,
+        start_time: minutes_to_hhmmss(a),
+        end_time: minutes_to_hhmmss(b),
         duration_minutes: slot_minutes,
         is_available: true,
         slot_type: 'work'
       }
-
-      current_time = add_minutes_to_time(current_time, slot_minutes)
     end
 
-    # Добавляем обеденный слот если есть
-    if lunch_start && lunch_end
-      slots << {
-        user: user,
-        date: date,
-        start_time: lunch_start,
-        end_time: lunch_end,
-        duration_minutes: time_diff_in_minutes(lunch_end, lunch_start),
-        is_available: false,
-        slot_type: 'lunch'
-      }
+    # Добавляем обеденный слот если есть и корректный интервал
+    if lunch_s_m && lunch_e_m
+      if (lunch_e_m - lunch_s_m) % 1440 > 0
+        slots << {
+          user: user,
+          date: date,
+          start_time: minutes_to_hhmmss(lunch_s_m),
+          end_time: minutes_to_hhmmss(lunch_e_m),
+          duration_minutes: time_diff_in_minutes_index(lunch_e_m, lunch_s_m),
+          is_available: false,
+          slot_type: 'lunch'
+        }
+      else
+        Rails.logger.warn "WorkingSchedule##{id}: Skipping invalid lunch interval for #{date}: #{lunch_start&.strftime('%H:%M')} - #{lunch_end&.strftime('%H:%M')}"
+      end
     end
 
     Rails.logger.info "Generated #{slots.length} slots for #{date}"
@@ -108,39 +132,57 @@ class WorkingSchedule < ApplicationRecord
   def working_hours_logic
     return unless is_working
 
-    if start_time.blank? || end_time.blank?
+    if read_attribute_before_type_cast(:start_time).blank? || read_attribute_before_type_cast(:end_time).blank?
       errors.add(:start_time, 'обязательно для рабочих дней')
       errors.add(:end_time, 'обязательно для рабочих дней')
       return
     end
 
-    return unless end_time <= start_time
-
-    errors.add(:end_time, 'должно быть позже времени начала работы')
+    s = minutes_from_attr(:start_time)
+    e = minutes_from_attr(:end_time)
+    if e.nil? || s.nil? || e <= s
+      errors.add(:end_time, 'должно быть позже времени начала (интервалы не могут пересекать полночь)')
+    end
   end
 
   def lunch_within_working_hours
-    return unless is_working && start_time && end_time && lunch_start && lunch_end
+    return unless is_working
+    s = minutes_from_attr(:start_time)
+    e = minutes_from_attr(:end_time)
+    return unless s && e && e > s
 
-    if lunch_start < start_time || lunch_end > end_time
-      errors.add(:lunch_start, 'обед должен быть в рамках рабочего времени')
+    ls = minutes_from_attr(:lunch_start)
+    le = minutes_from_attr(:lunch_end)
+    # Если обед не задан — ок.
+    return unless ls && le
+
+    # Корректность интервала обеда
+    if le <= ls
+      errors.add(:lunch_end, 'должно быть позже времени начала обеда')
+      return
     end
 
-    return unless lunch_end <= lunch_start
-
-    errors.add(:lunch_end, 'должно быть позже времени начала обеда')
+    # При запрете перехода через полночь обед обязан быть внутри рабочего интервала
+    if ls < s || le > e
+      errors.add(:lunch_start, 'обед должен быть в рамках рабочего времени')
+    end
   end
 
-  def overlaps_with_lunch?(slot_start, slot_end)
-    return false unless lunch_start && lunch_end
+  def overlaps_with_lunch?(slot_start, slot_end, lunch_start_t = lunch_start, lunch_end_t = lunch_end)
+    return false unless lunch_start_t && lunch_end_t
 
-    !(slot_end <= lunch_start || slot_start >= lunch_end)
+    if lunch_end_t < lunch_start_t
+      # обед пересекает полночь
+      !(slot_end <= lunch_start_t && slot_start >= lunch_end_t)
+    else
+      !(slot_end <= lunch_start_t || slot_start >= lunch_end_t)
+    end
   end
 
-  def time_diff_in_minutes(end_time, start_time)
-    total_end_minutes = (end_time.hour * 60) + end_time.min
-    total_start_minutes = (start_time.hour * 60) + start_time.min
-    (total_end_minutes - total_start_minutes).abs
+  def time_diff_in_minutes_index(end_m, start_m)
+    d = end_m - start_m
+    d += 1440 if d < 0
+    d
   end
 
   def add_minutes_to_time(time, minutes)
@@ -149,8 +191,47 @@ class WorkingSchedule < ApplicationRecord
     hours = total_minutes / 60
     mins = total_minutes % 60
 
+    # Обрабатываем переход через полночь (часы > 23)
+    hours = hours % 24 if hours >= 24
+
     # Создаем новое время с правильными часами и минутами
     # Используем Time.zone.parse для корректной работы с часовыми поясами
     Time.zone.parse("2000-01-01 #{hours.to_s.rjust(2, '0')}:#{mins.to_s.rjust(2, '0')}:00")
+  end
+
+  def normalize_time_to_utc(time)
+    # time — тип Time без даты (2000-01-01 HH:MM:SS в локальной зоне). Преобразуем к UTC с той же HH:MM.
+    hh = time.hour
+    mm = time.min
+    Time.utc(2000, 1, 1, hh, mm, 0)
+  end
+
+  def minutes_from_attr(attr_name)
+    raw = read_attribute_before_type_cast(attr_name)
+    if raw.present? && raw.to_s =~ /^\d{2}:\d{2}/
+      hh, mm = raw.to_s[0,5].split(':').map(&:to_i)
+      return (hh * 60) + mm
+    end
+    t = self[attr_name]
+    return (t.hour * 60) + t.min if t
+    nil
+  end
+
+  def minutes_to_hhmmss(mins)
+    mins = mins % 1440
+    hh = (mins / 60).floor
+    mm = mins % 60
+    format('%02d:%02d:00', hh, mm)
+  end
+
+  def lunch_overlaps_minutes?(a_start, a_end, l_start, l_end)
+    if l_end < l_start
+      # обед через полночь: считаем два отрезка
+      overlap1 = !(a_end <= l_start || a_start >= 1440)
+      overlap2 = !(a_end <= 0 || a_start >= l_end)
+      overlap1 || overlap2
+    else
+      !(a_end <= l_start || a_start >= l_end)
+    end
   end
 end

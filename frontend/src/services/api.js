@@ -389,7 +389,15 @@ class ApiService {
       throw new Error('Unauthorized')
     }
     const json = await response.json().catch(() => ({}))
-    if (!response.ok) throw new Error(json.error || 'Failed to add slot')
+    if (!response.ok) {
+      const message =
+        (typeof json.error === 'string'
+          ? json.error
+          : (json && json.error && (json.error.message || json.error.code))) || 'Failed to add slot'
+      const err = new Error(message)
+      err.status = response.status
+      throw err
+    }
     return json
   }
 
@@ -408,7 +416,13 @@ class ApiService {
     }
     const json = await response.json().catch(() => ({}))
     if (!response.ok) {
-      throw new Error(json.error || 'Failed to update slot')
+      const message =
+        (typeof json.error === 'string'
+          ? json.error
+          : (json && json.error && (json.error.message || json.error.code))) || 'Failed to update slot'
+      const err = new Error(message)
+      err.status = response.status
+      throw err
     }
     return json
   }

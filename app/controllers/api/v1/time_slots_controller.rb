@@ -11,9 +11,8 @@ module Api
 
         # Генерируем слоты если их нет
         current_user.ensure_slots_for_date(date)
-
-        # Получаем слоты на дату и гарантируем актуальность занятости по существующим броням
-        current_user.reconcile_bookings_with_slots_for_date(date)
+        # ensure_slots_for_date уже вызывает reconcile_bookings_with_slots_for_date,
+        # поэтому дополнительный вызов здесь не нужен, чтобы избежать лишней нагрузки
         slots = current_user.time_slots.for_date(date).includes(booking: :service).order(:start_time)
 
         Rails.logger.info "Found #{slots.count} slots for date #{date}"
@@ -33,8 +32,7 @@ module Api
 
         date = params[:date] ? Date.parse(params[:date]) : Date.current
         master.ensure_slots_for_date(date)
-        # Дополнительно синхронизируем брони со слотами для защиты от несвязанностей
-        master.reconcile_bookings_with_slots_for_date(date)
+        # ensure_slots_for_date уже синхронизирует слоты с бронированиями
 
         slots = master.time_slots.for_date(date).includes(booking: :service).order(:start_time)
         render json: slots, each_serializer: TimeSlotPublicSerializer
@@ -106,42 +104,50 @@ module Api
         slot_minutes = (schedule&.slot_duration_minutes || last_work_slot.duration_minutes).to_i
         slot_minutes = 60 if slot_minutes <= 0
 
-        # Время начала — конец последнего рабочего слота
-        new_start_time = last_work_slot.end_time
-        new_end_time = Time.zone.parse("2000-01-01 #{new_start_time.strftime('%H:%M')}") + slot_minutes.minutes
+        # Время начала — конец последнего рабочего слота (как минуты в сутках)
+        start_m = (last_work_slot.end_time.hour * 60) + last_work_slot.end_time.min
+        end_m = start_m + slot_minutes
+        if end_m > 1440
+          return render_error(code: 'validation_error', message: 'Нельзя добавлять слоты через полночь', status: :unprocessable_entity)
+        end
+        end_m = [end_m, 1440].min
 
-        # Границы рабочего дня
-        if schedule&.is_working && schedule.start_time && schedule.end_time
-          if new_end_time > schedule.end_time
-            return render_error(code: 'validation_error', message: 'Нельзя добавить слот за пределами рабочего дня', status: :unprocessable_entity)
-          end
+        to_hhmmss = ->(mins) { sprintf('%02d:%02d:00', (mins / 60).floor, mins % 60) }
+        new_start_hms = to_hhmmss.call(start_m)
+        new_end_hms   = to_hhmmss.call(end_m)
 
-          # Проверка пересечения с обедом
-          if schedule.lunch_start && schedule.lunch_end
-            lunch_start = schedule.lunch_start
-            lunch_end   = schedule.lunch_end
-            if (new_start_time < lunch_end) && (new_end_time > lunch_start)
-              return render_error(code: 'validation_error', message: 'Новый слот попадает на обед', status: :unprocessable_entity)
-            end
+        # Разрешаем добавлять слот и вне границ расписания.
+        # Единственные ограничения: не пересекать полночь и не попадать на обед, если он задан и пересекается.
+        # Уже проверили по минутам выше
+
+        if schedule && schedule.lunch_start && schedule.lunch_end && schedule.lunch_end > schedule.lunch_start
+          lunch_s = (schedule.lunch_start.hour * 60) + schedule.lunch_start.min
+          lunch_e = (schedule.lunch_end.hour * 60) + schedule.lunch_end.min
+          if (start_m < lunch_e) && (end_m > lunch_s)
+            return render_error(code: 'validation_error', message: 'Новый слот попадает на обед', status: :unprocessable_entity)
           end
         end
 
         # Проверка пересечений с любыми слотами этого дня
         overlap = existing_slots.any? do |s|
-          s.start_time < new_end_time && s.end_time > new_start_time
+          s_start_m = (s.start_time.hour * 60) + s.start_time.min
+          s_end_m   = (s.end_time.hour * 60) + s.end_time.min
+          (s_start_m < end_m) && (s_end_m > start_m)
         end
         if overlap
           return render_error(code: 'validation_error', message: 'Новый слот пересекается с существующими', status: :unprocessable_entity)
         end
 
-        # Создаем новый слот
-        new_slot = current_user.time_slots.create!(
+        # Создаем новый слот, записывая time как сырые HH:MM:SS
+        new_slot = TimeSlot.create_with_raw_times!(
+          user_id: current_user.id,
           date: date,
-          start_time: new_start_time,
-          end_time: new_end_time,
+          start_time: new_start_hms,
+          end_time: new_end_hms,
           duration_minutes: slot_minutes,
           is_available: true,
-          slot_type: 'work'
+          slot_type: 'work',
+          booking_id: nil
         )
 
         Rails.logger.info "Created new slot: #{new_slot.attributes}"

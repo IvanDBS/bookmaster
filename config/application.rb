@@ -24,6 +24,12 @@ module Bookmaster
     # Устанавливаем целевую таймзону приложения. ActiveRecord продолжит хранить в UTC,
     # но все парсинги через Time.zone будут интерпретироваться в указанной зоне.
     config.time_zone = "Europe/Moscow"
+    # Все записи времени в БД (включая тип time) сохраняем в локальной TZ,
+    # чтобы исключить смещения при записи '00:00' → '21:00' (UTC-офсет).
+    config.active_record.default_timezone = :local
+    # Отключаем tz-конвертацию для колонок :time, чтобы хранить и читать HH:MM без смещений
+    # (оставляем только :datetime под управление таймзоны)
+    config.active_record.time_zone_aware_types = [:datetime]
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Only loads a smaller set of middleware suitable for API only apps.

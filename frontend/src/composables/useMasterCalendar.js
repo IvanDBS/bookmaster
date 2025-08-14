@@ -97,9 +97,10 @@ export function useMasterCalendar() {
       if (isDayWorkingFinal) {
         // Если день явно помечен как рабочий в настройках
         if (workSlots.length === 0) {
-          // Если рабочий день, но слоты не сгенерированы - считаем свободным
-          loadLevel = 'free'
-          dayStatus = 'available'
+          // Раньше мы помечали такой день как "свободный", что давало зелёные дни без слотов.
+          // Теперь явно считаем такой день "non_working" визуально, пока слоты не появятся.
+          loadLevel = 'non_working'
+          dayStatus = 'non_working'
         } else {
           // Если есть рабочие слоты, определяем уровень загруженности
           const totalSlots = workSlots.length
@@ -198,9 +199,9 @@ export function useMasterCalendar() {
       if (isDayWorkingFinal) {
         // Если день явно помечен как рабочий в настройках
         if (workSlots.length === 0) {
-          // Если рабочий день, но слоты не сгенерированы - считаем свободным
-          loadLevel = 'free'
-          dayStatus = 'available'
+          // Не подсвечиваем зелёным дни без реальных слотов
+          loadLevel = 'non_working'
+          dayStatus = 'non_working'
         } else {
           // Если есть рабочие слоты, определяем уровень загруженности
           const totalSlots = workSlots.length
@@ -388,10 +389,19 @@ export function useMasterCalendar() {
 
       const slotsData = await api.getTimeSlots(dateString, authStore.token)
 
-      // Сохраняем в кэш
-      slotsCache.value.set(dateString, slotsData.slots)
+      // Строгая сортировка по времени начала на клиенте, чтобы исключить визуальные скачки
+      const sorted = (slotsData.slots || []).slice().sort((a, b) => {
+        const toMinutes = (s) => {
+          const [h, m] = String(s.start_time || '00:00').split(':').map((v) => parseInt(v, 10))
+          return h * 60 + m
+        }
+        return toMinutes(a) - toMinutes(b)
+      })
 
-      return slotsData.slots
+      // Сохраняем в кэш
+      slotsCache.value.set(dateString, sorted)
+
+      return sorted
     } catch (error) {
       console.error('Error loading time slots for', date.toISOString().split('T')[0], ':', error)
       return []
@@ -556,7 +566,7 @@ export function useMasterCalendar() {
       console.error('Error adding new slot:', error)
       if (typeof window !== 'undefined') {
         const { useToast } = await import('../composables/useToast')
-        useToast().show('Ошибка при добавлении нового слота: ' + error.message, 'red')
+        useToast().show('Ошибка при добавлении нового слота: ' + (error && error.message ? error.message : 'Неизвестная ошибка'), 'red')
       }
     } finally {
       // isAddingSlot.value = false // will be handled in MasterDashboard

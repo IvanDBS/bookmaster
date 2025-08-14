@@ -62,41 +62,35 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Время начала работы
                     </label>
-                    <input
-                      type="time"
-                      v-model="schedule.start_time"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <TimeSelect v-model="schedule.start_time" :step="30" />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Время окончания работы
                     </label>
-                    <input
-                      type="time"
-                      v-model="schedule.end_time"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <TimeSelect v-model="schedule.end_time" :step="30" />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Начало обеда
                     </label>
-                    <input
-                      type="time"
-                      v-model="schedule.lunch_start"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <TimeSelect v-model="schedule.lunch_start" :step="30" />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Конец обеда
                     </label>
-                    <input
-                      type="time"
-                      v-model="schedule.lunch_end"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <div class="flex space-x-2">
+                      <TimeSelect v-model="schedule.lunch_end" :step="30" />
+                      <button
+                        type="button"
+                        @click="clearLunch(schedule)"
+                        class="px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        title="Убрать обед"
+                      >
+                        Без обеда
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -183,6 +177,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 import AppHeader from '../components/AppHeader.vue'
+import TimeSelect from '../components/common/TimeSelect.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -216,50 +211,34 @@ const loadWorkingSchedules = async () => {
     
     const schedulesData = await api.getWorkingSchedules(authStore.token)
 
-    // Add day names and ensure all days are present, and format times
+    // Backend теперь отдаёт и "*_hhmm" (строки HH:MM). Используем их в приоритете.
     workingSchedules.value = schedulesData.map((schedule) => {
       const formattedSchedule = {
         ...schedule,
         day_name: dayNames[schedule.day_of_week],
       }
 
-      // Format time strings from ISO 8601 to HH:mm, or set to null if not working
-      formattedSchedule.start_time =
-        formattedSchedule.is_working && formattedSchedule.start_time
-          ? new Date(formattedSchedule.start_time).toLocaleTimeString('ru-RU', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            })
-          : null
-      formattedSchedule.end_time =
-        formattedSchedule.is_working && formattedSchedule.end_time
-          ? new Date(formattedSchedule.end_time).toLocaleTimeString('ru-RU', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            })
-          : null
-      formattedSchedule.lunch_start =
-        formattedSchedule.is_working && formattedSchedule.lunch_start
-          ? new Date(formattedSchedule.lunch_start).toLocaleTimeString('ru-RU', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            })
-          : null
-      formattedSchedule.lunch_end =
-        formattedSchedule.is_working && formattedSchedule.lunch_end
-          ? new Date(formattedSchedule.lunch_end).toLocaleTimeString('ru-RU', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            })
-          : null
+      const pickHHmm = (s, baseKey) => {
+        // 1) prefer *_hhmm directly from SQL to avoid TZ
+        const sqlKey = `${baseKey}_hhmm`
+        if (s && typeof s[sqlKey] === 'string' && /^\d{2}:\d{2}$/.test(s[sqlKey])) return s[sqlKey]
+        // 2) fallback: try to extract HH:MM from ISO string
+        const raw = s ? s[baseKey] : null
+        if (typeof raw === 'string') {
+          const t = raw.includes('T') ? raw.split('T')[1] : raw
+          const hhmm = t.slice(0,5)
+          return /^\d{2}:\d{2}$/.test(hhmm) ? hhmm : null
+        }
+        return null
+      }
 
-      // Ensure slot_duration_minutes is a number if working, otherwise null
+      formattedSchedule.start_time = formattedSchedule.is_working ? pickHHmm(schedule, 'start_time') : null
+      formattedSchedule.end_time = formattedSchedule.is_working ? pickHHmm(schedule, 'end_time') : null
+      formattedSchedule.lunch_start = formattedSchedule.is_working ? pickHHmm(schedule, 'lunch_start') : null
+      formattedSchedule.lunch_end = formattedSchedule.is_working ? pickHHmm(schedule, 'lunch_end') : null
+
       formattedSchedule.slot_duration_minutes = formattedSchedule.is_working
-        ? formattedSchedule.slot_duration_minutes || 30
+        ? Number(schedule.slot_duration_minutes || 30)
         : null
 
       return formattedSchedule
@@ -272,51 +251,16 @@ const loadWorkingSchedules = async () => {
       return dayA - dayB
     })
 
-    // Заполняем дефолтные значения для рабочих дней без времени
+    // Больше не автозаполняем время и обед — оставляем как в БД, чтобы не навязывать значения.
     workingSchedules.value.forEach((schedule) => {
-      if (schedule.is_working) {
-        if (
-          !schedule.start_time ||
-          schedule.start_time === '--:--' ||
-          schedule.start_time === null ||
-          schedule.start_time === ''
-        ) {
-          schedule.start_time = '09:00'
-        }
-        if (
-          !schedule.end_time ||
-          schedule.end_time === '--:--' ||
-          schedule.end_time === null ||
-          schedule.end_time === ''
-        ) {
-          schedule.end_time = '19:00'
-        }
-        if (
-          !schedule.lunch_start ||
-          schedule.lunch_start === '--:--' ||
-          schedule.lunch_start === null ||
-          schedule.lunch_start === ''
-        ) {
-          schedule.lunch_start = '13:00'
-        }
-        if (
-          !schedule.lunch_end ||
-          schedule.lunch_end === '--:--' ||
-          schedule.lunch_end === null ||
-          schedule.lunch_end === ''
-        ) {
-          schedule.lunch_end = '14:00'
-        }
-        if (!schedule.slot_duration_minutes) {
-          schedule.slot_duration_minutes = 30
-        }
-      } else {
-        // Очищаем время при отключении рабочего дня
+      if (!schedule.is_working) {
         schedule.start_time = null
         schedule.end_time = null
         schedule.lunch_start = null
         schedule.lunch_end = null
         schedule.slot_duration_minutes = null
+      } else {
+        if (!schedule.slot_duration_minutes) schedule.slot_duration_minutes = 60
       }
     })
 
@@ -335,10 +279,34 @@ const saveSchedule = async () => {
       throw new Error('Не авторизован')
     }
 
-    
+    // Локальная валидация: интервалы не могут пересекать полночь;
+    // обед, выходящий за пределы интервала, очищаем.
+    const toMinutes = (hhmm) => {
+      if (!hhmm || typeof hhmm !== 'string') return null
+      const [h, m] = hhmm.split(':').map((v) => parseInt(v, 10))
+      return h * 60 + m
+    }
 
     for (const schedule of workingSchedules.value) {
       // Проверяем валидность данных перед отправкой
+      if (schedule.is_working && schedule.start_time && schedule.end_time) {
+        const s = toMinutes(schedule.start_time)
+        const e = toMinutes(schedule.end_time)
+        if (e === null || s === null) throw new Error('Неверный формат времени')
+        if (e <= s) {
+          throw new Error(`День «${schedule.day_name}»: интервал не может пересекать полночь. Время окончания должно быть позже начала.`)
+        }
+        if (schedule.lunch_start && schedule.lunch_end) {
+          const ls = toMinutes(schedule.lunch_start)
+          const le = toMinutes(schedule.lunch_end)
+          if (!(ls >= s && le <= e && le > ls)) {
+            // очищаем обед, чтобы не блокировать сохранение
+            schedule.lunch_start = null
+            schedule.lunch_end = null
+          }
+        }
+      }
+
       const scheduleData = {
         working_schedule: {
           is_working: schedule.is_working,
@@ -436,11 +404,12 @@ const goBackToDashboard = async () => {
 // Auto-fill default values when enabling working day
 const handleWorkingDayChange = (schedule) => {
   if (schedule.is_working) {
-    schedule.start_time = '09:00'
-    schedule.end_time = '19:00'
-    schedule.lunch_start = '13:00'
-    schedule.lunch_end = '14:00'
-    schedule.slot_duration_minutes = 60
+    // не автозаполняем значения, пусть пользователь задаёт сам
+    schedule.start_time = null
+    schedule.end_time = null
+    schedule.lunch_start = null
+    schedule.lunch_end = null
+    schedule.slot_duration_minutes = schedule.slot_duration_minutes || 60
   } else {
     schedule.start_time = null
     schedule.end_time = null
@@ -448,5 +417,11 @@ const handleWorkingDayChange = (schedule) => {
     schedule.lunch_end = null
     schedule.slot_duration_minutes = null
   }
+}
+
+// Clear lunch time fields
+const clearLunch = (schedule) => {
+  schedule.lunch_start = null
+  schedule.lunch_end = null
 }
 </script>

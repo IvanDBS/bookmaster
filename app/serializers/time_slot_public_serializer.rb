@@ -8,7 +8,9 @@ class TimeSlotPublicSerializer < ActiveModel::Serializer
              :duration_minutes,
              :is_available,
              :slot_type,
-             :booked
+             :booked,
+             :booking_id,
+             :booking
 
   def start_time
     object.start_time.strftime('%H:%M')
@@ -28,6 +30,24 @@ class TimeSlotPublicSerializer < ActiveModel::Serializer
 
   def booked
     object.booked?
+  end
+
+  def booking_id
+    object.booking_id
+  end
+
+  def booking
+    return nil unless object.booking_id
+    {
+      id: object.booking.id,
+      client_name: object.booking.client_name,
+      client_email: object.booking.client_email,
+      client_phone: object.booking.client_phone,
+      service_name: object.booking.service&.name,
+      status: object.booking.status,
+      start_time: object.booking.start_time,
+      end_time: object.booking.end_time
+    }
   end
 end
 
