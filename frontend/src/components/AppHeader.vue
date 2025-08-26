@@ -64,11 +64,11 @@
         <!-- Actions -->
         <div class="flex items-center space-x-1 sm:space-x-2">
           <!-- Notifications Bell - только для мастеров -->
-          <div v-if="userType === 'master'" class="relative">
+          <div v-if="userType === 'master'" class="relative flex items-center">
             <button
               v-if="showNavigation && pendingBookingsCount > 0"
               @click="handleNotificationClick"
-              class="w-5 h-5 sm:w-4 sm:h-4 text-gray-600 hover:text-orange-600 transition-colors"
+              class="w-5 h-5 sm:w-4 sm:h-4 text-gray-600 hover:text-orange-600 transition-colors flex items-center"
             >
               <svg fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5 sm:w-4 sm:h-4">
                 <path
@@ -81,7 +81,7 @@
                 {{ pendingBookingsCount }}
               </span>
             </button>
-            <div v-else-if="showNavigation" class="w-5 h-5 sm:w-4 sm:h-4 text-gray-400">
+            <div v-else-if="showNavigation" class="w-5 h-5 sm:w-4 sm:h-4 text-gray-400 flex items-center">
               <svg fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5 sm:w-4 sm:h-4">
                 <path
                   d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"

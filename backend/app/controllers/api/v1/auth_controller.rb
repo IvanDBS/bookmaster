@@ -172,6 +172,38 @@ class Api::V1::AuthController < ApplicationController
       ]
     }
   end
+
+  # FedCM id assertion endpoint for Google OAuth
+  def google_fedcm_assertion
+    # FedCM requires specific headers
+    response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+    response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+    
+    # Set CORS headers for FedCM
+    response.headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site'
+    response.headers['Access-Control-Expose-Headers'] = 'Cross-Origin-Embedder-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy'
+    
+    # Handle FedCM assertion request
+    account_id = params[:account_id]
+    
+    if account_id == 'google'
+      # Generate a mock assertion for Google
+      assertion = {
+        id: SecureRandom.uuid,
+        account_id: 'google',
+        provider: 'google',
+        timestamp: Time.current.to_i
+      }
+      
+      render json: assertion
+    else
+      render_error(code: 'invalid_account', message: 'Invalid account ID', status: :bad_request)
+    end
+  end
   
   # Google OAuth callback endpoint
   def google_callback
