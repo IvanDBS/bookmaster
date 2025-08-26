@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Mobile-first responsive utilities */
+@layer utilities {
+  .container-mobile {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .text-mobile {
+    @apply text-sm sm:text-base;
+  }
+
+  .heading-mobile {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 640px) {
+  button,
+  a {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  /* Prevent text overflow */
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Better header spacing */
+  header .flex {
+    gap: 0.25rem;
+  }
+
+  /* Reduce padding on mobile */
+  .container-mobile {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Smaller text on mobile */
+  .text-mobile {
+    font-size: 0.875rem;
+  }
+
+  /* Prevent horizontal overflow */
+  .overflow-x-hidden {
+    overflow-x: hidden;
+  }
+
+  /* Smaller buttons on mobile */
+  .btn {
+    @apply text-xs px-2 py-1.5;
+  }
+
+  /* Better header on mobile */
+  header {
+    min-height: 64px;
+  }
+
+  /* Prevent text wrapping in buttons */
+  button {
+    white-space: nowrap;
+  }
+}
+
+/* Design tokens: Moldova flag (pastel) + minimalistic base */
+@layer base {
+  :root {
+    --brand-blue: #6ea8fe; /* pastel blue */
+    --brand-yellow: #ffe08a; /* pastel yellow */
+    --brand-red: #ff8fa3; /* pastel red */
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply font-sans;
+  }
+}
+
+/* Reusable minimal buttons (optional) */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold transition-colors;
+  }
+  .btn-primary {
+    @apply btn bg-lime-500 text-white hover:bg-lime-600 shadow-sm;
+  }
+  .btn-outline {
+    @apply btn border border-gray-300 text-gray-700 hover:bg-gray-50;
+  }
+
+  /* Mobile-specific button styles */
+  @media (max-width: 640px) {
+    .btn {
+      @apply px-2 py-1.5 text-xs;
+    }
+  }
+}

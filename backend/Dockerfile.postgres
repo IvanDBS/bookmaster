@@ -1,0 +1,42 @@
+FROM postgres:17-alpine
+
+# Обновление репозиториев и установка LLVM
+RUN apk update && apk add --no-cache \
+    llvm \
+    llvm-dev \
+    clang \
+    clang-dev \
+    build-base \
+    cmake
+
+# Проверка установки LLVM
+RUN llvm-config --version && which llvm-config
+
+# Проверка существования пользователя postgres
+RUN id postgres || (addgroup -g 999 postgres && \
+    adduser -D -s /bin/bash -u 999 -G postgres postgres)
+
+# Установка прав на директории
+RUN mkdir -p /var/lib/postgresql/data && \
+    chown -R postgres:postgres /var/lib/postgresql/data
+
+# Переключение на пользователя postgres
+USER postgres
+
+# Проверка что LLVM доступен для postgres
+RUN llvm-config --version
+
+# Возврат к root для запуска
+USER root
+
+# Копирование кастомных настроек
+COPY config/postgresql.conf /etc/postgresql/postgresql.conf
+
+# Установка прав
+RUN chown postgres:postgres /etc/postgresql/postgresql.conf
+
+# Переключение обратно на postgres
+USER postgres
+
+# Команда по умолчанию
+CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]

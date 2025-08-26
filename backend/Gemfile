@@ -1,0 +1,58 @@
+source "https://rubygems.org"
+
+ruby "3.3.0"
+
+# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+gem "rails", "~> 8.0.0"
+
+gem "pg", "~> 1.6"
+gem "puma", ">= 6.0"
+gem "bcrypt", "~> 3.1.7"
+gem "tzinfo-data", platforms: %i[ windows jruby ]
+gem "bootsnap", require: false
+gem "rack-cors"
+
+# Authentication
+gem "devise", "~> 4.9"
+gem "devise-jwt", "~> 0.12"
+gem "jwt", "~> 2.8"
+
+gem "active_model_serializers", "~> 0.10"
+
+gem "sidekiq", "~> 7.0"
+
+# Rate limiting
+gem 'rack-attack', "~> 6.7"
+gem "secure_headers", "~> 6.0"
+
+group :development, :test do
+  gem "byebug", platforms: [:mri, :mingw, :x64_mingw]
+  gem "debug", platforms: %i[ mri windows ]
+  gem 'pry-byebug'
+  
+  # Testing
+  gem "rspec-rails", "~> 7.0"
+  gem "factory_bot_rails", "~> 6.4"
+  gem "faker", "~> 3.2"
+  gem "shoulda-matchers", "~> 6.0"
+  
+  # Security
+  gem "bundler-audit", "~> 0.9"
+end
+
+group :production do
+  gem "lograge", "~> 0.12"
+  gem "sentry-ruby", "~> 5.0"
+  gem "sentry-rails", "~> 5.0"
+end
+
+group :development do
+  gem "letter_opener_web", "~> 2.0"
+  gem "web-console", "~> 4.2"
+  gem "listen", "~> 3.8"
+  gem "rubocop", require: false
+  gem "rubocop-rails", require: false
+  gem "rubocop-rspec", require: false
+end
+
+gem "rubocop-discourse", "~> 3.12"

@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bookmaster_db
+    env_file:
+      - env.development
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: bookmaster_redis
+
+  web:
+    build: ./backend
+    container_name: bookmaster_web
+    env_file:
+      - env.development
+    environment:
+      BUNDLE_WITHOUT: ""
+      BUNDLE_DEPLOYMENT: "0"
+      RAILS_MAX_THREADS: 5
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/rails
+    command: ./bin/rails server -b 0.0.0.0
+
+  worker:
+    build: ./backend
+    container_name: bookmaster_worker
+    env_file:
+      - env.development
+    environment:
+      BUNDLE_WITHOUT: ""
+      BUNDLE_DEPLOYMENT: "0"
+      RAILS_MAX_THREADS: 5
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/rails
+    command: bundle exec sidekiq
+
+  frontend:
+    build: ./frontend
+    container_name: bookmaster_frontend
+    env_file:
+      - env.development
+    depends_on:
+      - web
+    ports:
+      - "5173:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:
+  node_modules:
+
+

@@ -1,0 +1,87 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: bookmaster_db
+    env_file:
+      - env.production
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: >
+      postgres
+      -c jit=on
+      -c jit_provider=llvmjit
+      -c jit_above_cost=100000
+      -c jit_inline_above_cost=500000
+      -c jit_optimize_above_cost=500000
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+
+  redis:
+    image: redis:7-alpine
+    container_name: bookmaster_redis
+
+  web:
+    build: ./backend
+    container_name: bookmaster_web
+    env_file:
+      - env.production
+    environment:
+      BUNDLE_WITHOUT: ""
+      BUNDLE_DEPLOYMENT: "0"
+      RAILS_MAX_THREADS: 5
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/rails
+    command: ./bin/rails server -b 0.0.0.0
+
+  worker:
+    build: ./backend
+    container_name: bookmaster_worker
+    env_file:
+      - env.production
+    environment:
+      BUNDLE_WITHOUT: ""
+      BUNDLE_DEPLOYMENT: "0"
+      RAILS_MAX_THREADS: 5
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/rails
+    command: bundle exec sidekiq
+
+  frontend:
+    build: ./frontend
+    container_name: bookmaster_frontend
+    env_file:
+      - env.production
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+      VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+    depends_on:
+      - web
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./ssl:/etc/ssl:ro  # Mount SSL certificates
+
+volumes:
+  pgdata:
+  node_modules:

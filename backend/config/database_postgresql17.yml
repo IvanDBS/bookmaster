@@ -1,0 +1,90 @@
+# PostgreSQL 17 Optimized Configuration
+# This file contains additional optimizations for PostgreSQL 17 with JIT
+
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  
+  # PostgreSQL 17 specific optimizations
+  variables:
+    # JIT settings
+    jit: on
+    jit_provider: llvmjit
+    jit_above_cost: 100000
+    jit_inline_above_cost: 500000
+    jit_optimize_above_cost: 500000
+    
+    # Performance settings
+    shared_preload_libraries: pg_stat_statements
+    pg_stat_statements.track: all
+    pg_stat_statements.max: 10000
+    
+    # Connection and memory
+    max_connections: 200
+    shared_buffers: 256MB
+    effective_cache_size: 1GB
+    maintenance_work_mem: 64MB
+    
+    # WAL and checkpoint
+    checkpoint_completion_target: 0.9
+    wal_buffers: 16MB
+    
+    # Query planning
+    default_statistics_target: 100
+    random_page_cost: 1.1
+    effective_io_concurrency: 200
+    
+    # Logging
+    log_min_duration_statement: 1000
+    log_statement: none
+
+development:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+
+test:
+  <<: *default
+  database: bookmaster_test
+
+production:
+  <<: *default
+  database: bookmaster_production
+  username: bookmaster
+  password: <%= ENV["BOOKMASTER_DATABASE_PASSWORD"] %>
+  
+  # Production specific optimizations
+  variables:
+    # Inherit from default
+    jit: on
+    jit_provider: llvmjit
+    jit_above_cost: 100000
+    jit_inline_above_cost: 500000
+    jit_optimize_above_cost: 500000
+    
+    # Production memory settings
+    shared_buffers: 512MB
+    effective_cache_size: 2GB
+    maintenance_work_mem: 128MB
+    work_mem: 4MB
+    
+    # Production connection settings
+    max_connections: 300
+    
+    # Production WAL settings
+    wal_buffers: 32MB
+    checkpoint_completion_target: 0.9
+    
+    # Production query planning
+    default_statistics_target: 200
+    random_page_cost: 1.1
+    effective_io_concurrency: 400
+    
+    # Production logging
+    log_min_duration_statement: 500
+    log_statement: none
+    
+    # Production monitoring
+    shared_preload_libraries: pg_stat_statements
+    pg_stat_statements.track: all
+    pg_stat_statements.max: 20000
