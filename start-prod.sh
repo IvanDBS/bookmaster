@@ -9,8 +9,8 @@ docker compose -f docker-compose.prod.yml down
 docker compose -f docker-compose.prod.yml up --build -d
 
 echo "✅ Production server started!"
-echo "🌐 Frontend: http://book-master.ddns.net"
-echo "🔧 API: http://book-master.ddns.net/api/v1"
+echo "🌐 Frontend: https://yourdomain.com"
+echo "🔧 API: https://yourdomain.com/api/v1"
 echo ""
 echo "📋 Useful commands:"
 echo "  docker compose -f docker-compose.prod.yml logs -f web      # Rails logs"
