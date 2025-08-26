@@ -15,7 +15,6 @@ SecureHeaders::Configuration.default do |config|
     base_uri: ["'self'"],
     form_action: ["'self'"],
     upgrade_insecure_requests: true, # Принудительный HTTPS
-    block_all_mixed_content: true, # Блокировка смешанного контента
   }
 
   config.hsts = "max-age=31536000; includeSubDomains; preload"

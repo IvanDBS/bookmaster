@@ -13,6 +13,7 @@
 ActiveRecord::Schema[8.0].define(version: 2025_08_15_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_stat_statements"
 
   create_table "bookings", force: :cascade do |t|
     t.datetime "start_time", null: false

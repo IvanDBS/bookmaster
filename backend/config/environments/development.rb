@@ -14,6 +14,9 @@ Rails.application.configure do
   # Show full error reports.
   config.consider_all_requests_local = true
 
+  # Disable master key requirement in development
+  config.require_master_key = false
+
   # Enable server timing
   config.server_timing = true
 
