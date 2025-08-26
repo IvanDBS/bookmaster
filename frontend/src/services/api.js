@@ -18,9 +18,20 @@ class ApiService {
 
   // Helper для включения credentials в запросы
   getRequestOptions(options = {}) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const headers = {
+      ...options.headers,
+    }
+    
+    // Добавляем токен в заголовки если он есть
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
     return {
       credentials: 'include', // Включаем cookies в запросы
       ...options,
+      headers,
     }
   }
 

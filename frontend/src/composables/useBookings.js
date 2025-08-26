@@ -52,14 +52,18 @@ export function useBookings() {
   // API functions
   const loadBookings = async () => {
     try {
-      if (!authStore.token) {
+      // Получаем токен из localStorage или authStore
+      const token = localStorage.getItem('token') || authStore.token
+      
+      if (!token) {
         console.warn('No auth token available')
         recentBookings.value = []
         return
       }
 
-      const bookingsData = await api.getBookings(authStore.token)
+      const bookingsData = await api.getBookings(token)
       recentBookings.value = Array.isArray(bookingsData) ? bookingsData.filter(Boolean) : []
+      console.log('Bookings loaded:', recentBookings.value.length)
     } catch (error) {
       console.error('Error loading bookings:', error)
       recentBookings.value = []

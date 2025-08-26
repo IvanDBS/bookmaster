@@ -74,7 +74,8 @@ class ApplicationController < ActionController::Base
   end
 
   def authenticate_user_from_jwt!
-    token = request.cookies['jwt_token'] || request.headers['Authorization']&.gsub('Bearer ', '')
+    # Приоритет: сначала заголовок Authorization, потом cookie
+    token = request.headers['Authorization']&.gsub('Bearer ', '') || request.cookies['jwt_token']
     
     if token.blank?
       render_error(code: 'unauthorized', message: 'Токен не найден', status: :unauthorized)
@@ -116,5 +117,22 @@ class ApplicationController < ActionController::Base
   def validate_email(email)
     email_regex = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
     email_regex.match?(email.to_s)
+  end
+
+  # FedCM web-identity endpoint
+  def web_identity
+    response.headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    
+    render json: {
+      provider_urls: [
+        "https://accounts.google.com"
+      ],
+      accounts_endpoint: "/api/v1/auth/google_fedcm",
+      client_metadata_endpoint: "/api/v1/auth/google_fedcm_metadata",
+      id_assertion_endpoint: "/api/v1/auth/google_fedcm_assertion"
+    }
   end
 end

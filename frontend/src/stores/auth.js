@@ -88,7 +88,10 @@ export const useAuthStore = defineStore('auth', {
         this.user = null
         this.token = null
         this.error = null
-        // Не нужно очищать localStorage, так как токен в httpOnly cookie
+        // Очищаем localStorage от старых токенов
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token')
+        }
       }
     },
   },

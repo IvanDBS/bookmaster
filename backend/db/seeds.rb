@@ -24,21 +24,11 @@ Rails.logger.debug "Creating masters..."
 # Create masters with services
 masters = [
   {
-    email: 'anna@example.com',
-    password: 'password123',
-    first_name: 'Анна',
-    last_name: 'Петрова',
-    phone: '+7 (999) 111-11-11',
-    role: 'master',
-    bio: 'Профессиональный мастер маникюра с 5-летним опытом',
-    address: 'ул. Тверская, 15, Москва'
-  },
-  {
     email: 'maria@example.com',
     password: 'password123',
     first_name: 'Мария',
     last_name: 'Сидорова',
-    phone: '+7 (999) 222-22-22',
+    phone: '0712345678',
     role: 'master',
     bio: 'Специалист по педикюру и уходу за ногами',
     address: 'ул. Арбат, 25, Москва'
@@ -48,7 +38,7 @@ masters = [
     password: 'password123',
     first_name: 'Елена',
     last_name: 'Козлова',
-    phone: '+7 (999) 333-33-33',
+    phone: '0712345678',
     role: 'master',
     bio: 'Массажист с медицинским образованием',
     address: 'ул. Новый Арбат, 10, Москва'
@@ -58,20 +48,10 @@ masters = [
     password: 'password123',
     first_name: 'Ирина',
     last_name: 'Волкова',
-    phone: '+7 (999) 444-44-44',
+    phone: '0712345678',
     role: 'master',
     bio: 'Мастер по наращиванию ресниц и бровей',
     address: 'ул. Покровка, 8, Москва'
-  },
-  {
-    email: 'svetlana@example.com',
-    password: 'password123',
-    first_name: 'Светлана',
-    last_name: 'Морозова',
-    phone: '+7 (999) 555-55-55',
-    role: 'master',
-    bio: 'Косметолог и специалист по уходу за лицом',
-    address: 'ул. Мясницкая, 20, Москва'
   }
 ]
 
@@ -186,21 +166,21 @@ Rails.logger.debug "Creating clients..."
 # Create clients
 clients = [
   {
-    email: 'olga@example.com',
-    password: 'password123',
+    email: 'test2@example.com',
+    password: 'password',
     first_name: 'Ольга',
     last_name: 'Иванова',
-    phone: '+7 (999) 666-66-66',
+    phone: '0600000000',
     role: 'client',
     bio: 'Люблю качественный маникюр и массаж',
     address: 'ул. Покровка, 10, Москва'
   },
   {
-    email: 'natalia@example.com',
-    password: 'password123',
+    email: 'test3@example.com',
+    password: 'password',
     first_name: 'Наталья',
     last_name: 'Смирнова',
-    phone: '+7 (999) 777-77-77',
+    phone: '0600000000',
     role: 'client',
     bio: 'Регулярно делаю педикюр и массаж',
     address: 'ул. Мясницкая, 20, Москва'
@@ -210,30 +190,10 @@ clients = [
     password: 'password',
     first_name: 'Тест',
     last_name: 'Пользователь',
-    phone: '+7 (999) 123-45-67',
+    phone: '0600000000',
     role: 'client',
     bio: 'Тестовый пользователь',
     address: 'ул. Тестовая, 1, Москва'
-  },
-  {
-    email: 'elena_client@example.com',
-    password: 'password123',
-    first_name: 'Елена',
-    last_name: 'Кузнецова',
-    phone: '+7 (999) 888-88-88',
-    role: 'client',
-    bio: 'Постоянный клиент массажиста',
-    address: 'ул. Тверская, 5, Москва'
-  },
-  {
-    email: 'anna_client@example.com',
-    password: 'password123',
-    first_name: 'Анна',
-    last_name: 'Соколова',
-    phone: '+7 (999) 999-99-99',
-    role: 'client',
-    bio: 'Любительница косметологических процедур',
-    address: 'ул. Арбат, 15, Москва'
   }
 ]
 

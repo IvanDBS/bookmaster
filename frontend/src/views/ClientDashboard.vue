@@ -459,6 +459,8 @@ const confirmMessage = ref('Вы уверены, что хотите удали�
 const pendingBookingId = ref(null)
 const isClearHistory = ref(false)
 
+
+
 const openDeleteBookingModal = (bookingId) => {
   isClearHistory.value = false
   pendingBookingId.value = bookingId
@@ -491,7 +493,15 @@ const handleConfirmModal = async () => {
   } finally {
     pendingBookingId.value = null
     isClearHistory.value = false
+    isConfirmVisible.value = false // Дополнительная защита
   }
+}
+
+// Функция для принудительного закрытия модального окна
+const closeModal = () => {
+  isConfirmVisible.value = false
+  pendingBookingId.value = null
+  isClearHistory.value = false
 }
 
 // Removed local booking/date/status helpers in favor of useFormatters()

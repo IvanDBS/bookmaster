@@ -36,22 +36,30 @@ export function useClientBookingWizard() {
   }
 
   const selectServiceType = async (type) => {
-    selectedServiceType.value = type
-    const services = await api.getServicesByType(type)
-    const byMasterId = new Map()
-    services
-      .filter((s) => s && s.user && s.user.id)
-      .forEach((s) => {
-        if (!byMasterId.has(s.user.id)) {
-          byMasterId.set(s.user.id, { id: s.user.id, user: s.user, services: [] })
-        }
-        byMasterId.get(s.user.id).services.push(s)
-      })
-    mastersForType.value = Array.from(byMasterId.values())
-    selectedMaster.value = null
-    selectedMasterServices.value = []
-    selectedService.value = null
-    currentStep.value = 2
+    try {
+      selectedServiceType.value = type
+      const services = await api.getServicesByType(type)
+      const byMasterId = new Map()
+      services
+        .filter((s) => s && s.user && s.user.id)
+        .forEach((s) => {
+          if (!byMasterId.has(s.user.id)) {
+            byMasterId.set(s.user.id, { id: s.user.id, user: s.user, services: [] })
+          }
+          byMasterId.get(s.user.id).services.push(s)
+        })
+      mastersForType.value = Array.from(byMasterId.values())
+      selectedMaster.value = null
+      selectedMasterServices.value = []
+      selectedService.value = null
+      currentStep.value = 2
+    } catch (error) {
+      console.error('Error selecting service type:', error)
+      // Сброс состояния при ошибке
+      selectedServiceType.value = null
+      mastersForType.value = []
+      currentStep.value = 1
+    }
   }
 
   const selectMaster = (master) => {
@@ -117,10 +125,15 @@ export function useClientBookingWizard() {
       const payload = {
         master_id: selectedMaster.value.id,
         time_slot_id: selectedSlot.value.id,
-        booking: { service_id: selectedService.value.id },
+        booking: { 
+          service_id: selectedService.value.id,
+          client_email: authStore.user?.email || 'test@example.com',
+          client_name: `${authStore.user?.first_name || 'Тест'} ${authStore.user?.last_name || 'Пользователь'}`,
+          client_phone: authStore.user?.phone || '0690000000'
+        },
       }
       isSubmitting.value = true
-      await api.createBooking(payload, authStore.token)
+      await api.createBooking(payload)
       // Сообщаем приложению о создании записи, чтобы обновить списки
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('booking:created'))

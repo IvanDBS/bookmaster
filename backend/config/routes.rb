@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       post '/auth/resend_confirmation', to: 'auth#resend_confirmation'
       post '/auth/google', to: 'auth#google'
       get '/auth/google_fedcm', to: 'auth#google_fedcm'
+      get '/auth/google_fedcm_metadata', to: 'auth#google_fedcm_metadata'
       post '/auth/google_fedcm_assertion', to: 'auth#google_fedcm_assertion'
       get '/auth/google_callback', to: 'auth#google_callback'
       delete '/auth/logout', to: 'auth#logout'
@@ -99,6 +100,9 @@ Rails.application.routes.draw do
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # FedCM web-identity file
+  get ".well-known/web-identity" => "application#web_identity"
 
   # Defines the root path route ("/")
   # root "posts#index"

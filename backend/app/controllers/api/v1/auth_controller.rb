@@ -148,16 +148,31 @@ class Api::V1::AuthController < ApplicationController
 
   # FedCM endpoint for Google OAuth
   def google_fedcm
+    # Handle OPTIONS requests for CORS preflight
+    if request.method == 'OPTIONS'
+      response.headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
+      response.headers['Access-Control-Allow-Credentials'] = 'true'
+      response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+      response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User'
+      response.headers['Access-Control-Max-Age'] = '86400'
+      return head :ok
+    end
+    
     # FedCM requires specific headers
     response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
     response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
     response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
     
-    # Set CORS headers for FedCM
-    response.headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
+    # Set CORS headers for FedCM - CRITICAL for FedCM to work
+    origin = request.headers['Origin']
+    if origin && ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://book-master.ddns.net'].include?(origin)
+      response.headers['Access-Control-Allow-Origin'] = origin
+    else
+      response.headers['Access-Control-Allow-Origin'] = '*'
+    end
     response.headers['Access-Control-Allow-Credentials'] = 'true'
     response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User'
     response.headers['Access-Control-Expose-Headers'] = 'Cross-Origin-Embedder-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy'
     
     render json: {
@@ -173,35 +188,123 @@ class Api::V1::AuthController < ApplicationController
     }
   end
 
-  # FedCM id assertion endpoint for Google OAuth
-  def google_fedcm_assertion
+  # FedCM metadata endpoint for Google OAuth
+  def google_fedcm_metadata
+    # Handle OPTIONS requests for CORS preflight
+    if request.method == 'OPTIONS'
+      response.headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
+      response.headers['Access-Control-Allow-Credentials'] = 'true'
+      response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+      response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User'
+      response.headers['Access-Control-Max-Age'] = '86400'
+      return head :ok
+    end
+    
     # FedCM requires specific headers
     response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
     response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
     response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
     
-    # Set CORS headers for FedCM
-    response.headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
+    # Set CORS headers for FedCM - CRITICAL for FedCM to work
+    origin = request.headers['Origin']
+    if origin && ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://book-master.ddns.net'].include?(origin)
+      response.headers['Access-Control-Allow-Origin'] = origin
+    else
+      response.headers['Access-Control-Allow-Origin'] = '*'
+    end
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User'
+    response.headers['Access-Control-Expose-Headers'] = 'Cross-Origin-Embedder-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy'
+    
+    render json: {
+      provider_urls: [
+        "https://accounts.google.com"
+      ]
+    }
+  end
+
+  # FedCM id assertion endpoint for Google OAuth
+  def google_fedcm_assertion
+    # Handle OPTIONS requests for CORS preflight
+    if request.method == 'OPTIONS'
+      response.headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
+      response.headers['Access-Control-Allow-Credentials'] = 'true'
+      response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+      response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User'
+      response.headers['Access-Control-Max-Age'] = '86400'
+      return head :ok
+    end
+    
+    # FedCM requires specific headers
+    response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+    response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+    
+    # Set CORS headers for FedCM - CRITICAL for FedCM to work
+    origin = request.headers['Origin']
+    if origin && ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://book-master.ddns.net'].include?(origin)
+      response.headers['Access-Control-Allow-Origin'] = origin
+    else
+      response.headers['Access-Control-Allow-Origin'] = '*'
+    end
     response.headers['Access-Control-Allow-Credentials'] = 'true'
     response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User'
     response.headers['Access-Control-Expose-Headers'] = 'Cross-Origin-Embedder-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy'
     
     # Handle FedCM assertion request
-    account_id = params[:account_id]
+    id_token = params[:id_token]
+    if id_token.blank?
+      return render_error(code: 'bad_request', message: 'Missing id_token', status: :bad_request)
+    end
     
-    if account_id == 'google'
-      # Generate a mock assertion for Google
-      assertion = {
-        id: SecureRandom.uuid,
-        account_id: 'google',
-        provider: 'google',
-        timestamp: Time.current.to_i
+    begin
+      payload = verify_google_id_token(id_token)
+      email = payload['email']
+      first_name = payload['given_name']
+      last_name = payload['family_name']
+      
+      user = User.find_by(email: email)
+      if user.nil?
+        user = User.new(
+          email: email,
+          password: SecureRandom.hex(16),
+          first_name: first_name.presence || 'Google',
+          last_name: last_name.presence || 'User',
+          role: 'client',
+          phone: '+0000000000'
+        )
+        user.save!
+      end
+      
+      # Generate JWT token
+      payload = {
+        user_id: user.id,
+        email: user.email,
+        role: user.role,
+        exp: 1.hour.from_now.to_i
       }
       
-      render json: assertion
-    else
-      render_error(code: 'invalid_account', message: 'Invalid account ID', status: :bad_request)
+      token = JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
+      
+      # Set httpOnly cookie
+      response.set_cookie(
+        'jwt_token',
+        value: token,
+        httponly: true,
+        secure: Rails.env.production?,
+        same_site: :strict,
+        path: '/',
+        expires: 1.hour.from_now
+      )
+      
+      render json: {
+        user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
+        message: 'Успешный вход через Google'
+      }
+    rescue StandardError => e
+      render_error(code: 'unauthorized', message: e.message, status: :unauthorized)
     end
   end
   
@@ -259,22 +362,94 @@ class Api::V1::AuthController < ApplicationController
           user.save!
         end
         
-        # Generate JWT token
-        require 'warden/jwt_auth'
-        encoder = Warden::JWTAuth::UserEncoder.new
-        token, _payload = encoder.call(user, :user, nil)
+        # Generate JWT token (same format as regular login)
+        payload = {
+          user_id: user.id,
+          email: user.email,
+          role: user.role,
+          exp: 1.hour.from_now.to_i
+        }
+        token = JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
         sign_in user, store: false
         
-        render json: {
-          user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
-          token: token,
-          message: 'Успешный вход через Google'
-        }
+        # Return HTML page that sends message to parent window
+        html_content = <<~HTML
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Google OAuth Callback</title>
+          </head>
+          <body>
+            <script>
+              // Send success message to parent window
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'GOOGLE_OAUTH_SUCCESS',
+                  user: #{user.as_json(only: [:id, :email, :first_name, :last_name, :role]).to_json},
+                  token: '#{token}'
+                }, 'http://localhost:5173');
+                window.close();
+              } else {
+                // Fallback: redirect to login page with success message
+                window.location.href = 'http://localhost:5173/login?oauth_success=1';
+              }
+            </script>
+            <p>Авторизация успешна. Окно закроется автоматически...</p>
+          </body>
+          </html>
+        HTML
+        render html: html_content.html_safe
       else
-        render_error(code: 'oauth_error', message: 'Failed to exchange code for tokens', status: :bad_request)
+        # Return HTML page with error message
+        html_content = <<~HTML
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Google OAuth Error</title>
+          </head>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'GOOGLE_OAUTH_ERROR',
+                  error: 'Failed to exchange code for tokens'
+                }, 'http://localhost:5173');
+                window.close();
+              } else {
+                window.location.href = 'http://localhost:5173/login?oauth_error=1';
+              }
+            </script>
+            <p>Ошибка авторизации. Окно закроется автоматически...</p>
+          </body>
+          </html>
+        HTML
+        render html: html_content.html_safe
       end
     rescue StandardError => e
-      render_error(code: 'oauth_error', message: e.message, status: :bad_request)
+      # Return HTML page with error message
+      html_content = <<~HTML
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Google OAuth Error</title>
+        </head>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({
+                type: 'GOOGLE_OAUTH_ERROR',
+                error: '#{e.message}'
+              }, 'http://localhost:5173');
+              window.close();
+            } else {
+              window.location.href = 'http://localhost:5173/login?oauth_error=1';
+            }
+          </script>
+          <p>Ошибка авторизации: #{e.message}. Окно закроется автоматически...</p>
+        </body>
+        </html>
+      HTML
+      render html: html_content.html_safe
     end
   end
   

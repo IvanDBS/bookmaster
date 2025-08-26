@@ -117,9 +117,6 @@
               <span v-if="loadingGoogle">Вход через Google...</span>
               <span v-else>Войти через Google</span>
             </button>
-
-            <!-- Original Google button (hidden) -->
-            <div id="gsi-button" class="hidden"></div>
           </div>
 
           <div v-if="info" class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
@@ -205,20 +202,55 @@ const handleSubmit = async () => {
   }
 }
 
+
+
 const handleGoogleLogin = async () => {
   try {
     loadingGoogle.value = true
     error.value = ''
-
-    // Загружаем Google SDK если еще не загружен
-    await loadGoogleScript()
-
-    // Запускаем Google One Tap или показываем popup
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      window.google.accounts.id.prompt()
-    } else {
-      throw new Error('Google SDK не загружен')
+    
+    // Используем прямую OAuth ссылку вместо Google SDK
+    const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+    if (!CLIENT_ID) {
+      throw new Error('VITE_GOOGLE_CLIENT_ID не настроен в переменных окружения')
     }
+    
+    const redirectUri = encodeURIComponent('http://localhost:3000/api/v1/auth/google_callback')
+    const scope = encodeURIComponent('email profile')
+    const oauthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&prompt=select_account`
+    
+    // Открываем OAuth в новом окне
+    const popup = window.open(oauthUrl, 'google_oauth', 'width=500,height=600,scrollbars=yes,resizable=yes')
+    
+    if (!popup) {
+      throw new Error('Браузер заблокировал всплывающее окно. Разрешите всплывающие окна для этого сайта.')
+    }
+    
+    // Слушаем сообщения от popup
+    window.addEventListener('message', (event) => {
+      if (event.origin !== 'http://localhost:3000') return
+      
+              if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
+          popup.close()
+          // Обрабатываем успешную авторизацию
+          authStore.user = event.data.user
+          authStore.token = event.data.token
+          // Сохраняем токен в localStorage для API запросов
+          localStorage.setItem('token', event.data.token)
+        
+        if (event.data.user.role === 'admin') {
+          router.push('/admin')
+        } else if (event.data.user.role === 'master') {
+          router.push('/master/dashboard')
+        } else {
+          router.push('/client/dashboard')
+        }
+      } else if (event.data.type === 'GOOGLE_OAUTH_ERROR') {
+        popup.close()
+        error.value = event.data.error || 'Ошибка входа через Google'
+      }
+    })
+    
   } catch (err) {
     error.value = err.message || 'Ошибка входа через Google'
   } finally {
@@ -242,14 +274,19 @@ const initGoogleButton = async () => {
   try {
     loadingGoogle.value = true
     await loadGoogleScript()
-    const CLIENT_ID =
-      typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_CLIENT_ID
-        ? import.meta.env.VITE_GOOGLE_CLIENT_ID
-        : '35182841457-gmk8u309dkpq217uadqlf7n5e3qevj7t.apps.googleusercontent.com'
+    const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+    if (!CLIENT_ID) {
+      throw new Error('VITE_GOOGLE_CLIENT_ID не настроен в переменных окружения')
+    }
+    console.log('Using Google Client ID from env:', CLIENT_ID)
     window.google.accounts.id.initialize({
       client_id: CLIENT_ID,
       auto_select: false,
-      itp_support: true,
+      itp_support: false,
+      use_fedcm_for_prompt: false,
+      use_fedcm_for_button: false,
+      disable_fedcm: true,
+      auto_prompt: false,
       callback: async (resp) => {
         try {
           error.value = ''

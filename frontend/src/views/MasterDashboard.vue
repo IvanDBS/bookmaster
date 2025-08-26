@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import AppHeader from '../components/AppHeader.vue'
@@ -146,7 +146,32 @@ onMounted(async () => {
     user.value = authStore.user
   }
   await bookings.loadBookings()
+  
+  // Добавляем обработчик события создания записи
+  window.addEventListener('booking:created', handleBookingCreated)
+  
+  // Автообновление при фокусе на окно
+  window.addEventListener('focus', handleBookingCreated)
 })
+
+onBeforeUnmount(() => {
+  // Удаляем обработчики событий
+  window.removeEventListener('booking:created', handleBookingCreated)
+  window.removeEventListener('focus', handleBookingCreated)
+})
+
+const handleBookingCreated = async () => {
+  try {
+    // Обновляем данные записей
+    await bookings.loadBookings()
+    // Увеличиваем refreshTick для обновления календаря
+    bookings.refreshTick.value++
+  } catch (error) {
+    console.error('Error handling booking created event:', error)
+  }
+}
+
+
 
 const handleScrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)

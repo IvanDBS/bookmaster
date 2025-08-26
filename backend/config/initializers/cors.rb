@@ -11,7 +11,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     if ENV['RAILS_ENV'] == 'production'
       allowed_origins = ENV.fetch('CORS_ORIGINS') { raise 'CORS_ORIGINS must be set in production' }.split(',')
     else
-      allowed_origins = ENV.fetch('CORS_ORIGINS', 'http://localhost:3000,http://localhost:8080,http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://book-master.ddns.net').split(',')
+      allowed_origins = ENV.fetch('CORS_ORIGINS', 'http://localhost:3000,http://localhost:8080,http://localhost:5173,http://localhost:5174').split(',')
     end
 
     origins(*allowed_origins)
@@ -41,14 +41,6 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     resource '/api/v1/auth/google_fedcm',
              headers: %w[Authorization Content-Type Accept X-Requested-With Sec-Fetch-Dest Sec-Fetch-Mode Sec-Fetch-Site Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy],
              methods: %i[get options],
-             credentials: true,
-             max_age: 86400,
-             expose: %w[Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy Cross-Origin-Resource-Policy]
-
-    # FedCM assertion endpoint for Google OAuth
-    resource '/api/v1/auth/google_fedcm_assertion',
-             headers: %w[Authorization Content-Type Accept X-Requested-With Sec-Fetch-Dest Sec-Fetch-Mode Sec-Fetch-Site Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy],
-             methods: %i[post options],
              credentials: true,
              max_age: 86400,
              expose: %w[Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy Cross-Origin-Resource-Policy]
