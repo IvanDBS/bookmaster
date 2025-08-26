@@ -25,7 +25,7 @@ Rails.logger.debug "Creating masters..."
 masters = [
   {
     email: 'maria@example.com',
-    password: 'password123',
+    password: 'password',
     first_name: 'Мария',
     last_name: 'Сидорова',
     phone: '0712345678',
@@ -35,7 +35,7 @@ masters = [
   },
   {
     email: 'elena@example.com',
-    password: 'password123',
+    password: 'password',
     first_name: 'Елена',
     last_name: 'Козлова',
     phone: '0712345678',
@@ -45,7 +45,7 @@ masters = [
   },
   {
     email: 'irina@example.com',
-    password: 'password123',
+    password: 'password',
     first_name: 'Ирина',
     last_name: 'Волкова',
     phone: '0712345678',
@@ -66,29 +66,7 @@ end
 
 Rails.logger.debug "Creating services for masters..."
 
-# Services for Anna (manicure specialist)
-anna = User.find_by(email: 'anna@example.com')
-if anna
-  # Реальные позиции из прайса мастера 1 (маникюр)
-  services = [
-    { name: 'Manichiura igienica', description: 'Гигиенический маникюр', price: 50, duration: 60, 
-      service_type: 'маникюр' },
-    { name: 'Acoperire', description: 'Покрытие', price: 180, duration: 60, service_type: 'маникюр' },
-    { name: 'Corectie marimea 1-2', description: 'Коррекция длины 1–2', price: 200, duration: 60, 
-      service_type: 'маникюр' },
-    { name: 'Corectie marimea 3-4', description: 'Коррекция длины 3–4', price: 250, duration: 60, 
-      service_type: 'маникюр' },
-    { name: 'Alungire marimea 1-2', description: 'Наращивание длины 1–2', price: 250, duration: 60, 
-      service_type: 'маникюр' },
-    { name: 'Alungire marimea 3-4', description: 'Наращивание длины 3–4', price: 300, duration: 60, 
-      service_type: 'маникюр' }
-  ]
-  
-  services.each do |service_data|
-    service = anna.services.create!(service_data)
-    Rails.logger.debug { "Created service for Anna: #{service.name} (#{service.service_type})" }
-  end
-end
+
 
 # Services for Maria (pedicure specialist)
 maria = User.find_by(email: 'maria@example.com')
@@ -145,21 +123,7 @@ if elena
   end
 end
 
-# Svetlana - massage services
-svetlana = User.find_by(email: 'svetlana@example.com')
-if svetlana
-  services = [
-    { name: 'Лимфодренажный массаж', description: 'Массаж для улучшения лимфотока', price: 3500, duration: 60, 
-      service_type: 'массаж' },
-    { name: 'Расслабляющий массаж', description: 'Антистресс массаж для релаксации', price: 2800, duration: 60, 
-      service_type: 'массаж' }
-  ]
-  
-  services.each do |service_data|
-    service = svetlana.services.create!(service_data)
-    Rails.logger.debug { "Created service for Svetlana: #{service.name} (#{service.service_type})" }
-  end
-end
+
 
 Rails.logger.debug "Creating clients..."
 
@@ -218,15 +182,15 @@ Rails.logger.debug { "Created admin: #{admin_email}" }
 
 Rails.logger.debug "Generating time slots for masters..."
 
-# Generate time slots for the next 14 days for all masters
+# Generate time slots for the next 30 days for all masters (начиная с завтра)
 masters = User.where(role: 'master')
-(0..13).each do |day_offset|
+(1..30).each do |day_offset|
   date = Date.current + day_offset.days
   masters.each do |master|
     master.ensure_slots_for_date(date)
   end
 end
-Rails.logger.debug { "Generated time slots for #{masters.count} masters for 14 days" }
+Rails.logger.debug { "Generated time slots for #{masters.count} masters for 30 days" }
 
 Rails.logger.debug "Creating bookings aligned to slots..."
 
@@ -234,58 +198,70 @@ if User.exists?(role: 'master') && User.exists?(role: 'client')
   masters = User.where(role: 'master').to_a
   clients = User.where(role: 'client').to_a
 
-  # Фиксированные времена для записей (увеличиваем в 2 раза)
-  booking_times = ['09:00', '11:00', '14:00', '16:00']
-
-  (1..14).each do |day_offset|
-    date = Date.current + day_offset.days
+  # Создаем по 20 записей для каждого клиента
+  clients.each do |client|
+    puts "Creating 20 bookings for client: #{client.full_name}"
+    Rails.logger.debug { "Creating 20 bookings for client: #{client.full_name}" }
     
-    # Создаем 4 записи в день (по одному бронированию на время)
-    booking_times.each_with_index do |time_str, index|
-      # Выбираем случайного мастера для этой записи
+    20.times do |booking_index|
+      # Случайный день в ближайшие 30 дней (начиная с завтра)
+      day_offset = rand(1..30)
+      date = Date.current + day_offset.days
+      
+      # Случайный мастер
       master = masters.sample
       
       # Генерируем/гарантируем слоты для мастера
       master.ensure_slots_for_date(date)
       
-      # Находим слот для этого времени используя Ruby фильтрацию
-      hour, minute = time_str.split(':').map(&:to_i)
-      slot = master.time_slots.for_date(date)
-                   .work_slots
-                   .available
-                   .find { |s| s.start_time.hour == hour && s.start_time.min == minute }
+      # Находим случайный свободный слот
+      available_slots = master.time_slots.for_date(date).work_slots.available.to_a
+      if available_slots.empty?
+        puts "  No available slots for #{master.full_name} on #{date}"
+        next
+      end
       
-      next unless slot # Пропускаем если слот не найден
-      
+      slot = available_slots.sample
       service = master.services.sample
-      client = clients.sample
-
+      
       # Создаем время записи точно по слоту
-      start_dt = Time.zone.parse("#{date} #{time_str}")
+      start_dt = Time.zone.parse("#{slot.date} #{slot.start_time.strftime('%H:%M')}")
       end_dt = start_dt + service.duration.minutes
 
-      status = %w[pending confirmed cancelled].sample
-      booking = Booking.create!(
-        user: master,
-        service: service,
-        start_time: start_dt,
-        end_time: end_dt,
-        client_name: client.full_name,
-        client_email: client.email,
-        client_phone: client.phone,
-        status: status
-      )
+      # Пропускаем если время в прошлом (учитываем только дату)
+      if start_dt.to_date <= Date.current
+        puts "  Skipping past date: #{start_dt.to_date}"
+        next
+      end
 
-      # Правильно связываем слот с записью
-      slot.update!(booking_id: booking.id, is_available: false)
-      Rails.logger.debug do
-        "Created booking #{index + 1}/#{booking_times.size}: #{client.full_name} -> #{master.full_name} (#{service.name}, status: #{status}) on #{start_dt.strftime('%d.%m.%Y %H:%M')} in slot #{slot.id}"
+      status = %w[pending confirmed cancelled].sample
+      begin
+        booking = Booking.create!(
+          user: master,
+          service: service,
+          start_time: start_dt,
+          end_time: end_dt,
+          client_name: client.full_name,
+          client_email: client.email,
+          client_phone: client.phone,
+          status: status
+        )
+
+        # Правильно связываем слот с записью
+        slot.update!(booking_id: booking.id, is_available: false)
+        puts "  Created booking #{booking_index + 1}/20: #{client.full_name} -> #{master.full_name} (#{service.name}, status: #{status}) on #{start_dt.strftime('%d.%m.%Y %H:%M')}"
+      rescue ActiveRecord::RecordInvalid => e
+        puts "  Failed to create booking: #{e.message}"
+        next
       end
     end
     
     # Запускаем синхронизацию для всех мастеров
     masters.each do |master|
-      master.reconcile_bookings_with_slots_for_date(date)
+      (1..30).each do |day_offset|
+        date = Date.current + day_offset.days
+        master.reconcile_bookings_with_slots_for_date(date)
+      end
     end
   end
 end

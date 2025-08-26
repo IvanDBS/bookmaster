@@ -209,7 +209,7 @@ class WorkingSchedule < ApplicationRecord
     mins %= 1440
     hh = (mins / 60).floor
     mm = mins % 60
-    format('%02d:%02d:00', hh, mm)
+    Time.zone.parse("2000-01-01 #{format('%02d:%02d:00', hh, mm)}")
   end
 
   def lunch_overlaps_minutes?(a_start, a_end, l_start, l_end)
