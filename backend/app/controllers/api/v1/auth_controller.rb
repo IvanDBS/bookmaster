@@ -151,6 +151,14 @@ class Api::V1::AuthController < ApplicationController
     # FedCM requires specific headers
     response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
     response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+    response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+    
+    # Set CORS headers for FedCM
+    response.headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site'
+    response.headers['Access-Control-Expose-Headers'] = 'Cross-Origin-Embedder-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy'
     
     render json: {
       accounts: [
@@ -163,6 +171,79 @@ class Api::V1::AuthController < ApplicationController
         }
       ]
     }
+  end
+  
+  # Google OAuth callback endpoint
+  def google_callback
+    # Handle Google OAuth callback
+    code = params[:code]
+    state = params[:state]
+    
+    if code.blank?
+      return render_error(code: 'bad_request', message: 'Missing authorization code', status: :bad_request)
+    end
+    
+    # Exchange code for tokens
+    begin
+      require 'net/http'
+      require 'uri'
+      require 'json'
+      
+      uri = URI('https://oauth2.googleapis.com/token')
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      
+      request = Net::HTTP::Post.new(uri)
+      request.set_form_data({
+        'client_id' => google_client_id,
+        'client_secret' => ENV['GOOGLE_OAUTH_CLIENT_SECRET'],
+        'code' => code,
+        'grant_type' => 'authorization_code',
+        'redirect_uri' => 'http://localhost:3000/api/v1/auth/google_callback'
+      })
+      
+      response = http.request(request)
+      
+      if response.is_a?(Net::HTTPSuccess)
+        tokens = JSON.parse(response.body)
+        id_token = tokens['id_token']
+        
+        # Verify and process the ID token
+        payload = verify_google_id_token(id_token)
+        email = payload['email']
+        first_name = payload['given_name']
+        last_name = payload['family_name']
+        
+        user = User.find_by(email: email)
+        if user.nil?
+          user = User.new(
+            email: email,
+            password: SecureRandom.hex(16),
+            first_name: first_name.presence || 'Google',
+            last_name: last_name.presence || 'User',
+            role: 'client',
+            phone: '+0000000000'
+          )
+          user.save!
+        end
+        
+        # Generate JWT token
+        require 'warden/jwt_auth'
+        encoder = Warden::JWTAuth::UserEncoder.new
+        token, _payload = encoder.call(user, :user, nil)
+        sign_in user, store: false
+        
+        render json: {
+          user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
+          token: token,
+          message: 'Успешный вход через Google'
+        }
+      else
+        render_error(code: 'oauth_error', message: 'Failed to exchange code for tokens', status: :bad_request)
+      end
+    rescue StandardError => e
+      render_error(code: 'oauth_error', message: e.message, status: :bad_request)
+    end
   end
   
   def profile

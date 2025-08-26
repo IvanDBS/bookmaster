@@ -36,5 +36,13 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
              credentials: true,
              max_age: 86400,
              expose: %w[Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy]
+
+    # Special FedCM endpoint for Google OAuth
+    resource '/api/v1/auth/google_fedcm',
+             headers: %w[Authorization Content-Type Accept X-Requested-With Sec-Fetch-Dest Sec-Fetch-Mode Sec-Fetch-Site Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy],
+             methods: %i[get options],
+             credentials: true,
+             max_age: 86400,
+             expose: %w[Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy Cross-Origin-Resource-Policy]
   end
 end
