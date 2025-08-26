@@ -5,15 +5,15 @@ SecureHeaders::Configuration.default do |config|
 
   config.csp = {
     default_src: ["'self'"],
-    script_src: ["'self'", 'https://accounts.google.com', 'https://apis.google.com'],
-    style_src: ["'self'", 'https://accounts.google.com', 'https://fonts.googleapis.com'],
-    img_src: ["'self'", 'data:', 'https://accounts.google.com'],
-    connect_src: connect_src + ['https://accounts.google.com', 'https://oauth2.googleapis.com', 'https://www.googleapis.com'],
-    frame_src: ['https://accounts.google.com'],
+    script_src: ["'self'", "'unsafe-inline'", 'https://accounts.google.com', 'https://apis.google.com'],
+    style_src: ["'self'", "'unsafe-inline'", 'https://accounts.google.com', 'https://fonts.googleapis.com'],
+    img_src: ["'self'", 'data:', 'https://accounts.google.com', 'https://lh3.googleusercontent.com'],
+    connect_src: connect_src + ['https://accounts.google.com', 'https://oauth2.googleapis.com', 'https://www.googleapis.com', 'https://securetoken.googleapis.com', 'https://identitytoolkit.googleapis.com'],
+    frame_src: ['https://accounts.google.com', 'https://content.googleapis.com'],
     object_src: ["'none'"],
     frame_ancestors: ["'none'"], # Защита от clickjacking
     base_uri: ["'self'"],
-    form_action: ["'self'"],
+    form_action: ["'self'", 'https://accounts.google.com'],
     upgrade_insecure_requests: true, # Принудительный HTTPS
   }
 

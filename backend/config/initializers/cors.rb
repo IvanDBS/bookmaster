@@ -17,16 +17,24 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     origins(*allowed_origins)
 
     resource '/api/v1/*',
-             headers: %w[Authorization Content-Type Accept],
-             methods: %i[get post put patch delete],
+             headers: %w[Authorization Content-Type Accept X-Requested-With Sec-Fetch-Dest Sec-Fetch-Mode Sec-Fetch-Site],
+             methods: %i[get post put patch delete options],
              credentials: true,
              max_age: 86400
              
     # Более строгие настройки для админских эндпоинтов
     resource '/api/v1/admin/*',
-             headers: %w[Authorization Content-Type Accept],
-             methods: %i[get post put patch delete],
+             headers: %w[Authorization Content-Type Accept X-Requested-With Sec-Fetch-Dest Sec-Fetch-Mode Sec-Fetch-Site],
+             methods: %i[get post put patch delete options],
              credentials: true,
              max_age: 3600
+
+    # Google OAuth endpoints with FedCM support
+    resource '/api/v1/auth/*',
+             headers: %w[Authorization Content-Type Accept X-Requested-With Sec-Fetch-Dest Sec-Fetch-Mode Sec-Fetch-Site Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy],
+             methods: %i[get post put patch delete options],
+             credentials: true,
+             max_age: 86400,
+             expose: %w[Cross-Origin-Embedder-Policy Cross-Origin-Opener-Policy]
   end
 end

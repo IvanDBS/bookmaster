@@ -1,12 +1,14 @@
+# Temporarily disabled for Google OAuth debugging
+=begin
 class Rack::Attack
-  # Rate limiting для API endpoints
+  # Rate limiting для API endpoints (исключаем Google OAuth)
   throttle('api/ip', limit: 300, period: 5.minutes) do |req|
-    req.ip if req.path.start_with?('/api/')
+    req.ip if req.path.start_with?('/api/') && !req.path.start_with?('/api/v1/auth/google')
   end
 
-  # Rate limiting для аутентификации
+  # Rate limiting для аутентификации (исключаем Google OAuth)
   throttle('login/ip', limit: 5, period: 20.seconds) do |req|
-    req.ip if req.path == '/api/v1/auth/login' && req.post?
+    req.ip if req.path == '/api/v1/auth/login' && req.post? && !req.path.start_with?('/api/v1/auth/google')
   end
 
   # Rate limiting для регистрации
@@ -37,8 +39,11 @@ class Rack::Attack
     end
   end
 
-  # Блокировка известных ботов и сканеров
+  # Блокировка известных ботов и сканеров (исключаем Google OAuth)
   blocklist('blocklist/bots') do |req|
+    # Не блокируем Google OAuth endpoints
+    return false if req.path.start_with?('/api/v1/auth/google')
+    
     user_agent = req.user_agent.to_s.downcase
     bot_patterns = [
       'bot', 'crawler', 'spider', 'scraper', 'curl', 'wget',
@@ -59,7 +64,10 @@ class Rack::Attack
   end
 end
 
-# Enable Rack::Attack middleware
-Rails.application.config.middleware.use Rack::Attack
+# Enable Rack::Attack middleware (only in production)
+if Rails.env.production?
+  Rails.application.config.middleware.use Rack::Attack
+end
+=end
 
 

@@ -85,6 +85,18 @@ Rails.application.configure do
 
   # Google OAuth (dev default) – безопасно только для локальной разработки
   ENV['GOOGLE_OAUTH_CLIENT_ID'] ||= '35182841457-gmk8u309dkpq217uadqlf7n5e3qevj7t.apps.googleusercontent.com'
+  ENV['GOOGLE_OAUTH_CLIENT_SECRET'] ||= 'your_google_oauth_client_secret_here'
+  
+  # Allow CORS for Google OAuth in development
+  config.middleware.insert_before 0, Rack::Cors do
+    allow do
+      origins 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'
+      resource '*',
+        headers: :any,
+        methods: [:get, :post, :put, :patch, :delete, :options, :head],
+        credentials: true
+    end
+  end
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true

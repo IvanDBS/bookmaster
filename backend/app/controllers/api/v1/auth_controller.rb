@@ -145,6 +145,25 @@ class Api::V1::AuthController < ApplicationController
       render_error(code: 'unauthorized', message: e.message, status: :unauthorized)
     end
   end
+
+  # FedCM endpoint for Google OAuth
+  def google_fedcm
+    # FedCM requires specific headers
+    response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+    
+    render json: {
+      accounts: [
+        {
+          id: 'google',
+          name: 'Google',
+          given_name: 'Google',
+          email: 'user@example.com',
+          picture: 'https://accounts.google.com/favicon.ico'
+        }
+      ]
+    }
+  end
   
   def profile
     render json: {

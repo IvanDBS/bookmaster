@@ -19,6 +19,7 @@ Rails.application.routes.draw do
       post '/auth/confirm', to: 'auth#confirm'
       post '/auth/resend_confirmation', to: 'auth#resend_confirmation'
       post '/auth/google', to: 'auth#google'
+      get '/auth/google_fedcm', to: 'auth#google_fedcm'
       delete '/auth/logout', to: 'auth#logout'
       get '/auth/profile', to: 'auth#profile'
       

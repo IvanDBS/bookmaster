@@ -52,32 +52,6 @@ bookmaster/
 cp env.example env.development
 # Отредактируйте env.development с вашими данными
 ```
-
-## 🚀 Развертывание
-
-### Development
-```bash
-./start-dev.sh
-```
-
-### Production
-```bash
-./start-prod.sh
-```
-
-## 📊 Мониторинг
-
-```bash
-# Security audit
-cd backend && bundle exec rake security:audit
-
-# Check logs
-cd backend && bundle exec rake security:check_logs
-
-# Generate report
-cd backend && bundle exec rake security:report
-```
-
 ## 📄 Лицензия
 
 MIT License - см. файл [LICENSE](LICENSE)
